@@ -43,13 +43,6 @@ dependencyResolutionManagement {
                 password = gprKey
             }
         }
-        maven {
-            url = uri("https://maven.pkg.github.com/jonasfranz/ktor-client-karoo")
-            credentials {
-                username = gprUser
-                password = gprKey
-            }
-        }
     }
 }
 

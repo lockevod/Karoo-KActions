@@ -98,7 +98,7 @@ fun ConfigScreen() {
                 Timber.e(e, "Error loading sender config")
             }
 
-            
+
             sender.getSenderConfigFlow().collect { updatedConfig ->
                 senderConfig = updatedConfig
                 if (updatedConfig != null) {
@@ -107,6 +107,15 @@ fun ConfigScreen() {
             }
         }
     }
+
+    val errorKarooNotConnected = stringResource(R.string.error_karoo_not_connected)
+    val testMessageContent = stringResource(R.string.test_message_content)
+    val testMessageSent = stringResource(R.string.test_message_sent)
+    val errorSendingMessage = stringResource(R.string.error_sending_message)
+    val settingsSaved = stringResource(R.string.settings_saved)
+    val connectingText = stringResource(R.string.connecting)
+    val sendTestMessageText = stringResource(R.string.send_test_message)
+
 
     fun saveData() {
         if (ignoreAutoSave) {
@@ -147,7 +156,7 @@ fun ConfigScreen() {
                     sender.saveSenderConfig(newSenderConfig)
                 }
 
-                statusMessage = "Settings saved automatically"
+                statusMessage = settingsSaved
                 kotlinx.coroutines.delay(2000)
                 statusMessage = null
                 Timber.d("Configuración guardada exitosamente")
@@ -174,7 +183,7 @@ fun ConfigScreen() {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    "Notification Settings",
+                    stringResource(R.string.notification_settings),
                     style = MaterialTheme.typography.titleMedium
                 )
 
@@ -183,7 +192,7 @@ fun ConfigScreen() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        "Enable notifications",
+                        stringResource(R.string.enable_notifications),
                         modifier = Modifier.weight(1f)
                     )
                     Switch(
@@ -198,7 +207,7 @@ fun ConfigScreen() {
                 HorizontalDivider()
 
                 Text(
-                    "Send notifications when:",
+                    stringResource(R.string.send_notifications_when),
                     style = MaterialTheme.typography.bodyMedium
                 )
 
@@ -207,7 +216,7 @@ fun ConfigScreen() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        "Ride starts",
+                        stringResource(R.string.ride_starts),
                         modifier = Modifier.weight(1f)
                     )
                     Checkbox(
@@ -224,7 +233,7 @@ fun ConfigScreen() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        "Ride ends",
+                        stringResource(R.string.ride_ends),
                         modifier = Modifier.weight(1f)
                     )
                     Checkbox(
@@ -241,7 +250,7 @@ fun ConfigScreen() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        "Ride paused",
+                        stringResource(R.string.ride_paused),
                         modifier = Modifier.weight(1f)
                     )
                     Checkbox(
@@ -258,7 +267,7 @@ fun ConfigScreen() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        "Ride resumed",
+                        stringResource(R.string.ride_resumed),
                         modifier = Modifier.weight(1f)
                     )
                     Checkbox(
@@ -271,13 +280,13 @@ fun ConfigScreen() {
                 }
 
                 Text(
-                    "Enter your Karoo Live key",
+                    stringResource(R.string.enter_karoo_live_key),
                     modifier = Modifier.weight(1f)
                 )
                 OutlinedTextField(
                     value = karooKey,
                     onValueChange = { karooKey = it },
-                    label = { Text("Karoo Key") },
+                    label = { Text(stringResource(R.string.karoo_key)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .onFocusChanged { if (!it.isFocused) saveData() }
@@ -289,19 +298,19 @@ fun ConfigScreen() {
             }
 
             Text(
-                "WHAPI API Configuration",
+                stringResource(R.string.whapi_api_config),
                 style = MaterialTheme.typography.titleMedium
             )
 
             Text(
-                "Whapi allows sending Whats messages but you need to register (free tier before. Read info in extension github).",
+                stringResource(R.string.whapi_description),
                 style = MaterialTheme.typography.bodyMedium
             )
 
             OutlinedTextField(
                 value = apiKey,
                 onValueChange = { apiKey = it },
-                label = { Text("WHAPI API Key") },
+                label = { Text(stringResource(R.string.whapi_api_key)) },
                 placeholder = { Text("123456") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -318,7 +327,7 @@ fun ConfigScreen() {
 
             if (senderConfig != null && apiKey.isNotBlank()) {
                 Text(
-                    "Prueba de envío de mensajes",
+                    stringResource(R.string.test_sending),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(top = 16.dp)
                 )
@@ -326,8 +335,8 @@ fun ConfigScreen() {
                 OutlinedTextField(
                     value = testPhoneNumber,
                     onValueChange = { testPhoneNumber = it },
-                    label = { Text("Número para pruebas") },
-                    placeholder = { Text("34675123123") },
+                    label = { Text(stringResource(R.string.test_phone_number)) },
+                    placeholder = { Text(stringResource(R.string.phone_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
@@ -346,19 +355,19 @@ fun ConfigScreen() {
 
                             try {
                                 if (!karooConnected) {
-                                    statusMessage = "Error: Karoo System no está conectado"
+                                    statusMessage = errorKarooNotConnected
                                     return@launch
                                 }
 
                                 val success = sender.sendMessage(
                                     phoneNumber = testPhoneNumber,
-                                    message = "Mensaje de prueba desde KNotify"
+                                    message = testMessageContent
                                 )
 
                                 statusMessage = if (success) {
-                                    "¡Mensaje de prueba enviado correctamente!"
+                                    testMessageSent
                                 } else {
-                                    "Error al enviar mensaje. Revisa tu configuración."
+                                    errorSendingMessage
                                 }
                             } catch (e: Exception) {
                                 statusMessage = "Error: ${e.message}"
@@ -370,8 +379,14 @@ fun ConfigScreen() {
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading && testPhoneNumber.isNotBlank() && karooConnected
                 ) {
-                    Text(if (isConnecting) "Conectando..." else "Enviar mensaje de prueba")
+                    Text(
+                        if (isConnecting)
+                            connectingText
+                        else
+                            sendTestMessageText
+                    )
                 }
+
 
                 if (isLoading) {
                     Spacer(modifier = Modifier.height(8.dp))

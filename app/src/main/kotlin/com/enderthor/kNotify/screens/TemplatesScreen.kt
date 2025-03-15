@@ -11,11 +11,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.enderthor.kNotify.data.ConfigData
 import com.enderthor.kNotify.extension.loadPreferencesFlow
 import com.enderthor.kNotify.extension.savePreferences
+import com.enderthor.kNotify.R
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,15 +26,30 @@ fun MessagesScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+
+    val messageTemplatesTitle = stringResource(R.string.message_templates)
+    val configureMessagesDesc = stringResource(R.string.configure_messages)
+    val startMessageLabel = stringResource(R.string.start_message)
+    val pauseMessageLabel = stringResource(R.string.pause_message)
+    val resumeMessageLabel = stringResource(R.string.resume_message)
+    val stopMessageLabel = stringResource(R.string.stop_message)
+    val messagesSavedText = stringResource(R.string.messages_saved)
+
+
+    val defaultStartMsg = stringResource(R.string.default_start_message)
+    val defaultStopMsg = stringResource(R.string.default_stop_message)
+    val defaultPauseMsg = stringResource(R.string.default_pause_message)
+    val defaultResumeMsg = stringResource(R.string.default_resume_message)
+
     var config by remember { mutableStateOf<ConfigData?>(null) }
-    var startMessage by remember { mutableStateOf("I started a ride") }
-    var stopMessage by remember { mutableStateOf("I finished my ride") }
-    var pauseMessage by remember { mutableStateOf("I paused my ride") }
-    var resumeMessage by remember { mutableStateOf("I resumed my ride") }
+    var startMessage by remember { mutableStateOf(defaultStartMsg) }
+    var stopMessage by remember { mutableStateOf(defaultStopMsg) }
+    var pauseMessage by remember { mutableStateOf(defaultPauseMsg) }
+    var resumeMessage by remember { mutableStateOf(defaultResumeMsg) }
     var statusMessage by remember { mutableStateOf<String?>(null) }
 
-
     var ignoreAutoSave by remember { mutableStateOf(true) }
+
 
 
     LaunchedEffect(Unit) {
@@ -68,7 +85,7 @@ fun MessagesScreen() {
 
         scope.launch {
             savePreferences(context, mutableListOf(updatedConfig))
-            statusMessage = "Messages saved automatically"
+            statusMessage = messagesSavedText
 
             kotlinx.coroutines.delay(2000)
             statusMessage = null
@@ -89,19 +106,19 @@ fun MessagesScreen() {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    "Message Templates",
+                    messageTemplatesTitle,
                     style = MaterialTheme.typography.titleMedium
                 )
 
                 Text(
-                    "Configure the messages that will be sent for each ride event",
+                    configureMessagesDesc,
                     style = MaterialTheme.typography.bodyMedium
                 )
 
                 OutlinedTextField(
                     value = startMessage,
                     onValueChange = { startMessage = it },
-                    label = { Text("Start Message") },
+                    label = { Text(startMessageLabel) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .onFocusChanged { if (!it.isFocused) saveData() }
@@ -114,7 +131,7 @@ fun MessagesScreen() {
                 OutlinedTextField(
                     value = pauseMessage,
                     onValueChange = { pauseMessage = it },
-                    label = { Text("Pause Message") },
+                    label = { Text(pauseMessageLabel) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .onFocusChanged { if (!it.isFocused) saveData() }
@@ -127,7 +144,7 @@ fun MessagesScreen() {
                 OutlinedTextField(
                     value = resumeMessage,
                     onValueChange = { resumeMessage = it },
-                    label = { Text("Resume Message") },
+                    label = { Text(resumeMessageLabel) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .onFocusChanged { if (!it.isFocused) saveData() }
@@ -140,7 +157,7 @@ fun MessagesScreen() {
                 OutlinedTextField(
                     value = stopMessage,
                     onValueChange = { stopMessage = it },
-                    label = { Text("Stop Message") },
+                    label = { Text(stopMessageLabel) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .onFocusChanged { if (!it.isFocused) saveData() }

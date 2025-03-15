@@ -4,8 +4,8 @@
   "latestApkUrl": "https://github.com/lockevod/Karoo-KNotify/releases/latest/download/knotify.apk",
   "iconUrl": "https://github.com/lockevod/Karoo-KNotify/releases/latest/download/karoo-notify.png",
   "latestVersion": "0.1",
-  "latestVersionCode": 202503032,
+  "latestVersionCode": 202503151,
   "developer": "Enderthor",
-  "description": "This extension for Karoo devices adds a device simulates a virtual power meter.",
-  "releaseNotes": "Locale fix. Improve streams detection. Code improvement. Fix some random crashes when locale isn't english."
+  "description": "This extension for Karoo devices allows to send automated whatsapp messages when you start, stop, pause or resume your activity.",
+  "releaseNotes": "First release. Alpha release"
 }

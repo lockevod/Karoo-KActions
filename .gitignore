@@ -15,8 +15,6 @@
 local.properties
 /app/release/
 /.kotlin/
-/defaultconfig
-/app/src/main/kotlin/com/enderthor/kpower/vdevice/CyclingEstimator.kt
 /.idea/compiler.xml
 /.idea/deploymentTargetSelector.xml
 /.idea/gradle.xml

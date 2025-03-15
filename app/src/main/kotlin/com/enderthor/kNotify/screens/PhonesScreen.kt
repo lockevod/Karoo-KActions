@@ -14,12 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.enderthor.kNotify.data.ConfigData
 import com.enderthor.kNotify.extension.loadPreferencesFlow
 import com.enderthor.kNotify.extension.savePreferences
+import com.enderthor.kNotify.R
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,6 +29,20 @@ import kotlinx.coroutines.launch
 fun PhonesScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+
+    val phoneNumbersTitle = stringResource(R.string.phone_numbers)
+    val enterUpTo3PhonesDesc = stringResource(R.string.enter_up_to_3_phones)
+    val number1Label = stringResource(R.string.number_1)
+    val number2Label = stringResource(R.string.number_2)
+    val number3Label = stringResource(R.string.number_3)
+    val phonesSavedMessage = stringResource(R.string.phone_numbers_saved)
+    val cannotSaveMessage = stringResource(R.string.cannot_save_invalid_format)
+
+
+    val errorNoPlus = stringResource(R.string.error_no_plus)
+    val errorDigitsOnly = stringResource(R.string.error_digits_only)
+    val errorLength = stringResource(R.string.error_length)
 
     var config by remember { mutableStateOf<ConfigData?>(null) }
     var phoneNumber1 by remember { mutableStateOf("") }
@@ -37,7 +53,6 @@ fun PhonesScreen() {
     var isPhone1Valid by remember { mutableStateOf(true) }
     var isPhone2Valid by remember { mutableStateOf(true) }
     var isPhone3Valid by remember { mutableStateOf(true) }
-
 
     var ignoreAutoSave by remember { mutableStateOf(true) }
 
@@ -57,7 +72,7 @@ fun PhonesScreen() {
         }
     }
 
-   fun validatePhoneNumber(phoneNumber: String): Pair<Boolean, String> {
+    fun validatePhoneNumber(phoneNumber: String): Pair<Boolean, String> {
         val trimmedPhone = phoneNumber.trim()
 
         if (trimmedPhone.isEmpty()) {
@@ -65,24 +80,27 @@ fun PhonesScreen() {
         }
 
         if (trimmedPhone.contains("+")) {
-            return Pair(false, "Phone number must be entered without the '+' symbol and with country code. Example: 34675123123")
+            return Pair(false, errorNoPlus)
         }
 
         if (!trimmedPhone.all { it.isDigit() }) {
-            return Pair(false, "Phone number must contain only digits. Example: 34675123123")
+            return Pair(false, errorDigitsOnly)
         }
 
         if (trimmedPhone.length < 10 || trimmedPhone.length > 15) {
-            return Pair(false, "Phone number must have between 10-15 digits, country code is required. Example: 34675123123")
+            return Pair(false, errorLength)
         }
 
         return Pair(true, "")
     }
 
+    var phone1ErrorMessage by remember { mutableStateOf("") }
+    var phone2ErrorMessage by remember { mutableStateOf("") }
+    var phone3ErrorMessage by remember { mutableStateOf("") }
+
 
     fun saveData() {
         if (ignoreAutoSave) return
-
 
         val phone1Result = validatePhoneNumber(phoneNumber1)
         val phone2Result = validatePhoneNumber(phoneNumber2)
@@ -107,12 +125,12 @@ fun PhonesScreen() {
 
             scope.launch {
                 savePreferences(context, mutableListOf(updatedConfig))
-                statusMessage = "Phone numbers saved"
+                statusMessage = phonesSavedMessage
                 kotlinx.coroutines.delay(2000)
                 statusMessage = null
             }
         } else {
-            statusMessage = "Cannot save: Some phone numbers have invalid format"
+            statusMessage = cannotSaveMessage
             scope.launch {
                 kotlinx.coroutines.delay(3000)
                 statusMessage = null
@@ -134,19 +152,14 @@ fun PhonesScreen() {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    "Phone Numbers",
+                    phoneNumbersTitle,
                     style = MaterialTheme.typography.titleMedium
                 )
 
                 Text(
-                    "Enter up to 3 phone numbers that will receive notifications",
+                    enterUpTo3PhonesDesc,
                     style = MaterialTheme.typography.bodyMedium
                 )
-
-                // Error 1: validatePhoneNumber devuelve un Pair<Boolean, String>, no un Boolean
-                var phone1ErrorMessage by remember { mutableStateOf("") }
-                var phone2ErrorMessage by remember { mutableStateOf("") }
-                var phone3ErrorMessage by remember { mutableStateOf("") }
 
                 PhoneNumberInput(
                     value = phoneNumber1,
@@ -156,7 +169,7 @@ fun PhonesScreen() {
                         isPhone1Valid = valid
                         phone1ErrorMessage = message
                     },
-                    label = "Number 1",
+                    label = number1Label,
                     isValid = isPhone1Valid,
                     errorMessage = phone1ErrorMessage,
                     onClear = {
@@ -181,7 +194,7 @@ fun PhonesScreen() {
                         isPhone2Valid = valid
                         phone2ErrorMessage = message
                     },
-                    label = "Number 2",
+                    label = number2Label,
                     isValid = isPhone2Valid,
                     errorMessage = phone2ErrorMessage,
                     onClear = {
@@ -206,7 +219,7 @@ fun PhonesScreen() {
                         isPhone3Valid = valid
                         phone3ErrorMessage = message
                     },
-                    label = "Number 3",
+                    label = number3Label,
                     isValid = isPhone3Valid,
                     errorMessage = phone3ErrorMessage,
                     onClear = {
@@ -235,6 +248,8 @@ fun PhonesScreen() {
     }
 }
 
+
+
 @Composable
 fun PhoneNumberInput(
     value: String,
@@ -246,11 +261,13 @@ fun PhoneNumberInput(
     onDone: () -> Unit,
     onFocusChange: (FocusState) -> Unit
 ) {
+    val phonePlaceholder = stringResource(R.string.phone_placeholder)
+
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        placeholder = { Text("34675123123") }, // Cambiado para ser coherente con la validación
+        placeholder = { Text(phonePlaceholder) },
         modifier = Modifier
             .fillMaxWidth()
             .onFocusChanged(onFocusChange)

@@ -13,8 +13,8 @@ android {
         applicationId = "com.enderthor.kNotify"
         minSdk = 23
         targetSdk = 34
-        versionCode = 202503121
-        versionName = "0.1alpha"
+        versionCode = 202503151
+        versionName = "0.1"
     }
 
     buildTypes {
@@ -45,7 +45,6 @@ android {
 dependencies {
 
     implementation(libs.hammerhead.karoo.ext)
-    implementation(libs.ktor.client)
     implementation(libs.androidx.core.ktx)
     implementation(libs.bundles.androidx.lifeycle)
     implementation(libs.androidx.activity.compose)
@@ -63,8 +62,5 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.androidx.foundation.android)
     implementation(libs.androidx.foundation.layout.android)
-    implementation("androidx.compose.material:material-icons-extended:1.7.8")
-
-
 }
 

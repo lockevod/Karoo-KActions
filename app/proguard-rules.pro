@@ -50,7 +50,6 @@
 -keep class com.enderthor.kNotify.** { *; }
 -keep class com.enderthor.kNotify.data.** { *; }
 -keep class com.enderthor.kNotify.extension.** { *; }
--keep class com.enderthor.kNotify.vdevice.** { *; }
 -keep class com.enderthor.kNotify.activity.** { *; }
 -keep class com.enderthor.kNotify.screens.** { *; }
 

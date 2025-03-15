@@ -43,6 +43,6 @@ class KNotifyApplication : Application() {
 
             })
         }
-        Timber.d("Starting KAdvancePower App")
+        Timber.d("Starting KNotify App")
     }
 }
