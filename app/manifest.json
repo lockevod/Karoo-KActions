@@ -1,0 +1,11 @@
+{
+  "label": "KNotify",
+  "packageName": "com.enderthor.knotify",
+  "latestApkUrl": "https://github.com/lockevod/Karoo-KNotify/releases/latest/download/knotify.apk",
+  "iconUrl": "https://github.com/lockevod/Karoo-KNotify/releases/latest/download/karoo-notify.png",
+  "latestVersion": "0.1",
+  "latestVersionCode": 202503032,
+  "developer": "Enderthor",
+  "description": "This extension for Karoo devices adds a device simulates a virtual power meter.",
+  "releaseNotes": "Locale fix. Improve streams detection. Code improvement. Fix some random crashes when locale isn't english."
+}

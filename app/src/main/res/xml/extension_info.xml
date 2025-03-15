@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ExtensionInfo
+    displayName="@string/extension_name"
+    icon="@drawable/ic_power_hr"
+    id="knotify"
+    scansDevices="false">
+</ExtensionInfo>
