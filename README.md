@@ -25,12 +25,13 @@ Compatible with Karoo 2 and Karoo 3 devices running Karoo OS version 1.524.2003 
 kNotify uses the Whapi service to send WhatsApp messages without requiring your phone to be connected. To set this up:
 
 1. **Create a Whapi account**:
-  - Visit [Whapi.io](https://whapi.io/) and register for an account.
+  - Visit [Whapi.io](https://whapi.io/) and register for an account. You can use your google account.
+  - You can see the dashboard and you'll have a trial channel created. You can use, but this channel is only for some days (you've to pay if you want to use more time).
+  - You need to create other channel and change from normal to sandbox channel. This sandbox channel allows to send every day 150 messages (1000 month)
   - The free plan allows sending up to 20 messages per day, which is sufficient for most users.
 
-2. **Get your API Key**:
-  - Once registered, go to the "API Keys" section in your dashboard.
-  - Create a new API Key or copy the existing one.
+2. **Get your API Key and link your phone **:
+  - If you enter in this channel you can see the api (you need to use this in knotify) and you can also see device.
 
 3. **Configure kNotify**:
   - Open kNotify on your Karoo.
