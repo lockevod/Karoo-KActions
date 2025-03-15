@@ -53,9 +53,10 @@ kNotify uses the Whapi service to send WhatsApp messages without requiring your 
 3. **Customize messages**:
   - Personalize messages for each event type (start, end, pause, resume).
   - Messages can include custom text according to your preferences.
+  - Enter you Karoo live key. For example if you live url is https://dashboard.hammerhead.io/live/ZC35WnpU you only have to fill ZC35WnpU
 
 4. **During your ride**:
-  - Once configured, kNotify will automatically send messages when you start, pause, resume, or end a ride on your Karoo.
+  - Once configured, kNotify will automatically send messages when you start, pause, resume, or end a ride on your Karoo  with your tracking url (only if you've filled key before)
   - No need to interact with the app during your ride; everything works in the background.
 
 ## Features
@@ -65,22 +66,25 @@ kNotify uses the Whapi service to send WhatsApp messages without requiring your 
 - Control of minimum time between messages of the same type (3 minutes by default).
 - Support for multiple languages (English and Spanish).
 - Integration with Karoo Live for real-time tracking.
+- Knotify interacts with companion app, then you need to have your mobile and companion app (hammerhead official app) active and karoo connected to mobile.
 
 ## Known Issues
 
-- Notifications may be delayed if there are connectivity issues.
+- Notifications may be delayed if there are connectivity issues. Knotify will retry several times if there is some connectivity problem.
 - Your Karoo needs internet connection for messages to be sent successfully.
-- The free Whapi service has a limit of 20 messages per day.
-- Make sure you have sufficient balance in your Whapi account if using a paid plan.
+- The free Whapi service has a limit of 150 messages per day. You cannot use for business use, please read Whapi conditions before use it.
+- Make sure you have sufficient balance in your Whapi account if using a paid plan. 
 
 ## Privacy
 
 kNotify does not store or share any personal information beyond what's necessary for its operation. Phone numbers and messages are stored only on your Karoo device.
-
+KNotify use Whapi services but Knotify hasn't any relationship with Whapi. Whapi is a known service but I cannot provide any support, responsability with Whapi service, conditions and if they have any security issue in whapi service.
+Whapi works as a "gateway", you use a api and send messages linking your whatsapp account to Whapi service. Please, if you don't understand this, don't use Knotify.
+ 
 ## Credits
 
 - Developed by EnderThor.
-- Uses the Whapi API for message sending.
+- Uses the Whapi API for message sending. Please read Whapi privacy policy, if you use Knotify you're agree with this, please you have to uninstall knotify if you aren't agree with this.
 - Uses the Karoo Extensions Framework developed by Hammerhead.
 
 ## Useful Links
