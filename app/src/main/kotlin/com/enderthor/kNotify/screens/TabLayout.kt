@@ -20,7 +20,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TabLayout() {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Conf.", "Mess.", "Phones")
+    val tabs = listOf("Conf.", "Mess.", "Phones","WH")
+    //val tabs = listOf("Conf.", "Mess.", "Phones")
 
     Column(modifier = Modifier.fillMaxSize()) {
         TabRow(
@@ -31,15 +32,16 @@ fun TabLayout() {
                 Tab(
                     selected = selectedTabIndex == index,
                     onClick = { selectedTabIndex = index },
-                    text = { Text(text = title, fontSize = 14.sp) },
+                    text = { Text(text = title, fontSize = 12.sp) },
                 )
             }
         }
 
         when (selectedTabIndex) {
-            0 -> ConfigScreen()
-            1 -> MessagesScreen()
-            2 -> PhonesScreen()
+            0 -> BaseConfigScreen()
+            1 -> ProviderConfigScreen()
+            2 -> ConfigurationScreen()
+            3 -> WebhookConfigScreen()
         }
     }
 }

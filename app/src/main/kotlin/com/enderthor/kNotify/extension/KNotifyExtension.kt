@@ -2,6 +2,7 @@ package com.enderthor.kNotify.extension
 
 import com.enderthor.kNotify.BuildConfig
 import com.enderthor.kNotify.data.ConfigData
+import com.enderthor.kNotify.data.ProviderType
 import com.enderthor.kNotify.data.SenderConfig
 import com.enderthor.kNotify.data.Template
 import com.enderthor.kNotify.data.karooUrl
@@ -39,12 +40,11 @@ class KNotifyExtension : KarooExtension("knotify", BuildConfig.VERSION_NAME), Co
     private var wasRecording = false
     private var wasPaused = false
 
-    // Control de mensajes duplicados
+
     private val sentMessageStates = mutableSetOf<String>()
 
-    // Control de tiempo entre mensajes del mismo tipo
     private val lastMessageTimeByType = mutableMapOf<String, Long>()
-    // 5 minutos entre mensajes del mismo tipo
+
     private val MIN_TIME_BETWEEN_SAME_MESSAGES = 3 * 60 * 1000L
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -130,7 +130,7 @@ class KNotifyExtension : KarooExtension("knotify", BuildConfig.VERSION_NAME), Co
     }
 
     private fun processRideStateChange(newRideState: RideState) {
-        // Verificar si el estado realmente cambió
+
         if (lastRideState == newRideState) return
 
         Timber.d("Ride state changed: $newRideState")
@@ -172,7 +172,7 @@ class KNotifyExtension : KarooExtension("knotify", BuildConfig.VERSION_NAME), Co
         }
 
         lastRideState = newRideState
-        // Actualizar las variables de estado
+
         when (newRideState) {
             is RideState.Recording -> {
                 wasRecording = true
@@ -190,11 +190,24 @@ class KNotifyExtension : KarooExtension("knotify", BuildConfig.VERSION_NAME), Co
     }
 
     private fun handleEventWithTimeLimit(eventType: String, currentTime: Long, configs: List<ConfigData>) {
-
         val lastTime = lastMessageTimeByType[eventType] ?: 0L
         val timeElapsed = currentTime - lastTime
 
-        if (timeElapsed >= MIN_TIME_BETWEEN_SAME_MESSAGES) {
+
+        val isTextBeltFree = senderConfig?.let {
+            it.provider == ProviderType.TEXTBELT &&
+                    (it.apiKey.isBlank() || it.apiKey == "textbelt")
+        } ?: false
+
+        val configuredDelay = (configs.firstOrNull()?.delayIntents ?: 0.0) * 60 * 1000
+
+
+        val minTimeBetweenMessages = when {
+            isTextBeltFree -> 24 * 60 * 60 * 1000L // 24 horas en milisegundos
+            else -> maxOf(configuredDelay.toLong(), MIN_TIME_BETWEEN_SAME_MESSAGES)
+        }
+
+        if (timeElapsed >= minTimeBetweenMessages) {
             val configsWithNotify = when (eventType) {
                 "start" -> configs.filter { it.notifyOnStart }
                 "stop" -> configs.filter { it.notifyOnStop }
@@ -204,15 +217,12 @@ class KNotifyExtension : KarooExtension("knotify", BuildConfig.VERSION_NAME), Co
             }
 
             if (configsWithNotify.isNotEmpty()) {
-
                 lastMessageTimeByType[eventType] = currentTime
-
-
                 val stateKey = "$eventType-$currentTime"
+
                 if (!sentMessageStates.contains(stateKey)) {
                     sendMessageForEvent(eventType)
                     sentMessageStates.add(stateKey)
-
 
                     if (sentMessageStates.size > 10) {
                         val keysToRemove = sentMessageStates.toList()
@@ -223,11 +233,12 @@ class KNotifyExtension : KarooExtension("knotify", BuildConfig.VERSION_NAME), Co
                 }
             }
         } else {
-            Timber.d("Mensaje tipo $eventType ignorado - han pasado solo ${timeElapsed/1000} segundos desde el último (mínimo ${MIN_TIME_BETWEEN_SAME_MESSAGES/1000}s)")
+            val minutosRestantes = (minTimeBetweenMessages - timeElapsed) / (60 * 1000.0)
+            Timber.d("Mensaje tipo $eventType ignorado - han pasado solo ${timeElapsed/1000} segundos desde el último (mínimo ${minTimeBetweenMessages/1000}s, faltan ${String.format("%.1f", minutosRestantes)} minutos)")
         }
     }
 
-    private fun sendMessageForEvent(eventType: String) {
+    /*private fun sendMessageForEvent(eventType: String) {
         launch(Dispatchers.IO) {
             try {
                 val config = activeConfigs.firstOrNull() ?: run {
@@ -276,7 +287,80 @@ class KNotifyExtension : KarooExtension("knotify", BuildConfig.VERSION_NAME), Co
             }
         }
     }
+*/
 
+    private fun sendMessageForEvent(eventType: String) {
+        launch(Dispatchers.IO) {
+            try {
+                val config = activeConfigs.firstOrNull() ?: run {
+                    Timber.e("No hay configuración disponible para enviar mensajes")
+                    return@launch
+                }
+
+                val sConfig = senderConfig ?: run {
+                    Timber.e("No hay configuración de remitente disponible")
+                    return@launch
+                }
+
+                val karooLive = if (config.karooKey.isNotBlank()) karooUrl + config.karooKey else ""
+                val message = when (eventType) {
+                    "start" -> config.startMessage + "   " + karooLive
+                    "stop" -> config.stopMessage + "   " + karooLive
+                    "pause" -> config.pauseMessage + "   " + karooLive
+                    "resume" -> config.resumeMessage + "   " + karooLive
+                    else -> return@launch
+                }
+
+
+                if (sConfig.provider == ProviderType.RESEND) {
+                    try {
+                        val success = sender.sendEmailMessage(message)
+                        if (success) {
+                            Timber.d("Email enviado para evento: $eventType")
+                        } else {
+                            Timber.e("Error enviando email para evento: $eventType")
+                        }
+                    } catch (e: Exception) {
+                        Timber.e(e, "Excepción enviando email para evento: $eventType")
+                    }
+                    return@launch
+                }
+
+
+                if (config.phoneNumbers.isNotEmpty()) {
+                    val sendJobs = config.phoneNumbers.map { phoneNumber ->
+                        async {
+                            try {
+                                val success = when (sConfig.provider) {
+                                    ProviderType.WHAPI -> sender.sendMessage(phoneNumber, message)
+                                    ProviderType.TEXTBELT -> sender.sendSMSMessage(phoneNumber, message)
+                                    else -> false
+                                }
+
+                                if (success) {
+                                    Timber.d("Mensaje enviado para evento: $eventType a $phoneNumber")
+                                } else {
+                                    Timber.e("Error enviando mensaje para evento: $eventType a $phoneNumber")
+                                }
+                                success
+                            } catch (e: Exception) {
+                                Timber.e(e, "Excepción enviando mensaje para evento: $eventType a $phoneNumber")
+                                false
+                            }
+                        }
+                    }
+
+                    val results = sendJobs.awaitAll()
+                    val successCount = results.count { it }
+                    Timber.d("Resumen de envíos para evento $eventType: $successCount éxitos de ${config.phoneNumbers.size} intentos")
+                } else {
+                    Timber.d("No hay números de teléfono configurados para evento: $eventType")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error enviando mensajes para evento: $eventType")
+            }
+        }
+    }
     override fun onDestroy() {
         karooSystem.disconnect()
         job.cancel()

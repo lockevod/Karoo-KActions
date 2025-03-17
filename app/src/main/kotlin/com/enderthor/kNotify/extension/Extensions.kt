@@ -6,7 +6,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.enderthor.kNotify.activity.dataStore
 import com.enderthor.kNotify.data.ConfigData
+import com.enderthor.kNotify.data.WebhookData
 import com.enderthor.kNotify.data.defaultConfigData
+import com.enderthor.kNotify.data.defaultWebhookData
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.models.HttpResponseState
 import io.hammerhead.karooext.models.OnHttpResponse
@@ -31,6 +33,7 @@ import kotlin.time.Duration.Companion.seconds
 val jsonWithUnknownKeys = Json { ignoreUnknownKeys = true }
 
 val preferencesKey = stringPreferencesKey("configdata")
+val webhookKey = stringPreferencesKey("webhook")
 
 suspend fun savePreferences(context: Context, configDatas: MutableList<ConfigData>) {
     context.dataStore.edit { t ->
@@ -49,6 +52,27 @@ fun Context.loadPreferencesFlow(): Flow<List<ConfigData>> {
         } catch(e: Throwable){
             Timber.tag("kpower").e(e, "Failed to read preferences Flow Extension")
             jsonWithUnknownKeys.decodeFromString<List<ConfigData>>(defaultConfigData)
+        }
+    }.distinctUntilChanged()
+}
+
+suspend fun saveWebhookData(context: Context, configDatas: MutableList<WebhookData>) {
+    context.dataStore.edit { t ->
+        t[preferencesKey] = Json.encodeToString(configDatas)
+    }
+}
+
+
+fun Context.loadWebhookDataFlow(): Flow<List<WebhookData>> {
+    return dataStore.data.map { settingsJson ->
+        try {
+            jsonWithUnknownKeys.decodeFromString<List<WebhookData>>(
+                settingsJson[webhookKey] ?: defaultWebhookData
+            )
+
+        } catch(e: Throwable){
+            Timber.tag("kpower").e(e, "Failed to read preferences Flow Extension")
+            jsonWithUnknownKeys.decodeFromString<List<WebhookData>>(defaultWebhookData)
         }
     }.distinctUntilChanged()
 }

@@ -11,6 +11,7 @@
     <string name="ride_paused">Ride paused</string>
     <string name="ride_resumed">Ride resumed</string>
     <string name="enter_karoo_live_key">Enter your Karoo Live key</string>
+    <string name="karoo_configuration">Karoo Tracking Key</string>
     <string name="karoo_key">Karoo Key</string>
     <string name="whapi_api_config">WHAPI API Configuration</string>
     <string name="whapi_description">Whapi allows sending messages but you need to register (free tier available. Read info in extension github).</string>
@@ -25,6 +26,7 @@
     <string name="test_message_sent">Test message sent successfully!</string>
     <string name="error_sending_message">Error sending message. Check your configuration.</string>
     <string name="settings_saved">Settings saved automatically</string>
+    <string name="notification_delay">Delay between send a new start ride message</string>
 
     <!-- PhonesScreen -->
     <string name="phone_numbers">Phone Numbers</string>
@@ -52,6 +54,25 @@
     <string name="default_stop_message">I finished my ride</string>
     <string name="default_pause_message">I paused my ride</string>
     <string name="default_resume_message">I resumed my ride</string>
+
+    <!-- ProviderConfigScreen -->
+    <string name="message_provider">Message Provider</string>
+    <string name="provider_configuration">Provider Configuration</string>
+    <string name="min_delay_between_notifications">Minimum delay between notifications (minutes)</string>
+
+    <string name="whapi_provider">WhatsApp (WHAPI)</string>
+    <string name="textbelt_provider">SMS (TextBelt)</string>
+    <string name="resend_provider">Email (Resend)</string>
+    <string name="configure_whapi">Configure your WHAPI API key</string>
+    <string name="configure_textbelt">Configure your TextBelt API key</string>
+    <string name="configure_resend">Configure your Resend API key</string>
+    <string name="textbelt_free_warning">You are using the free tier of TextBelt which allows only 1 SMS per day</string>
+    <string name="email_from">Sender email address</string>
+    <string name="email_to">Recipient email address</string>
+    <string name="textbelt_free_delay_warning">Minimum delay TextBelt free is 24 hours.</string>
+    <string name="webhook_test_success">Test webhook ok </string>
+    <string name="webhook_test_error">Error to send webhook</string>
+
 
 
 </resources>

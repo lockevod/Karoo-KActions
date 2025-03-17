@@ -26,6 +26,8 @@
     <string name="test_message_sent">¡Mensaje de prueba enviado correctamente!</string>
     <string name="error_sending_message">Error al enviar mensaje. Revisa tu configuración.</string>
     <string name="settings_saved">Configuración guardada automáticamente</string>
+    <string name="karoo_configuration">Karoo Tracking Key</string>
+    <string name="notification_delay">Tiempo necesario entre hasta que se enviará un nuevo mensaje.</string>
 
     <!-- PhonesScreen -->
     <string name="phone_numbers">Números de Teléfono</string>
@@ -53,4 +55,23 @@
     <string name="default_stop_message">He terminado la salida.</string>
     <string name="default_pause_message">He pausado la salida.</string>
     <string name="default_resume_message">He reanudado la salida.</string>
+    <!-- ProviderConfigScreen -->
+    <string name="message_provider">Proveedor de Mensajes</string>
+    <string name="provider_configuration">Configuración del Proveedor</string>
+    <string name="min_delay_between_notifications">Retardo mínimo entre notificaciones (minutos)</string>
+
+    <string name="whapi_provider">WhatsApp (WHAPI)</string>
+    <string name="textbelt_provider">SMS (TextBelt)</string>
+    <string name="resend_provider">Correo (Resend)</string>
+    <string name="configure_whapi">Configure su clave API de WHAPI</string>
+    <string name="configure_textbelt">Configure su clave API de TextBelt</string>
+    <string name="configure_resend">Configure su clave API de Resend</string>
+    <string name="textbelt_free_warning">Está usando la versión gratuita de TextBelt que permite solo 1 SMS diario</string>
+    <string name="email_from">Dirección de correo remitente</string>
+    <string name="email_to">Dirección de correo destinatario</string>
+
+    <string name="textbelt_free_delay_warning">El tiempo mínimo entre mensajes con la API gratuita es de 24 horas</string>
+    <string name="webhook_test_success">Prueba enviada correctamente al webhook</string>
+    <string name="webhook_test_error">Error al enviar prueba al webhook</string>
+
 </resources>

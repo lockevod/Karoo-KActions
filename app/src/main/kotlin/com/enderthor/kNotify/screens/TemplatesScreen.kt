@@ -127,7 +127,7 @@ fun MessagesScreen() {
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { saveData() })
                 )
-
+                /*
                 OutlinedTextField(
                     value = pauseMessage,
                     onValueChange = { pauseMessage = it },
@@ -166,6 +166,8 @@ fun MessagesScreen() {
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { saveData() })
                 )
+
+                 */
             }
 
             statusMessage?.let { message ->

@@ -1,4 +1,4 @@
-package com.enderthor.kNotify.screens
+/*package com.enderthor.kNotify.screens
 
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
@@ -34,8 +34,8 @@ fun PhonesScreen() {
     val phoneNumbersTitle = stringResource(R.string.phone_numbers)
     val enterUpTo3PhonesDesc = stringResource(R.string.enter_up_to_3_phones)
     val number1Label = stringResource(R.string.number_1)
-    val number2Label = stringResource(R.string.number_2)
-    val number3Label = stringResource(R.string.number_3)
+    /*val number2Label = stringResource(R.string.number_2)
+    val number3Label = stringResource(R.string.number_3)*/
     val phonesSavedMessage = stringResource(R.string.phone_numbers_saved)
     val cannotSaveMessage = stringResource(R.string.cannot_save_invalid_format)
 
@@ -46,13 +46,11 @@ fun PhonesScreen() {
 
     var config by remember { mutableStateOf<ConfigData?>(null) }
     var phoneNumber1 by remember { mutableStateOf("") }
-    var phoneNumber2 by remember { mutableStateOf("") }
-    var phoneNumber3 by remember { mutableStateOf("") }
     var statusMessage by remember { mutableStateOf<String?>(null) }
 
     var isPhone1Valid by remember { mutableStateOf(true) }
-    var isPhone2Valid by remember { mutableStateOf(true) }
-    var isPhone3Valid by remember { mutableStateOf(true) }
+  /*  var isPhone2Valid by remember { mutableStateOf(true) }
+    var isPhone3Valid by remember { mutableStateOf(true) }*/
 
     var ignoreAutoSave by remember { mutableStateOf(true) }
 
@@ -64,8 +62,6 @@ fun PhonesScreen() {
                 val phoneNumbers = savedConfig.phoneNumbers
                 if (phoneNumbers.isNotEmpty()) {
                     phoneNumber1 = phoneNumbers[0]
-                    if (phoneNumbers.size > 1) phoneNumber2 = phoneNumbers[1]
-                    if (phoneNumbers.size > 2) phoneNumber3 = phoneNumbers[2]
                 }
                 ignoreAutoSave = false
             }
@@ -95,26 +91,27 @@ fun PhonesScreen() {
     }
 
     var phone1ErrorMessage by remember { mutableStateOf("") }
-    var phone2ErrorMessage by remember { mutableStateOf("") }
-    var phone3ErrorMessage by remember { mutableStateOf("") }
+   /* var phone2ErrorMessage by remember { mutableStateOf("") }
+    var phone3ErrorMessage by remember { mutableStateOf("") }*/
 
 
     fun saveData() {
         if (ignoreAutoSave) return
 
         val phone1Result = validatePhoneNumber(phoneNumber1)
-        val phone2Result = validatePhoneNumber(phoneNumber2)
-        val phone3Result = validatePhoneNumber(phoneNumber3)
+       // val phone2Result = validatePhoneNumber(phoneNumber2)
+        // val phone3Result = validatePhoneNumber(phoneNumber3)
 
         isPhone1Valid = phone1Result.first
-        isPhone2Valid = phone2Result.first
-        isPhone3Valid = phone3Result.first
+      //  isPhone2Valid = phone2Result.first
+       // isPhone3Valid = phone3Result.first
 
-        if (isPhone1Valid && isPhone2Valid && isPhone3Valid) {
+        //if (isPhone1Valid && isPhone2Valid && isPhone3Valid) {
+            if (isPhone1Valid) {
             val phoneNumbers = listOfNotNull(
                 phoneNumber1.trim().takeIf { it.isNotBlank() },
-                phoneNumber2.trim().takeIf { it.isNotBlank() },
-                phoneNumber3.trim().takeIf { it.isNotBlank() }
+              /*  phoneNumber2.trim().takeIf { it.isNotBlank() },
+                phoneNumber3.trim().takeIf { it.isNotBlank() }*/
             )
 
             val updatedConfig = config?.copy(
@@ -185,7 +182,7 @@ fun PhonesScreen() {
                         }
                     }
                 )
-
+/*
                 PhoneNumberInput(
                     value = phoneNumber2,
                     onValueChange = {
@@ -234,7 +231,7 @@ fun PhonesScreen() {
                             saveData()
                         }
                     }
-                )
+                )*/
             }
 
             statusMessage?.let { message ->
@@ -294,4 +291,4 @@ fun PhoneNumberInput(
             }
         }
     )
-}
+}*/

@@ -1,4 +1,4 @@
-package com.enderthor.kNotify.screens
+/*package com.enderthor.kNotify.screens
 
 
 import androidx.compose.foundation.focusable
@@ -205,7 +205,7 @@ fun ConfigScreen() {
                 }
 
                 HorizontalDivider()
-
+                /*
                 Text(
                     stringResource(R.string.send_notifications_when),
                     style = MaterialTheme.typography.bodyMedium
@@ -277,7 +277,7 @@ fun ConfigScreen() {
                             saveData()
                         }
                     )
-                }
+                }*/
 
                 Text(
                     stringResource(R.string.enter_karoo_live_key),
@@ -406,4 +406,4 @@ fun ConfigScreen() {
             }
         }
     }
-}
+}*/

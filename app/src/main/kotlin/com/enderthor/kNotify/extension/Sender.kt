@@ -75,6 +75,106 @@ class Sender(
     }
 
 
+    suspend fun sendSMSMessage(phoneNumber: String, message: String): Boolean {
+        try {
+            val config = getSenderConfig() ?: run {
+                Timber.e("No hay configuración de TextBelt disponible")
+                return false
+            }
+
+            if (karooSystem == null) {
+                Timber.e("KarooSystemService es necesario para enviar mensajes")
+                return false
+            }
+
+            val formattedPhone = phoneNumber.trim()
+
+            val jsonBody = buildJsonObject {
+                put("phone", formattedPhone)
+                put("message", message)
+                put("key", config.apiKey)
+            }.toString()
+
+            val url = "https://textbelt.com/text"
+
+            val headers = mapOf(
+                "Content-Type" to "application/json"
+            )
+
+            val response = karooSystem.makeHttpRequest(
+                method = "POST",
+                url = url,
+                headers = headers,
+                body = jsonBody.toByteArray()
+            ).first()
+
+            val responseText = response.body?.toString(Charsets.UTF_8) ?: ""
+            return if (response.statusCode in 200..299 && responseText.contains("\"success\":true")) {
+                Timber.d("SMS enviado correctamente a $formattedPhone")
+                true
+            } else {
+                Timber.e("Error en respuesta de TextBelt: Código ${response.statusCode}, $responseText")
+                false
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error enviando SMS: ${e.message}")
+            return false
+        }
+    }
+
+    suspend fun sendEmailMessage(message: String): Boolean {
+        try {
+            val config = getSenderConfig() ?: run {
+                Timber.e("No hay configuración de Resend disponible")
+                return false
+            }
+
+            if (karooSystem == null) {
+                Timber.e("KarooSystemService es necesario para enviar emails")
+                return false
+            }
+
+            if (config.emailFrom.isBlank() || config.emailTo.isBlank()) {
+                Timber.e("Faltan direcciones de correo origen/destino")
+                return false
+            }
+
+            val jsonBody = buildJsonObject {
+                put("from", config.emailFrom)
+                put("to", config.emailTo)
+                put("subject", "Notificación de actividad")
+                put("html", "<p>$message</p>")
+            }.toString()
+
+            val url = "https://api.resend.com/emails"
+
+            val headers = mapOf(
+                "Content-Type" to "application/json",
+                "Authorization" to "Bearer ${config.apiKey}"
+            )
+
+            val response = karooSystem.makeHttpRequest(
+                method = "POST",
+                url = url,
+                headers = headers,
+                body = jsonBody.toByteArray()
+            ).first()
+
+            val responseText = response.body?.toString(Charsets.UTF_8) ?: ""
+            return if (response.statusCode in 200..299) {
+                Timber.d("Email enviado correctamente a ${config.emailTo}")
+                true
+            } else {
+                Timber.e("Error en respuesta de Resend: Código ${response.statusCode}, $responseText")
+                false
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error enviando email: ${e.message}")
+            return false
+        }
+    }
+
+
     private suspend fun attemptSendMessage(phoneNumber: String, message: String): Boolean {
         try {
             val config = getSenderConfig() ?: run {
