@@ -4,4 +4,10 @@
     icon="@drawable/ic_kactions"
     id="kactions"
     scansDevices="false">
+    <DataType
+        description="@string/webhook_description_datatype"
+        displayName="@string/webhook_datatype"
+        graphical="false"
+        icon=""
+        typeId="webhook-one" />
 </ExtensionInfo>

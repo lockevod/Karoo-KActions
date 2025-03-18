@@ -88,7 +88,7 @@
     <string name="webhook_on_resume">On resume</string>
     <string name="webhook_on_custom">Custom</string>
     <string name="webhook_location_filter">Location Filter</string>
-    <string name="webhook_only_at_location">Only at specific location</string>
+    <string name="webhook_only_at_location">Only at Home POI location</string>
     <string name="webhook_location">Location</string>
     <string name="webhook_test_section">Test webhook</string>
     <string name="webhook_send_test">Send webhook test</string>
@@ -101,4 +101,7 @@
     <string name="webhook_error_action">Execution failed</string>
     <string name="webhook_notavailable_action">Webhook not available</string>
     <string name="webhook_cancel_action">Action Cancelled</string>
+    <string name="webhook_description_datatype">Webhook</string>
+    <string name="webhook_datatype">Webhook</string>
+
 </resources>

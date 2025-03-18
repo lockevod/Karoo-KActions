@@ -1,17 +1,19 @@
 package com.enderthor.kActions.extension
 
-
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.enderthor.kActions.activity.dataStore
 import com.enderthor.kActions.data.ConfigData
+import com.enderthor.kActions.data.GpsCoordinates
 import com.enderthor.kActions.data.WebhookData
 import com.enderthor.kActions.data.defaultConfigData
 import com.enderthor.kActions.data.defaultWebhookData
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.models.HttpResponseState
+import io.hammerhead.karooext.models.OnGlobalPOIs
 import io.hammerhead.karooext.models.OnHttpResponse
+import io.hammerhead.karooext.models.OnLocationChanged
 import io.hammerhead.karooext.models.RideState
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.TimeoutCancellationException
@@ -23,7 +25,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.timeout
-
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
@@ -31,7 +32,6 @@ import kotlin.time.Duration.Companion.seconds
 
 
 val jsonWithUnknownKeys = Json { ignoreUnknownKeys = true }
-
 val preferencesKey = stringPreferencesKey("configdata")
 val webhookKey = stringPreferencesKey("webhook")
 
@@ -78,7 +78,6 @@ fun Context.loadWebhookDataFlow(): Flow<List<WebhookData>> {
 }
 
 
-
 fun KarooSystemService.streamRide(): Flow<RideState> {
     return callbackFlow {
         val listenerId = addConsumer { event: RideState ->
@@ -94,7 +93,6 @@ fun KarooSystemService.streamRide(): Flow<RideState> {
 fun KarooSystemService.makeHttpRequest(method: String, url: String, queue: Boolean = false, headers: Map<String, String> = emptyMap(), body: ByteArray? = null): Flow<HttpResponseState.Complete> {
     val flow = callbackFlow {
         Timber.d("$method request to ${url}...")
-
 
         val listenerId = addConsumer(
             OnHttpResponse.MakeHttpRequest(
@@ -134,6 +132,55 @@ fun KarooSystemService.makeHttpRequest(method: String, url: String, queue: Boole
         }
     }
 }
+
+fun KarooSystemService.streamLocation(): Flow<OnLocationChanged> {
+    return callbackFlow {
+        val listenerId = addConsumer { event: OnLocationChanged ->
+            trySendBlocking(event)
+        }
+        awaitClose {
+            removeConsumer(listenerId)
+        }
+    }
+}
+
+fun KarooSystemService.streamPOIs(): Flow<OnGlobalPOIs> {
+    return callbackFlow {
+        val listenerId = addConsumer { event: OnGlobalPOIs  ->
+            trySendBlocking(event)
+        }
+        awaitClose {
+            removeConsumer(listenerId)
+        }
+    }
+}
+
+
+fun KarooSystemService.getGpsFlow(): Flow<GpsCoordinates> {
+    return streamLocation()
+        .map {
+            GpsCoordinates(it.lat, it.lng)
+        }
+        .catch {
+            Timber.e(it, "Error obteniendo ubicación GPS")
+            emit(GpsCoordinates(10.0, 10.0))
+        }
+        .map { it }
+}
+
+fun KarooSystemService.getHomeFlow(): Flow<GpsCoordinates> {
+    return streamPOIs()
+        .map { globalPOIs ->
+            globalPOIs.pois.find { poi -> poi.type == "home" }?.let { homePoi ->
+                GpsCoordinates(homePoi.lat, homePoi.lng)
+            } ?: GpsCoordinates(0.0, 0.0)
+        }
+        .catch {
+            Timber.e(it, "Error obteniendo ubicación HOME")
+            emit(GpsCoordinates(0.0, 0.0))
+        }
+}
+
 
 
 

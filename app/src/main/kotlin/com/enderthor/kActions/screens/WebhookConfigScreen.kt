@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.enderthor.kActions.R
+import com.enderthor.kActions.data.GpsCoordinates
 import com.enderthor.kActions.data.WebhookData
 import com.enderthor.kActions.extension.loadWebhookDataFlow
 import com.enderthor.kActions.extension.makeHttpRequest
@@ -44,7 +45,7 @@ fun WebhookConfigScreen() {
     var actionOnResume by remember { mutableStateOf(false) }
     var actionOnCustom by remember { mutableStateOf(false) }
     var onlyIfLocation by remember { mutableStateOf(false) }
-    var location by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf(GpsCoordinates(0.0, 0.0)) }
 
     var isLoading by remember { mutableStateOf(false) }
     var statusMessage by remember { mutableStateOf<String?>(null) }
@@ -109,7 +110,7 @@ fun WebhookConfigScreen() {
                     actionOnResume = actionOnResume,
                     actionOnCustom = actionOnCustom,
                     onlyIfLocation = onlyIfLocation,
-                    location = location.trim()
+                    location = location
                 ) ?: WebhookData(
                     name = name.trim(),
                     url = url.trim(),
@@ -121,7 +122,7 @@ fun WebhookConfigScreen() {
                     actionOnResume = actionOnResume,
                     actionOnCustom = actionOnCustom,
                     onlyIfLocation = onlyIfLocation,
-                    location = location.trim()
+                    location = location
                 )
 
                 saveWebhookData(context, mutableListOf(updatedWebhook))
@@ -204,6 +205,19 @@ fun WebhookConfigScreen() {
                             checked = enabled,
                             onCheckedChange = {
                                 enabled = it
+                                saveData()
+                            }
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.webhook_only_at_location), modifier = Modifier.weight(1f))
+                        Switch(
+                            checked = onlyIfLocation,
+                            onCheckedChange = {
+                                onlyIfLocation = it
                                 saveData()
                             }
                         )
@@ -296,7 +310,7 @@ fun WebhookConfigScreen() {
                         )
                     }
 
-                    Row(
+                   /*Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -322,64 +336,8 @@ fun WebhookConfigScreen() {
                                 saveData()
                             }
                         )
-                    }
+                    }*/
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.webhook_on_custom), modifier = Modifier.weight(1f))
-                        Switch(
-                            checked = actionOnCustom,
-                            onCheckedChange = {
-                                actionOnCustom = it
-                                saveData()
-                            }
-                        )
-                    }
-                }
-            }
-
-            Card {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        stringResource(R.string.webhook_location_filter),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.webhook_only_at_location), modifier = Modifier.weight(1f))
-                        Switch(
-                            checked = onlyIfLocation,
-                            onCheckedChange = {
-                                onlyIfLocation = it
-                                saveData()
-                            }
-                        )
-                    }
-
-                    if (onlyIfLocation) {
-                        OutlinedTextField(
-                            value = location,
-                            onValueChange = {
-                                location = it
-                                saveData()
-                            },
-                            label = { Text(stringResource(R.string.webhook_location)) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .onFocusChanged { if (!it.isFocused) saveData() },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                            keyboardActions = KeyboardActions(onDone = { saveData() })
-                        )
-                    }
                 }
             }
 

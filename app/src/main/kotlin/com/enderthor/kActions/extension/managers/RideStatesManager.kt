@@ -1,6 +1,5 @@
 package com.enderthor.kActions.extension.managers
 
-import android.content.Context
 import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.SenderConfig
 import com.enderthor.kActions.extension.streamRide
@@ -12,7 +11,6 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class RideStateManager(
-    private val context: Context,
     private val karooSystem: KarooSystemService,
     private val notificationManager: NotificationManager,
     private val webhookManager: WebhookManager,
@@ -63,7 +61,7 @@ class RideStateManager(
 
 
                         scope.launch {
-                            webhookManager.handleEvent("start")
+                            webhookManager.handleEvent("start",0)
                         }
                     }
                 } else if (lastRideState is RideState.Paused) {
@@ -74,7 +72,7 @@ class RideStateManager(
 
 
                     scope.launch {
-                        webhookManager.handleEvent("resume")
+                        webhookManager.handleEvent("resume",0)
                     }
                 }
             }
@@ -88,7 +86,7 @@ class RideStateManager(
 
 
                     scope.launch {
-                        webhookManager.handleEvent("pause")
+                        webhookManager.handleEvent("pause",0)
                     }
                 }
             }
@@ -102,7 +100,7 @@ class RideStateManager(
 
 
                     scope.launch {
-                        webhookManager.handleEvent("stop")
+                        webhookManager.handleEvent("stop",0)
                     }
                 }
             }
@@ -132,7 +130,7 @@ class RideStateManager(
         scope.launch {
             Timber.d("Activando webhook: $webhookId")
 
-            webhookManager.handleEvent("custom")
+            webhookManager.handleEvent("custom",webhookId)
         }
     }
 }

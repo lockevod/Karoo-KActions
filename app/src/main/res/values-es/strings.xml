@@ -88,7 +88,7 @@
     <string name="webhook_on_resume">Al reanudar</string>
     <string name="webhook_on_custom">Personalizado</string>
     <string name="webhook_location_filter">Filtro de ubicación</string>
-    <string name="webhook_only_at_location">Solo en ubicación específica</string>
+    <string name="webhook_only_at_location">Solo en el POI Home</string>
     <string name="webhook_location">Ubicación</string>
     <string name="webhook_test_section">Prueba del webhook</string>
     <string name="webhook_send_test">Enviar prueba al webhook</string>
@@ -101,4 +101,6 @@
     <string name="webhook_error_action">Error en ejecución</string>
     <string name="webhook_notavailable_action">Webhook no disponible</string>
     <string name="webhook_cancel_action">Acción Cancelada</string>
+    <string name="webhook_description_datatype">Webhook</string>
+    <string name="webhook_datatype">Webhook</string>
 </resources>

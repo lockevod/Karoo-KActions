@@ -28,7 +28,7 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
 
     override val types by lazy {
         listOf(
-            WebhookDataType(karooSystem, "webhook-one",1),
+            WebhookDataType(karooSystem, "webhook-one",0),
         )
     }
 
@@ -72,7 +72,6 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
         notificationManager = NotificationManager(applicationContext, sender)
         webhookManager = WebhookManager(applicationContext, karooSystem)
         rideStateManager = RideStateManager(
-            applicationContext,
             karooSystem,
             notificationManager,
             webhookManager,

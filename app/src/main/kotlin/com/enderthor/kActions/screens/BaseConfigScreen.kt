@@ -1,6 +1,6 @@
 package com.enderthor.kActions.screens
 
-import androidx.compose.foundation.layout.*
+/*import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -203,4 +203,4 @@ fun BaseConfigScreen() {
             }
         }
     }
-}
+}*/

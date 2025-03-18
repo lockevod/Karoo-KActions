@@ -16,8 +16,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.enderthor.kActions.R
+import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.data.SenderConfig
+import com.enderthor.kActions.extension.savePreferences
 import com.enderthor.kActions.extension.Sender
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -30,8 +32,8 @@ fun ProviderConfigScreen() {
     val scope = rememberCoroutineScope()
     val sender = remember { Sender(context, null) }
 
-
     var senderConfig by remember { mutableStateOf<SenderConfig?>(null) }
+    var configData by remember { mutableStateOf<ConfigData?>(null) }
     var selectedProvider by remember { mutableStateOf(ProviderType.WHAPI) }
     var apiKey by remember { mutableStateOf("") }
     var emailTo by remember { mutableStateOf("") }
@@ -47,6 +49,8 @@ fun ProviderConfigScreen() {
     val test_message_sent = stringResource(R.string.test_message_sent)
     val settings_saved = stringResource(R.string.settings_saved)
 
+    val isTextBeltFree = selectedProvider == ProviderType.TEXTBELT &&
+            (apiKey.isBlank() || apiKey == "textbelt")
 
 
     LaunchedEffect(Unit) {
@@ -56,20 +60,22 @@ fun ProviderConfigScreen() {
                 senderConfig = savedConfig
                 selectedProvider = savedConfig?.provider ?: ProviderType.WHAPI
                 apiKey = savedConfig?.apiKey ?: ""
-                emailTo = savedConfig?.emailTo ?: ""
-                emailFrom = savedConfig?.emailFrom ?: ""
+
+                // Obtener emails desde ConfigData
+                val configs = sender.getConfigData()
+                configData = configs?.firstOrNull()
+                if (configData?.emails?.isNotEmpty() == true) {
+                    emailFrom = configData?.emails?.getOrNull(0) ?: ""
+                    emailTo = configData?.emails?.getOrNull(1) ?: ""
+                }
 
                 delay(500)
                 ignoreAutoSave = false
             } catch (e: Exception) {
-                Timber.e(e, "Error cargando configuración del remitente")
+                Timber.e(e, "Error cargando configuración")
             }
         }
     }
-
-
-    val isTextBeltFree = selectedProvider == ProviderType.TEXTBELT &&
-                        (apiKey.isBlank() || apiKey == "textbelt")
 
 
     fun saveData() {
@@ -80,14 +86,23 @@ fun ProviderConfigScreen() {
             statusMessage = null
 
             try {
+                // Guardar SenderConfig (solo provider y apiKey)
+                if (apiKey.isBlank() && selectedProvider == ProviderType.TEXTBELT) {
+                    apiKey = "textbelt"
+                }
                 val newSenderConfig = SenderConfig(
                     apiKey = apiKey.trim(),
-                    provider = selectedProvider,
-                    emailTo = emailTo.trim(),
-                    emailFrom = emailFrom.trim()
+                    provider = selectedProvider
                 )
-
                 sender.saveSenderConfig(newSenderConfig)
+
+
+                if (selectedProvider == ProviderType.RESEND) {
+                    val currentConfigData = configData ?: ConfigData()
+                    val emailList = listOf(emailFrom.trim(), emailTo.trim())
+                    val updatedConfigData = currentConfigData.copy(emails = emailList)
+                    savePreferences(context, mutableListOf(updatedConfigData))
+                }
 
                 statusMessage = settings_saved
                 delay(2000)

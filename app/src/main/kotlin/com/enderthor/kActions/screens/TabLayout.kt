@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TabLayout() {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Conf.", "Mess.", "Phones","WH")
-    //val tabs = listOf("Conf.", "Mess.", "Phones")
+    val tabs = listOf("Conf.", "Prov.","WH")
+
 
     Column(modifier = Modifier.fillMaxSize()) {
         TabRow(
@@ -38,10 +38,9 @@ fun TabLayout() {
         }
 
         when (selectedTabIndex) {
-            0 -> BaseConfigScreen()
+            0 -> ConfigurationScreen()
             1 -> ProviderConfigScreen()
-            2 -> ConfigurationScreen()
-            3 -> WebhookConfigScreen()
+            2 -> WebhookConfigScreen()
         }
     }
 }

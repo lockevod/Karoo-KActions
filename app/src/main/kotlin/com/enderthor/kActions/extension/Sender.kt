@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.enderthor.kActions.activity.dataStore
+import com.enderthor.kActions.data.ConfigData
+import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.data.SenderConfig
 import com.enderthor.kActions.data.Template
 import io.hammerhead.karooext.KarooSystemService
@@ -24,6 +26,19 @@ class Sender(
     private val context: Context,
     private val karooSystem: KarooSystemService? = null
 ) {
+
+    suspend fun sendNotification(phoneNumber: String? = null, message: String): Boolean {
+        val config = getSenderConfig() ?: run {
+            Timber.e("No hay configuración del proveedor disponible")
+            return false
+        }
+
+        return when(config.provider) {
+            ProviderType.WHAPI -> sendMessage(phoneNumber ?: return false, message)
+            ProviderType.TEXTBELT -> sendSMSMessage(phoneNumber ?: return false, message)
+            ProviderType.RESEND -> sendEmailMessage(message)
+        }
+    }
 
 
    suspend fun sendMessage(phoneNumber: String, message: String): Boolean {
@@ -122,10 +137,29 @@ class Sender(
         }
     }
 
+    suspend fun getConfigData(): List<ConfigData>? {
+        return try {
+            context.loadPreferencesFlow().first()
+        } catch (e: Exception) {
+            Timber.e(e, "Error al obtener configuración")
+            null
+        }
+    }
+
     suspend fun sendEmailMessage(message: String): Boolean {
         try {
             val config = getSenderConfig() ?: run {
                 Timber.e("No hay configuración de Resend disponible")
+                return false
+            }
+
+            val configData = getConfigData()?.firstOrNull() ?: run {
+                Timber.e("No hay configuración disponible")
+                return false
+            }
+
+            if (configData.emails.size < 2) {
+                Timber.e("Faltan direcciones de correo origen/destino")
                 return false
             }
 
@@ -134,15 +168,14 @@ class Sender(
                 return false
             }
 
-            if (config.emailFrom.isBlank() || config.emailTo.isBlank()) {
-                Timber.e("Faltan direcciones de correo origen/destino")
-                return false
-            }
+            val emailFrom = configData.emails[0]
+            val emailTo = configData.emails[1]
+
 
             val jsonBody = buildJsonObject {
-                put("from", config.emailFrom)
-                put("to", config.emailTo)
-                put("subject", "Notificación de actividad")
+                put("from", emailFrom)
+                put("to", emailTo)
+                put("subject", "Karoo Notification")
                 put("html", "<p>$message</p>")
             }.toString()
 
@@ -162,7 +195,7 @@ class Sender(
 
             val responseText = response.body?.toString(Charsets.UTF_8) ?: ""
             return if (response.statusCode in 200..299) {
-                Timber.d("Email enviado correctamente a ${config.emailTo}")
+                Timber.d("Email enviado correctamente a $emailTo")
                 true
             } else {
                 Timber.e("Error en respuesta de Resend: Código ${response.statusCode}, $responseText")

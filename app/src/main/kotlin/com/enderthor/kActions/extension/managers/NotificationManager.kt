@@ -99,31 +99,15 @@ class NotificationManager(
                 else -> return@coroutineScope false
             }
 
-            // Manejo de email (Resend)
-            if (sConfig.provider == ProviderType.RESEND) {
-                try {
-                    val success = sender.sendEmailMessage(message)
-                    if (success) {
-                        Timber.d("Email enviado correctamente para evento $eventType")
-                    } else {
-                        Timber.e("Error enviando email para evento $eventType")
-                    }
-                    return@coroutineScope success
-                } catch (e: Exception) {
-                    Timber.e(e, "Excepción enviando email para evento: $eventType")
-                    return@coroutineScope false
-                }
-            }
 
-            // Manejo de mensajes a teléfonos
-            if (config.phoneNumbers.isNotEmpty()) {
+            if (sConfig.provider == ProviderType.RESEND) {
+
+                return@coroutineScope sender.sendNotification(message = message)
+            } else if (config.phoneNumbers.isNotEmpty()) {
+
                 val sendJobs = config.phoneNumbers.map { phoneNumber ->
                     async {
-                        when (sConfig.provider) {
-                            ProviderType.WHAPI -> sender.sendMessage(phoneNumber, message)
-                            ProviderType.TEXTBELT -> sender.sendSMSMessage(phoneNumber, message)
-                            else -> false
-                        }
+                        sender.sendNotification(phoneNumber = phoneNumber, message = message)
                     }
                 }
 
@@ -132,7 +116,7 @@ class NotificationManager(
                 Timber.d("Resumen de envíos para evento $eventType: $successCount éxitos de ${config.phoneNumbers.size} intentos")
                 return@coroutineScope successCount > 0
             } else {
-                Timber.d("No hay números de teléfono configurados para evento: $eventType")
+                Timber.d("No hay destinatarios configurados para evento: $eventType")
                 return@coroutineScope false
             }
         } catch (e: Exception) {
