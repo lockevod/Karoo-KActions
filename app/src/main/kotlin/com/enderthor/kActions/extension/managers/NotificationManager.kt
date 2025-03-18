@@ -1,10 +1,8 @@
 package com.enderthor.kActions.extension.managers
 
-import android.content.Context
 import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.data.SenderConfig
-import com.enderthor.kActions.data.Template
 import com.enderthor.kActions.data.karooUrl
 import com.enderthor.kActions.extension.Sender
 import kotlinx.coroutines.async
@@ -13,7 +11,6 @@ import kotlinx.coroutines.coroutineScope
 import timber.log.Timber
 
 class NotificationManager(
-    private val context: Context,
     private val sender: Sender
 ) {
     private val lastMessageTimeByType = mutableMapOf<String, Long>()

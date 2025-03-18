@@ -19,8 +19,8 @@ import com.enderthor.kActions.R
 import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.data.SenderConfig
-import com.enderthor.kActions.extension.savePreferences
 import com.enderthor.kActions.extension.Sender
+import com.enderthor.kActions.extension.managers.ConfigurationManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -30,7 +30,8 @@ import timber.log.Timber
 fun ProviderConfigScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val sender = remember { Sender(context, null) }
+    val configManager = remember { ConfigurationManager(context) }
+    val sender = remember { Sender(karooSystem = null, configManager = configManager) }
 
     var senderConfig by remember { mutableStateOf<SenderConfig?>(null) }
     var configData by remember { mutableStateOf<ConfigData?>(null) }
@@ -56,17 +57,20 @@ fun ProviderConfigScreen() {
     LaunchedEffect(Unit) {
         launch {
             try {
-                val savedConfig = sender.getSenderConfig()
-                senderConfig = savedConfig
-                selectedProvider = savedConfig?.provider ?: ProviderType.WHAPI
-                apiKey = savedConfig?.apiKey ?: ""
+                configManager.loadSenderConfigFlow().collect { configs ->
+                    val savedConfig = configs.firstOrNull()
+                    senderConfig = savedConfig
+                    selectedProvider = configData?.activeProvider ?: ProviderType.WHAPI
+                    apiKey = savedConfig?.apiKey ?: ""
 
-                // Obtener emails desde ConfigData
-                val configs = sender.getConfigData()
-                configData = configs?.firstOrNull()
-                if (configData?.emails?.isNotEmpty() == true) {
-                    emailFrom = configData?.emails?.getOrNull(0) ?: ""
-                    emailTo = configData?.emails?.getOrNull(1) ?: ""
+
+                    configManager.loadPreferencesFlow().collect { configDatas ->
+                        configData = configDatas.firstOrNull()
+                        if (configData?.emails?.isNotEmpty() == true) {
+                            emailFrom = configData?.emails?.getOrNull(0) ?: ""
+                            emailTo = configData?.emails?.getOrNull(1) ?: ""
+                        }
+                    }
                 }
 
                 delay(500)
@@ -86,22 +90,38 @@ fun ProviderConfigScreen() {
             statusMessage = null
 
             try {
-                // Guardar SenderConfig (solo provider y apiKey)
+
                 if (apiKey.isBlank() && selectedProvider == ProviderType.TEXTBELT) {
                     apiKey = "textbelt"
                 }
-                val newSenderConfig = SenderConfig(
-                    apiKey = apiKey.trim(),
-                    provider = selectedProvider
+
+                configData?.let { currentConfig ->
+                    val updatedConfig = currentConfig.copy(
+                        activeProvider = selectedProvider
+                    )
+                    configManager.savePreferences(mutableListOf(updatedConfig))
+                }
+
+                val updatedSenderConfig = senderConfig?.copy(
+                    provider = selectedProvider,
+                    apiKey = apiKey
+                ) ?: SenderConfig(
+                    provider = selectedProvider,
+                    apiKey = apiKey
                 )
-                sender.saveSenderConfig(newSenderConfig)
+
+                configManager.saveSenderConfig(updatedSenderConfig)
+
 
 
                 if (selectedProvider == ProviderType.RESEND) {
-                    val currentConfigData = configData ?: ConfigData()
-                    val emailList = listOf(emailFrom.trim(), emailTo.trim())
-                    val updatedConfigData = currentConfigData.copy(emails = emailList)
-                    savePreferences(context, mutableListOf(updatedConfigData))
+                    val updatedConfigData = configData?.copy(
+                        emails = listOf(emailFrom.trim(), emailTo.trim())
+                    ) ?: ConfigData(
+                        emails = listOf(emailFrom.trim(), emailTo.trim())
+                    )
+
+                    configManager.savePreferences(mutableListOf(updatedConfigData))
                 }
 
                 statusMessage = settings_saved

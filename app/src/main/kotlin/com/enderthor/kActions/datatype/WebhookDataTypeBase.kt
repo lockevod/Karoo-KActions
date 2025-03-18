@@ -23,7 +23,7 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import com.enderthor.kActions.data.WebhookData
 import com.enderthor.kActions.data.WebhookStatus
-import com.enderthor.kActions.extension.loadWebhookDataFlow
+import com.enderthor.kActions.extension.managers.ConfigurationManager
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.internal.ViewEmitter
@@ -43,10 +43,12 @@ import timber.log.Timber
 abstract class WebhookDataTypeBase(
     protected val karooSystem: KarooSystemService,
     datatype: String,
-    protected val webhookIndex: Int
+    protected val webhookIndex: Int,
+    protected val context: Context
 ) : DataTypeImpl("kactions", datatype) {
 
     private val glance = GlanceRemoteViews()
+    private val configManager by lazy { ConfigurationManager(context) }
 
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
 
@@ -58,7 +60,7 @@ abstract class WebhookDataTypeBase(
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 try {
-                    context.loadWebhookDataFlow().collect { webhooks ->
+                    configManager.loadWebhookDataFlow().collect  { webhooks ->
                         val result = updateWebhookView(context, webhooks[webhookIndex], config)
                         emitter.updateView(result.remoteViews)
                     }

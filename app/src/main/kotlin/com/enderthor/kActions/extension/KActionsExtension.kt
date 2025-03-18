@@ -2,8 +2,8 @@ package com.enderthor.kActions.extension
 
 import com.enderthor.kActions.BuildConfig
 import com.enderthor.kActions.data.ConfigData
+import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.data.SenderConfig
-import com.enderthor.kActions.data.Template
 import com.enderthor.kActions.data.WebhookStatus
 import com.enderthor.kActions.datatype.WebhookDataType
 import com.enderthor.kActions.extension.managers.ConfigurationManager
@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
@@ -45,8 +46,6 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
 
     private var activeConfigs: List<ConfigData> = emptyList()
     private var senderConfig: SenderConfig? = null
-    private var availableTemplates: List<Template> = emptyList()
-
 
     companion object {
         private var instance: KActionsExtension? = null
@@ -66,10 +65,10 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
 
 
         karooSystem = KarooSystemService(applicationContext)
-        sender = Sender(applicationContext, karooSystem)
+        configManager = ConfigurationManager(applicationContext)
+        sender = Sender(karooSystem, configManager)
 
-        configManager = ConfigurationManager(applicationContext, sender)
-        notificationManager = NotificationManager(applicationContext, sender)
+        notificationManager = NotificationManager(sender)
         webhookManager = WebhookManager(applicationContext, karooSystem)
         rideStateManager = RideStateManager(
             karooSystem,
@@ -94,8 +93,18 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
         launch {
             try {
 
-                configManager.loadConfigDataFlow().collect { configs ->
+                configManager.loadPreferencesFlow().collect { configs ->
                     activeConfigs = configs
+
+                    // Obtener el activeProvider del primer config (si existe)
+                    val activeProvider = configs.first().activeProvider
+
+                    // Si ya tenemos los senderConfigs, buscar el activo basado en activeProvider
+                    if (senderConfig == null) {
+                        configManager.loadSenderConfigFlow().first().let { senderConfigs ->
+                            senderConfig = findActiveSenderConfig(senderConfigs, activeProvider)
+                        }
+                    }
 
                     if (senderConfig != null) {
                         rideStateManager.observeRideState(activeConfigs, senderConfig)
@@ -103,8 +112,9 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
                 }
 
 
-                configManager.loadSenderConfigFlow().collect { config ->
-                    senderConfig = config
+                configManager.loadSenderConfigFlow().collect { configList ->
+                    val activeProvider = activeConfigs.first().activeProvider
+                    senderConfig = findActiveSenderConfig(configList, activeProvider)
 
                     if (activeConfigs.isNotEmpty()) {
                         rideStateManager.observeRideState(activeConfigs, senderConfig)
@@ -112,16 +122,19 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
                 }
 
 
-                configManager.loadTemplatesFlow().collect { templates ->
-                    availableTemplates = templates
-                }
             } catch (e: Exception) {
                 Timber.e(e, "Error inicializando configuraciones")
             }
         }
     }
 
-    // Método público para activar webhook manualmente
+    private fun findActiveSenderConfig(configList: List<SenderConfig>, activeProvider: ProviderType?): SenderConfig? {
+        return when {
+            activeProvider == null -> configList.firstOrNull()
+            else -> configList.find { it.provider == activeProvider } ?: configList.firstOrNull()
+        }
+    }
+
     fun triggerCustomWebhook(webhookId: Int? = null) {
         if (webhookId == null) {
             Timber.w("Webhook ID no proporcionado")
@@ -129,6 +142,7 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
         }
         rideStateManager.triggerCustomWebhook(webhookId)
     }
+
 
 
     fun updateWebhookState(webhookId: Int?, newStatus: WebhookStatus) {

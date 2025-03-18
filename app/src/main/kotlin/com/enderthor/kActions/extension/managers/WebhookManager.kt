@@ -7,7 +7,6 @@ import com.enderthor.kActions.activity.dataStore
 import com.enderthor.kActions.data.GpsCoordinates
 import com.enderthor.kActions.data.WebhookData
 import com.enderthor.kActions.data.WebhookStatus
-import com.enderthor.kActions.extension.loadWebhookDataFlow
 import com.enderthor.kActions.extension.makeHttpRequest
 import com.enderthor.kActions.extension.getGpsFlow
 import com.enderthor.kActions.extension.getHomeFlow
@@ -33,10 +32,10 @@ class WebhookManager(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var webhookConfig: WebhookData? = null
     private val webhooksKey = stringPreferencesKey("webhooks")
+    private val configManager = ConfigurationManager(context)
 
     suspend fun loadWebhookConfiguration(webhookId: Int? = null) {
-
-        val webhooks = context.loadWebhookDataFlow().first()
+        val webhooks = configManager.loadWebhookDataFlow().first()
         webhookConfig = if (webhookId != null) {
             webhooks.find { it.id == webhookId }
         } else {
@@ -97,13 +96,11 @@ class WebhookManager(
     private suspend fun checkCurrentLocation(targetLocation: GpsCoordinates): Boolean {
         try {
             val currentLocation = karooSystem.getGpsFlow().first() // Obtenemos solo el primer valor
-            if (currentLocation != null) {
-                val distance = distanceTo(currentLocation, targetLocation)
-                Timber.d("Distancia a la ubicación objetivo: $distance km")
-                return distance <= 0.010 // 10 metros
-            }
-            Timber.e("Ubicación actual no disponible")
-            return false
+
+            val distance = distanceTo(currentLocation, targetLocation)
+            Timber.d("Distancia a la ubicación objetivo: $distance km")
+            return distance <= 0.010 // 10 metros
+
         } catch (e: Exception) {
             Timber.e(e, "Error al comprobar la ubicación: ${e.message}")
             return false
@@ -131,7 +128,7 @@ class WebhookManager(
     }
 
     private suspend fun loadWebhooks(): List<WebhookData> {
-        return context.loadWebhookDataFlow().first()
+        return configManager.loadWebhookDataFlow().first()
     }
 
     private suspend fun saveWebhooks(webhooks: List<WebhookData>) {

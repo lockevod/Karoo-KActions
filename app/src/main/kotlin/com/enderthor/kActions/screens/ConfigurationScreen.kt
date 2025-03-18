@@ -21,8 +21,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.enderthor.kActions.R
 import com.enderthor.kActions.data.ConfigData
-import com.enderthor.kActions.extension.loadPreferencesFlow
-import com.enderthor.kActions.extension.savePreferences
+import com.enderthor.kActions.extension.managers.ConfigurationManager
 import io.hammerhead.karooext.KarooSystemService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -35,6 +34,7 @@ fun ConfigurationScreen() {
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val karooSystem = remember { KarooSystemService(context) }
+    val configManager = remember { ConfigurationManager(context) }
     var karooConnected by remember { mutableStateOf(false) }
     var isConnecting by remember { mutableStateOf(false) }
 
@@ -79,7 +79,7 @@ fun ConfigurationScreen() {
         }
 
         launch {
-            context.loadPreferencesFlow().collect { configs ->
+            configManager.loadPreferencesFlow().collect { configs ->
                 if (configs.isNotEmpty()) {
                     val savedConfig = configs.first()
                     config = savedConfig
@@ -163,7 +163,7 @@ fun ConfigurationScreen() {
                         resumeMessage = resumeMessage.trim()
                     )
 
-                    savePreferences(context, mutableListOf(updatedConfig))
+                    configManager.savePreferences(mutableListOf(updatedConfig))
                     statusMessage = settingsSaved
                     delay(2000)
                     statusMessage = null

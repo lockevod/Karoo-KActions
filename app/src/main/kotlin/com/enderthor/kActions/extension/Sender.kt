@@ -1,39 +1,28 @@
 package com.enderthor.kActions.extension
 
-import android.content.Context
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import com.enderthor.kActions.activity.dataStore
-import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.ProviderType
-import com.enderthor.kActions.data.SenderConfig
-import com.enderthor.kActions.data.Template
+import com.enderthor.kActions.extension.managers.ConfigurationManager
 import io.hammerhead.karooext.KarooSystemService
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import timber.log.Timber
 
-private val senderConfigKey = stringPreferencesKey("sender")
-private val templatesKey = stringPreferencesKey("templates")
 
 class Sender(
-    private val context: Context,
-    private val karooSystem: KarooSystemService? = null
+    private val karooSystem: KarooSystemService? = null,
+    private val configManager: ConfigurationManager
 ) {
 
     suspend fun sendNotification(phoneNumber: String? = null, message: String): Boolean {
-        val config = getSenderConfig() ?: run {
+        val config = configManager.loadSenderConfigFlow().first()
+        val senderConfig = config.firstOrNull() ?: run {
             Timber.e("No hay configuración del proveedor disponible")
             return false
         }
 
-        return when(config.provider) {
+        return when (senderConfig.provider) {
             ProviderType.WHAPI -> sendMessage(phoneNumber ?: return false, message)
             ProviderType.TEXTBELT -> sendSMSMessage(phoneNumber ?: return false, message)
             ProviderType.RESEND -> sendEmailMessage(message)
@@ -61,7 +50,7 @@ class Sender(
                         kotlinx.coroutines.delay(delayTime * 1000L)
                     }
 
-                    // Intentar con timeout para evitar bloqueos
+
                     val result = withTimeoutOrNull(30_000L) {
                         attemptSendMessage(phoneNumber, message)
                     } == true
@@ -92,10 +81,8 @@ class Sender(
 
     suspend fun sendSMSMessage(phoneNumber: String, message: String): Boolean {
         try {
-            val config = getSenderConfig() ?: run {
-                Timber.e("No hay configuración de TextBelt disponible")
-                return false
-            }
+            val config = configManager.loadSenderConfigFlow().first().firstOrNull() ?: return false
+
 
             if (karooSystem == null) {
                 Timber.e("KarooSystemService es necesario para enviar mensajes")
@@ -137,29 +124,15 @@ class Sender(
         }
     }
 
-    suspend fun getConfigData(): List<ConfigData>? {
-        return try {
-            context.loadPreferencesFlow().first()
-        } catch (e: Exception) {
-            Timber.e(e, "Error al obtener configuración")
-            null
-        }
-    }
 
     suspend fun sendEmailMessage(message: String): Boolean {
         try {
-            val config = getSenderConfig() ?: run {
-                Timber.e("No hay configuración de Resend disponible")
-                return false
-            }
+            val config = configManager.loadSenderConfigFlow().first().firstOrNull() ?: return false
+            val configData = configManager.loadPreferencesFlow().first().firstOrNull() ?: return false
 
-            val configData = getConfigData()?.firstOrNull() ?: run {
-                Timber.e("No hay configuración disponible")
-                return false
-            }
 
-            if (configData.emails.size < 2) {
-                Timber.e("Faltan direcciones de correo origen/destino")
+            if (configData.emails.isEmpty() || configData.emails.size < 2) {
+                Timber.e("No hay suficientes direcciones de email configuradas")
                 return false
             }
 
@@ -210,10 +183,7 @@ class Sender(
 
     private suspend fun attemptSendMessage(phoneNumber: String, message: String): Boolean {
         try {
-            val config = getSenderConfig() ?: run {
-                Timber.Forest.e("No WhAPI configuration available")
-                return false
-            }
+            val config = configManager.loadSenderConfigFlow().first().firstOrNull() ?: return false
 
             if (karooSystem == null) {
                 Timber.Forest.e("KarooSystemService is required to send messages")
@@ -254,62 +224,6 @@ class Sender(
         } catch (e: Exception) {
             Timber.Forest.e(e, "Error sending WhatsApp message: ${e.message}")
             return false
-        }
-    }
-
-    suspend fun saveSenderConfig(config: SenderConfig) {
-        try {
-            context.dataStore.edit { preferences ->
-                preferences[senderConfigKey] = Json.Default.encodeToString(config)
-            }
-            Timber.Forest.d("Configuración de Sender guardada")
-        } catch (e: Exception) {
-            Timber.Forest.e(e, "Error al guardar configuración de Sender")
-        }
-    }
-
-    suspend fun getSenderConfig(): SenderConfig? {
-        return try {
-            context.dataStore.data.map { preferences ->
-                val configJson = preferences[senderConfigKey]
-                if (configJson != null) {
-                    Json.Default.decodeFromString<SenderConfig>(configJson)
-                } else {
-                    SenderConfig()
-                }
-            }.first()
-        } catch (e: Exception) {
-            Timber.Forest.e(e, "Error al obtener configuración del Sender")
-            SenderConfig()
-        }
-    }
-
-    fun getSenderConfigFlow(): Flow<SenderConfig?> {
-        return context.dataStore.data.map { preferences ->
-            try {
-                val configJson = preferences[senderConfigKey]
-                if (configJson != null) {
-                    Json.Default.decodeFromString<SenderConfig>(configJson)
-                } else {
-                    null
-                }
-            } catch (e: Exception) {
-                Timber.Forest.e(e, "Error al leer configuración del Sender")
-                null
-            }
-        }
-    }
-
-    fun getTemplatesFlow(): Flow<List<Template>> {
-        return context.dataStore.data.map { preferences ->
-            try {
-                val templatesJson = preferences[templatesKey] ?: "[]"
-                val jsonConfig = Json { ignoreUnknownKeys = true }
-                jsonConfig.decodeFromString<List<Template>>(templatesJson)
-            } catch (e: Exception) {
-                Timber.e(e, "Error al leer plantillas de WhatsApp")
-                emptyList()
-            }
         }
     }
 

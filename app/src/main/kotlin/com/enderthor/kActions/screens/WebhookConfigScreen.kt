@@ -17,9 +17,8 @@ import androidx.compose.ui.unit.dp
 import com.enderthor.kActions.R
 import com.enderthor.kActions.data.GpsCoordinates
 import com.enderthor.kActions.data.WebhookData
-import com.enderthor.kActions.extension.loadWebhookDataFlow
 import com.enderthor.kActions.extension.makeHttpRequest
-import com.enderthor.kActions.extension.saveWebhookData
+import com.enderthor.kActions.extension.managers.ConfigurationManager
 import io.hammerhead.karooext.KarooSystemService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -33,7 +32,7 @@ fun WebhookConfigScreen() {
     val scope = rememberCoroutineScope()
     val karooSystem = remember { KarooSystemService(context) }
     var karooConnected by remember { mutableStateOf(false) }
-
+    val configManager = remember { ConfigurationManager(context) }
     var webhook by remember { mutableStateOf<WebhookData?>(null) }
     var name by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
@@ -71,9 +70,9 @@ fun WebhookConfigScreen() {
         }
 
         launch {
-            context.loadWebhookDataFlow().collect { webhooks ->
+            configManager.loadWebhookDataFlow().collect { webhooks ->
                 if (webhooks.isNotEmpty()) {
-                    val savedWebhook = webhooks.firstOrNull() ?: WebhookData()
+                    val savedWebhook = webhooks.first()
                     webhook = savedWebhook
                     name = savedWebhook.name
                     url = savedWebhook.url
@@ -125,7 +124,7 @@ fun WebhookConfigScreen() {
                     location = location
                 )
 
-                saveWebhookData(context, mutableListOf(updatedWebhook))
+                configManager.saveWebhookData(mutableListOf(updatedWebhook))
 
                 statusMessage = settingsSaved
                 delay(2000)
