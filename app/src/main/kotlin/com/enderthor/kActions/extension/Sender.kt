@@ -1,11 +1,11 @@
-package com.enderthor.kNotify.extension
+package com.enderthor.kActions.extension
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.enderthor.kNotify.activity.dataStore
-import com.enderthor.kNotify.data.SenderConfig
-import com.enderthor.kNotify.data.Template
+import com.enderthor.kActions.activity.dataStore
+import com.enderthor.kActions.data.SenderConfig
+import com.enderthor.kActions.data.Template
 import io.hammerhead.karooext.KarooSystemService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

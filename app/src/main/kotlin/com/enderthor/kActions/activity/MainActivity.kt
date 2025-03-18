@@ -1,4 +1,4 @@
-package com.enderthor.kNotify.activity
+package com.enderthor.kActions.activity
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -14,7 +14,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 
-import com.enderthor.kNotify.screens.TabLayout
+import com.enderthor.kActions.screens.TabLayout
 
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")

@@ -1,14 +1,14 @@
-package com.enderthor.kNotify.extension
+package com.enderthor.kActions.extension
 
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.enderthor.kNotify.activity.dataStore
-import com.enderthor.kNotify.data.ConfigData
-import com.enderthor.kNotify.data.WebhookData
-import com.enderthor.kNotify.data.defaultConfigData
-import com.enderthor.kNotify.data.defaultWebhookData
+import com.enderthor.kActions.activity.dataStore
+import com.enderthor.kActions.data.ConfigData
+import com.enderthor.kActions.data.WebhookData
+import com.enderthor.kActions.data.defaultConfigData
+import com.enderthor.kActions.data.defaultWebhookData
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.models.HttpResponseState
 import io.hammerhead.karooext.models.OnHttpResponse

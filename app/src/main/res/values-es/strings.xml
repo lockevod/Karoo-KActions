@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">KNotify</string>
-    <string name="extension_name">KNotify</string>
+    <string name="app_name">KActions</string>
+    <string name="extension_name">KActions</string>
 
     <!-- ConfigScreen -->
     <string name="notification_settings">Configuración de Notificaciones</string>
@@ -73,5 +73,32 @@
     <string name="textbelt_free_delay_warning">El tiempo mínimo entre mensajes con la API gratuita es de 24 horas</string>
     <string name="webhook_test_success">Prueba enviada correctamente al webhook</string>
     <string name="webhook_test_error">Error al enviar prueba al webhook</string>
+    <!-- WebhookScreen -->
+    <string name="webhook_config_title">Configuración del Webhook</string>
+    <string name="enable_webhook">Habilitar webhook</string>
+    <string name="webhook_name">Nombre</string>
+    <string name="webhook_url">URL</string>
+    <string name="webhook_url_placeholder">https://ejemplo.com/webhook</string>
+    <string name="webhook_post_body">Cuerpo POST (JSON)</string>
+    <string name="webhook_post_body_placeholder">{ \"key\": \"value\" }</string>
+    <string name="webhook_trigger_events">Eventos que activan el webhook</string>
+    <string name="webhook_on_start">Al iniciar</string>
+    <string name="webhook_on_stop">Al detener</string>
+    <string name="webhook_on_pause">Al pausar</string>
+    <string name="webhook_on_resume">Al reanudar</string>
+    <string name="webhook_on_custom">Personalizado</string>
+    <string name="webhook_location_filter">Filtro de ubicación</string>
+    <string name="webhook_only_at_location">Solo en ubicación específica</string>
+    <string name="webhook_location">Ubicación</string>
+    <string name="webhook_test_section">Prueba del webhook</string>
+    <string name="webhook_send_test">Enviar prueba al webhook</string>
+    <string name="webhook_url_error">Error: La URL debe comenzar con http:// o https://</string>
 
+    <string name="webhook_idle_action">Pulsa para ejecutar</string>
+    <string name="webhook_first_action">Pulsa para confirmar</string>
+    <string name="webhook_excuting_action">Ejecutando webhook…</string>
+    <string name="webhook_success_action">Éxito al ejecutar</string>
+    <string name="webhook_error_action">Error en ejecución</string>
+    <string name="webhook_notavailable_action">Webhook no disponible</string>
+    <string name="webhook_cancel_action">Acción Cancelada</string>
 </resources>

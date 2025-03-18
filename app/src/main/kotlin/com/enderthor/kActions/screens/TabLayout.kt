@@ -1,4 +1,4 @@
-package com.enderthor.kNotify.screens
+package com.enderthor.kActions.screens
 
 
 import androidx.compose.foundation.layout.Column

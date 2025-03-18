@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">KNotify</string>
-    <string name="extension_name">KNotify</string>
+    <string name="app_name">KActions</string>
+    <string name="extension_name">KActions</string>
 
     <!-- ConfigScreen -->
     <string name="notification_settings">Notification Settings</string>
@@ -73,6 +73,32 @@
     <string name="webhook_test_success">Test webhook ok </string>
     <string name="webhook_test_error">Error to send webhook</string>
 
+    <!-- WebhookScreen -->
+    <string name="webhook_config_title">Webhook Configuration</string>
+    <string name="enable_webhook">Enable webhook</string>
+    <string name="webhook_name">Name</string>
+    <string name="webhook_url">URL</string>
+    <string name="webhook_url_placeholder">https://example.com/webhook</string>
+    <string name="webhook_post_body">POST Body (JSON)</string>
+    <string name="webhook_post_body_placeholder">{ \"key\": \"value\" }</string>
+    <string name="webhook_trigger_events">Events that trigger the webhook</string>
+    <string name="webhook_on_start">On start</string>
+    <string name="webhook_on_stop">On stop</string>
+    <string name="webhook_on_pause">On pause</string>
+    <string name="webhook_on_resume">On resume</string>
+    <string name="webhook_on_custom">Custom</string>
+    <string name="webhook_location_filter">Location Filter</string>
+    <string name="webhook_only_at_location">Only at specific location</string>
+    <string name="webhook_location">Location</string>
+    <string name="webhook_test_section">Test webhook</string>
+    <string name="webhook_send_test">Send webhook test</string>
+    <string name="webhook_url_error">Error: URL must start with http:// or https://</string>
 
-
+    <string name="webhook_idle_action">Tap to execute</string>
+    <string name="webhook_first_action">Tap to confirm</string>
+    <string name="webhook_excuting_action">Executing webhook…</string>
+    <string name="webhook_success_action">Execution successful</string>
+    <string name="webhook_error_action">Execution failed</string>
+    <string name="webhook_notavailable_action">Webhook not available</string>
+    <string name="webhook_cancel_action">Action Cancelled</string>
 </resources>

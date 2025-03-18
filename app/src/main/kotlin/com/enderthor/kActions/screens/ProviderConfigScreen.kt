@@ -1,4 +1,4 @@
-package com.enderthor.kNotify.screens
+package com.enderthor.kActions.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,10 +15,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.enderthor.kNotify.R
-import com.enderthor.kNotify.data.ProviderType
-import com.enderthor.kNotify.data.SenderConfig
-import com.enderthor.kNotify.extension.Sender
+import com.enderthor.kActions.R
+import com.enderthor.kActions.data.ProviderType
+import com.enderthor.kActions.data.SenderConfig
+import com.enderthor.kActions.extension.Sender
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber

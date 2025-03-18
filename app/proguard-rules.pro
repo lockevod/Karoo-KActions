@@ -47,11 +47,11 @@
 
 
 # Mantener las clases de tu aplicación
--keep class com.enderthor.kNotify.** { *; }
--keep class com.enderthor.kNotify.data.** { *; }
--keep class com.enderthor.kNotify.extension.** { *; }
--keep class com.enderthor.kNotify.activity.** { *; }
--keep class com.enderthor.kNotify.screens.** { *; }
+-keep class com.enderthor.kActions.** { *; }
+-keep class com.enderthor.kActions.data.** { *; }
+-keep class com.enderthor.kActions.extension.** { *; }
+-keep class com.enderthor.kActions.activity.** { *; }
+-keep class com.enderthor.kActions.screens.** { *; }
 
 # Reglas para Timber
 -dontwarn org.jetbrains.annotations.**

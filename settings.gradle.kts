@@ -46,5 +46,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "KNotify Extension"
+rootProject.name = "KActions Extension"
 include(":app")

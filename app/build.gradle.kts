@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.enderthor.kNotify"
+    namespace = "com.enderthor.kActions"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.enderthor.kNotify"
+        applicationId = "com.enderthor.kActions"
         minSdk = 23
         targetSdk = 34
         versionCode = 202503151

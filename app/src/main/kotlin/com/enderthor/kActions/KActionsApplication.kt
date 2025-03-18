@@ -1,4 +1,4 @@
-package com.enderthor.kNotify
+package com.enderthor.kActions
 
 import android.app.Application
 import android.util.Log
@@ -8,7 +8,7 @@ import timber.log.Timber.Forest.plant
 import timber.log.Timber.Tree
 
 
-class KNotifyApplication : Application() {
+class KActionsApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()

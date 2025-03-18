@@ -1,4 +1,4 @@
-package com.enderthor.kNotify.screens
+package com.enderthor.kActions.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,11 +14,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.enderthor.kNotify.R
-import com.enderthor.kNotify.data.WebhookData
-import com.enderthor.kNotify.extension.loadWebhookDataFlow
-import com.enderthor.kNotify.extension.makeHttpRequest
-import com.enderthor.kNotify.extension.saveWebhookData
+import com.enderthor.kActions.R
+import com.enderthor.kActions.data.WebhookData
+import com.enderthor.kActions.extension.loadWebhookDataFlow
+import com.enderthor.kActions.extension.makeHttpRequest
+import com.enderthor.kActions.extension.saveWebhookData
 import io.hammerhead.karooext.KarooSystemService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -54,6 +54,7 @@ fun WebhookConfigScreen() {
     val settingsSaved = stringResource(R.string.settings_saved)
     val testSuccess = stringResource(R.string.webhook_test_success)
     val testError = stringResource(R.string.webhook_test_error)
+    val urlError = stringResource(R.string.webhook_url_error)
 
     LaunchedEffect(Unit) {
         isConnecting = true
@@ -143,7 +144,7 @@ fun WebhookConfigScreen() {
 
             try {
                 if (!url.startsWith("http")) {
-                    statusMessage = "Error: La URL debe comenzar con http:// o https://"
+                    statusMessage = urlError
                     isLoading = false
                     return@launch
                 }
@@ -187,17 +188,16 @@ fun WebhookConfigScreen() {
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        "Configuración del Webhook",
+                        stringResource(R.string.webhook_config_title),
                         style = MaterialTheme.typography.titleMedium
                     )
 
-                    // Activar/desactivar webhook
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            "Habilitar webhook",
+                            stringResource(R.string.enable_webhook),
                             modifier = Modifier.weight(1f)
                         )
                         Switch(
@@ -209,14 +209,13 @@ fun WebhookConfigScreen() {
                         )
                     }
 
-
                     OutlinedTextField(
                         value = name,
                         onValueChange = {
                             name = it
                             saveData()
                         },
-                        label = { Text("Nombre") },
+                        label = { Text(stringResource(R.string.webhook_name)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .onFocusChanged { if (!it.isFocused) saveData() },
@@ -224,7 +223,6 @@ fun WebhookConfigScreen() {
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { saveData() })
                     )
-
 
                     OutlinedTextField(
                         value = url,
@@ -232,8 +230,8 @@ fun WebhookConfigScreen() {
                             url = it
                             saveData()
                         },
-                        label = { Text("URL") },
-                        placeholder = { Text("https://ejemplo.com/webhook") },
+                        label = { Text(stringResource(R.string.webhook_url)) },
+                        placeholder = { Text(stringResource(R.string.webhook_url_placeholder)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .onFocusChanged { if (!it.isFocused) saveData() },
@@ -242,15 +240,14 @@ fun WebhookConfigScreen() {
                         keyboardActions = KeyboardActions(onDone = { saveData() })
                     )
 
-                    // Cuerpo POST
                     OutlinedTextField(
                         value = postBody,
                         onValueChange = {
                             postBody = it
                             saveData()
                         },
-                        label = { Text("Cuerpo POST (JSON)") },
-                        placeholder = { Text("{ \"key\": \"value\" }") },
+                        label = { Text(stringResource(R.string.webhook_post_body)) },
+                        placeholder = { Text(stringResource(R.string.webhook_post_body_placeholder)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp)
@@ -261,14 +258,13 @@ fun WebhookConfigScreen() {
                 }
             }
 
-
             Card {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        "Eventos que activan el webhook",
+                        stringResource(R.string.webhook_trigger_events),
                         style = MaterialTheme.typography.titleMedium
                     )
 
@@ -276,7 +272,7 @@ fun WebhookConfigScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Al iniciar", modifier = Modifier.weight(1f))
+                        Text(stringResource(R.string.webhook_on_start), modifier = Modifier.weight(1f))
                         Switch(
                             checked = actionOnStart,
                             onCheckedChange = {
@@ -290,7 +286,7 @@ fun WebhookConfigScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Al detener", modifier = Modifier.weight(1f))
+                        Text(stringResource(R.string.webhook_on_stop), modifier = Modifier.weight(1f))
                         Switch(
                             checked = actionOnStop,
                             onCheckedChange = {
@@ -304,7 +300,7 @@ fun WebhookConfigScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Al pausar", modifier = Modifier.weight(1f))
+                        Text(stringResource(R.string.webhook_on_pause), modifier = Modifier.weight(1f))
                         Switch(
                             checked = actionOnPause,
                             onCheckedChange = {
@@ -318,7 +314,7 @@ fun WebhookConfigScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Al reanudar", modifier = Modifier.weight(1f))
+                        Text(stringResource(R.string.webhook_on_resume), modifier = Modifier.weight(1f))
                         Switch(
                             checked = actionOnResume,
                             onCheckedChange = {
@@ -332,7 +328,7 @@ fun WebhookConfigScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Personalizado", modifier = Modifier.weight(1f))
+                        Text(stringResource(R.string.webhook_on_custom), modifier = Modifier.weight(1f))
                         Switch(
                             checked = actionOnCustom,
                             onCheckedChange = {
@@ -350,7 +346,7 @@ fun WebhookConfigScreen() {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        "Filtro de ubicación",
+                        stringResource(R.string.webhook_location_filter),
                         style = MaterialTheme.typography.titleMedium
                     )
 
@@ -358,7 +354,7 @@ fun WebhookConfigScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Solo en ubicación específica", modifier = Modifier.weight(1f))
+                        Text(stringResource(R.string.webhook_only_at_location), modifier = Modifier.weight(1f))
                         Switch(
                             checked = onlyIfLocation,
                             onCheckedChange = {
@@ -375,7 +371,7 @@ fun WebhookConfigScreen() {
                                 location = it
                                 saveData()
                             },
-                            label = { Text("Ubicación") },
+                            label = { Text(stringResource(R.string.webhook_location)) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .onFocusChanged { if (!it.isFocused) saveData() },
@@ -387,7 +383,6 @@ fun WebhookConfigScreen() {
                 }
             }
 
-            // Prueba del webhook
             if (url.isNotBlank()) {
                 Card {
                     Column(
@@ -395,7 +390,7 @@ fun WebhookConfigScreen() {
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            "Prueba del webhook",
+                            stringResource(R.string.webhook_test_section),
                             style = MaterialTheme.typography.titleMedium
                         )
 
@@ -404,7 +399,7 @@ fun WebhookConfigScreen() {
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isLoading && url.isNotBlank()
                         ) {
-                            Text("Enviar prueba al webhook")
+                            Text(stringResource(R.string.webhook_send_test))
                         }
                     }
                 }
