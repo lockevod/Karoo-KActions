@@ -306,7 +306,7 @@ fun ConfigurationScreen() {
                 }
             }
 
-            // 4. Message Templates
+
             Card {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -342,7 +342,7 @@ fun ConfigurationScreen() {
                         minLines = 2
                     )
 
-                    OutlinedTextField(
+                   /* OutlinedTextField(
                         value = pauseMessage,
                         onValueChange = { pauseMessage = it },
                         label = { Text(stringResource(R.string.pause_message)) },
@@ -360,7 +360,7 @@ fun ConfigurationScreen() {
                             .fillMaxWidth()
                             .onFocusChanged { if (!it.isFocused) saveData() },
                         minLines = 2
-                    )
+                    )*/
                 }
             }
 

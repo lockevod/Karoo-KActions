@@ -15,7 +15,7 @@
     <string name="karoo_key">Karoo Key</string>
     <string name="whapi_api_config">WHAPI API Configuration</string>
     <string name="whapi_description">Whapi allows sending messages but you need to register (free tier available. Read info in extension github).</string>
-    <string name="whapi_api_key">WHAPI API Key</string>
+    <string name="api_key">API Key</string>
     <string name="test_sending">Test message sending</string>
     <string name="test_phone_number">Test phone number</string>
     <string name="phone_placeholder">34675123123</string>

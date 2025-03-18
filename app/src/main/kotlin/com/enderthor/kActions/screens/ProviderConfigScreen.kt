@@ -241,7 +241,7 @@ fun ProviderConfigScreen() {
                                     apiKey = it
                                     saveData()
                                 },
-                                label = { Text(stringResource(R.string.whapi_api_key)) },
+                                label = { Text(stringResource(R.string.api_key)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .onFocusChanged { if (!it.isFocused) saveData() },
@@ -258,7 +258,7 @@ fun ProviderConfigScreen() {
                                     apiKey = it
                                     saveData()
                                 },
-                                label = { Text(stringResource(R.string.whapi_api_key)) },
+                                label = { Text(stringResource(R.string.api_key)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .onFocusChanged { if (!it.isFocused) saveData() },
@@ -291,7 +291,7 @@ fun ProviderConfigScreen() {
                                     apiKey = it
                                     saveData()
                                 },
-                                label = { Text(stringResource(R.string.whapi_api_key)) },
+                                label = { Text(stringResource(R.string.api_key)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .onFocusChanged { if (!it.isFocused) saveData() },
