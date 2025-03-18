@@ -29,7 +29,7 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
 
     override val types by lazy {
         listOf(
-            WebhookDataType(karooSystem, "webhook-one",0),
+            WebhookDataType(karooSystem, "webhook-one", applicationContext,0),
         )
     }
 

@@ -43,8 +43,8 @@ import timber.log.Timber
 abstract class WebhookDataTypeBase(
     protected val karooSystem: KarooSystemService,
     datatype: String,
-    protected val webhookIndex: Int,
-    protected val context: Context
+    protected val context: Context,
+    protected val webhookIndex: Int
 ) : DataTypeImpl("kactions", datatype) {
 
     private val glance = GlanceRemoteViews()
