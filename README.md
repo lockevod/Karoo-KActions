@@ -98,7 +98,7 @@ KActions allows you to configure webhooks to send data to external services when
 
 2. **Configure phone numbers**:
    - Add one phone numbers that will receive notifications.
-   - Numbers should be entered with E164 format (with the '+' sign and with the country code example: 34675123123).
+   - Numbers should be entered with E164 format (with the '+' sign and with the country code example: +34675123123).
 
 3. **Customize messages**:
    - Personalize messages for each type of event (start, end, pause, resumption).
