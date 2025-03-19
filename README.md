@@ -126,9 +126,10 @@ KActions allows you to configure webhooks to send data to external services when
 
 ## Privacy/Liability
 
-KActions does not store  personal information beyond what is necessary for its operation, obviously if you use a third part API (Whapi, CallmeBot, Resend, Textbelt or any information with webhooks) you're sharing this information with these services. KActions store information only in your Karoo device, but if you use a third party API, you need to understand you're sharing this info with third party service. 
-KActions doesn't have any relationship or partnership with Whapi, Callmebot, Resend or Textbelt, you need to read and accept their conditions. If you use KActions with any of these services, you accept this. 
-When you use Kactions you're agree you've all responsability with the information (and use) with his use. 
+- KActions does not store  personal information beyond what is necessary for its operation, obviously if you use a third part API (Whapi, CallmeBot, Resend, Textbelt or any information with webhooks) you're sharing this information with these services. KActions store information only in your Karoo device, but if you use a third party API, you need to understand you're sharing this info with third party service. 
+- KActions doesn't have any relationship or partnership with Whapi, Callmebot, Resend or Textbelt, you need to read and accept their conditions. If you use KActions with any of these services, you accept this. 
+- When you use Kactions you're agree you've all responsability with the information (and use), for example don't spam, be careful it you link a webhook to make actions, etc. Kactions has no warranties, if you aren't agree with this you cannot use it.
+- Please be careful with your personal information.
 
 ## Credits
 
