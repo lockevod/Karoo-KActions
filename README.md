@@ -1,6 +1,6 @@
 # KActions - Notification Extension for Karoo
 
-This extension for Karoo devices allows you to send automated notifications when you start, pause, resume or finish a bike ride. Now compatible with multiple messaging providers and with webhook support.
+This extension for Karoo devices allows you to send automated notifications when you start, pause, resume or finish a bike ride. Now compatible with multiple messaging providers and with webhook support (send custom actions from datafield).
 
 Compatible with Karoo 2 and Karoo 3 running Karoo OS version 1.524.2003 and later.
 
