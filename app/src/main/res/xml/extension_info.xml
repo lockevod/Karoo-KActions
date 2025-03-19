@@ -7,7 +7,7 @@
     <DataType
         description="@string/webhook_description_datatype"
         displayName="@string/webhook_datatype"
-        graphical="false"
-        icon=""
+        graphical="true"
+        icon="@drawable/ic_kactions"
         typeId="webhook-one" />
 </ExtensionInfo>

@@ -37,6 +37,7 @@ import com.enderthor.kActions.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import androidx.glance.action.actionParametersOf
+import io.hammerhead.karooext.models.ShowCustomStreamState
 import timber.log.Timber
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -55,8 +56,10 @@ abstract class WebhookDataTypeBase(
 
         val configJob = CoroutineScope(Dispatchers.IO).launch {
             emitter.onNext(UpdateGraphicConfig(showHeader = false))
+            emitter.onNext(ShowCustomStreamState(message = "", color = null))
             awaitCancellation()
         }
+
 
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
@@ -97,14 +100,36 @@ abstract class WebhookDataTypeBase(
         val status = webhookData?.status ?: WebhookStatus.NOT_AVAILABLE
         val name = webhookData?.name ?: ""
 
+        // Obtener strings directamente del contexto
+        val idleActionString = context.getString(R.string.webhook_idle_action)
+        val firstActionString = context.getString(R.string.webhook_first_action)
+        val executingActionString = context.getString(R.string.webhook_excuting_action)
+        val cancelActionString = context.getString(R.string.webhook_cancel_action)
+        val successActionString = context.getString(R.string.webhook_success_action)
+        val errorActionString = context.getString(R.string.webhook_error_action)
+        val notAvailableActionString = context.getString(R.string.webhook_notavailable_action)
+
+        // Determinar mensaje basado en estado
+        val webhookMessage = when (status) {
+            WebhookStatus.IDLE -> "$idleActionString\n$name"
+            WebhookStatus.FIRST -> firstActionString
+            WebhookStatus.EXECUTING -> executingActionString
+            WebhookStatus.CANCEL -> cancelActionString
+            WebhookStatus.SUCCESS -> successActionString
+            WebhookStatus.ERROR -> errorActionString
+            WebhookStatus.NOT_AVAILABLE -> notAvailableActionString
+        }
+
         return glance.compose(context, DpSize.Unspecified) {
             var modifier = GlanceModifier.fillMaxSize().padding(5.dp)
 
+            Timber.d("WebhookData: $webhookData")
             if (!config.preview && webhookData != null) {
 
                 val id = webhookData.id
                 val url = webhookData.url
                 val statusName = status.name
+                Timber.d("Dentro click WebhookData:")
 
                 modifier = modifier.clickable(
                     onClick = actionRunCallback<ExecuteWebhookAction>(
@@ -118,24 +143,9 @@ abstract class WebhookDataTypeBase(
             }
 
             Box(
-                modifier = GlanceModifier.fillMaxSize().padding(5.dp),
+                modifier = modifier,
                 contentAlignment = Alignment.Center
             ) {
-                val webhookMessage = when (status) {
-
-                    WebhookStatus.IDLE ->  stringResource(R.string.webhook_idle_action) + "\n" + name
-
-                    WebhookStatus.FIRST ->  stringResource(R.string.webhook_first_action)
-
-                    WebhookStatus.EXECUTING -> stringResource(R.string.webhook_excuting_action)
-
-                    WebhookStatus.CANCEL -> stringResource(R.string.webhook_cancel_action)
-
-                    WebhookStatus.SUCCESS -> stringResource(R.string.webhook_success_action)
-                    WebhookStatus.ERROR -> stringResource(R.string.webhook_error_action)
-
-                    WebhookStatus.NOT_AVAILABLE -> stringResource(R.string.webhook_notavailable_action)
-                }
 
                 Text(
                     text = webhookMessage, style = TextStyle(

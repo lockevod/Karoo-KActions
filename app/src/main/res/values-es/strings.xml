@@ -22,7 +22,7 @@
     <string name="connecting">Conectando...</string>
     <string name="send_test_message">Enviar mensaje de prueba</string>
     <string name="error_karoo_not_connected">Error: El sistema Karoo no está conectado</string>
-    <string name="test_message_content">Mensaje de prueba desde kNotify</string>
+    <string name="test_message_content">Mensaje de prueba desde KActions</string>
     <string name="test_message_sent">¡Mensaje de prueba enviado correctamente!</string>
     <string name="error_sending_message">Error al enviar mensaje. Revisa tu configuración.</string>
     <string name="settings_saved">Configuración guardada automáticamente</string>
@@ -107,4 +107,6 @@
     <string name="webhook_cancel_action">Acción Cancelada</string>
     <string name="webhook_description_datatype">Webhook</string>
     <string name="webhook_datatype">Webhook</string>
+
+    <string name="send_to">Se enviará a: </string>
 </resources>

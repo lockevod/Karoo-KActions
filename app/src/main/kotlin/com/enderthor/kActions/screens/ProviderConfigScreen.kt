@@ -22,6 +22,7 @@ import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.data.SenderConfig
 import com.enderthor.kActions.extension.managers.ConfigurationManager
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -63,7 +64,7 @@ fun ProviderConfigScreen() {
 
         launch {
             try {
-                configManager.loadPreferencesFlow().collect { configDatas ->
+                configManager.loadPreferencesFlow().collectLatest { configDatas ->
                     configData = configDatas.firstOrNull()
 
                     // Actualizar las variables con los datos de configuración
@@ -86,7 +87,7 @@ fun ProviderConfigScreen() {
         }
         launch {
             try {
-                configManager.loadSenderConfigFlow().collect { configs ->
+                configManager.loadSenderConfigFlow().collectLatest { configs ->
 
                     providerConfigs = configs.associateBy { it.provider }
 
@@ -182,6 +183,32 @@ fun ProviderConfigScreen() {
         }
     }
 
+    fun saveCurrentProviderConfig() {
+        if (ignoreAutoSave) return
+
+        scope.launch {
+            try {
+                // Guardar solo el proveedor actual
+                val currentConfig = providerConfigs[selectedProvider] ?: SenderConfig(selectedProvider, "")
+                val updatedConfig = currentConfig.copy(apiKey = apiKey)
+
+                val updatedConfigs = providerConfigs.values.toMutableList()
+
+                // Reemplazar o añadir la configuración actual
+                val index = updatedConfigs.indexOfFirst { it.provider == selectedProvider }
+                if (index >= 0) {
+                    updatedConfigs[index] = updatedConfig
+                } else {
+                    updatedConfigs.add(updatedConfig)
+                }
+
+                configManager.saveSenderConfig(updatedConfigs)
+            } catch (e: Exception) {
+                Timber.e(e, "Error guardando configuración actual")
+            }
+        }
+    }
+
     Scaffold { padding ->
         Column(
             modifier = Modifier
@@ -212,9 +239,7 @@ fun ProviderConfigScreen() {
                                 onClick = {
                                     if (selectedProvider != ProviderType.TEXTBELT) {
                                         // Guardar la configuración actual antes de cambiar
-                                        if (!ignoreAutoSave) {
-                                            saveData()
-                                        }
+                                        saveCurrentProviderConfig()
 
                                         // Cambiar al nuevo proveedor
                                         selectedProvider = ProviderType.TEXTBELT
@@ -238,9 +263,7 @@ fun ProviderConfigScreen() {
                                 onClick = {
                                     if (selectedProvider != ProviderType.CALLMEBOT) {
                                         // Guardar la configuración actual antes de cambiar
-                                        if (!ignoreAutoSave) {
-                                            saveData()
-                                        }
+                                        saveCurrentProviderConfig()
 
                                         // Cambiar al nuevo proveedor
                                         selectedProvider = ProviderType.CALLMEBOT
@@ -264,9 +287,7 @@ fun ProviderConfigScreen() {
                                 onClick = {
                                     if (selectedProvider != ProviderType.WHAPI) {
                                         // Guardar la configuración actual antes de cambiar
-                                        if (!ignoreAutoSave) {
-                                            saveData()
-                                        }
+                                        saveCurrentProviderConfig()
 
                                         // Cambiar al nuevo proveedor
                                         selectedProvider = ProviderType.WHAPI

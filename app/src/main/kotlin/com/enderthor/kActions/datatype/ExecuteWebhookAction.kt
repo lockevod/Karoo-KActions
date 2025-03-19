@@ -24,6 +24,7 @@ class ExecuteWebhookAction : ActionCallback {
         parameters: ActionParameters
     ) {
         try {
+            Timber.d("Ejecutando webhook con ID: ${parameters[WEBHOOK_ID]}")
             val extension = KActionsExtension.getInstance()
             val webhookId = parameters[WEBHOOK_ID]
             val currentStatusStr = parameters[CURRENT_STATUS]

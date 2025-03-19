@@ -594,12 +594,12 @@ fun ConfigurationScreen() {
 
                     if (selectedProvider == ProviderType.RESEND) {
                         Text(
-                            "Se enviará a: $email1",
+                            stringResource(R.string.send_to) + email1,
                             style = MaterialTheme.typography.bodyMedium
                         )
                     } else {
                         Text(
-                            "Se enviará a: $phoneNumber1",
+                            stringResource(R.string.send_to) + phoneNumber1,
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
