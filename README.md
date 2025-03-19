@@ -120,13 +120,14 @@ KActions allows you to configure webhooks to send data to external services when
 ## Known Issues
 
 - Notifications may be delayed if there are connectivity issues.
-- Your Karoo needs an internet connection for messages to be sent correctly.
+- Your Karoo needs an internet connection for messages to be sent correctly (mobile connected and linked with companion app if you've a karoo 3)
 - Each provider has its own usage limitations, especially in free plans.
 - Make sure you have sufficient balance if using paid plans.
 
 ## Privacy
 
 KActions does not store or share personal information beyond what is necessary for its operation. Phone numbers and messages are stored only on your Karoo device.
+KActions doesn't have any relationship or partnership with Whapi, Callmebot, Resend or Textbelt, you need to read and accept their conditions. If you use KActions with any of these services, you accept this.
 
 ## Credits
 
