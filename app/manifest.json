@@ -1,11 +1,11 @@
 {
-  "label": "KNotify",
-  "packageName": "com.enderthor.knotify",
-  "latestApkUrl": "https://github.com/lockevod/Karoo-KNotify/releases/latest/download/knotify.apk",
-  "iconUrl": "https://github.com/lockevod/Karoo-KNotify/releases/latest/download/karoo-notify.png",
+  "label": "KActions",
+  "packageName": "com.enderthor.kactions",
+  "latestApkUrl": "https://github.com/lockevod/Karoo-KActions/releases/latest/download/kactions.apk",
+  "iconUrl": "https://github.com/lockevod/Karoo-KActions/releases/latest/download/karoo-actions.png",
   "latestVersion": "0.1",
   "latestVersionCode": 202503151,
   "developer": "Enderthor",
-  "description": "This extension for Karoo devices allows to send automated whatsapp messages when you start, stop, pause or resume your activity.",
+  "description": "This extension for Karoo devices allows to send automated whatsapp, sms or mail messages when you start, stop your activity. You can send alse custom webhooks.",
   "releaseNotes": "First release. Alpha release"
 }

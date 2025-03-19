@@ -38,6 +38,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import androidx.glance.action.actionParametersOf
 import timber.log.Timber
+import kotlin.coroutines.cancellation.CancellationException
 
 @OptIn(ExperimentalGlanceRemoteViewsApi::class)
 abstract class WebhookDataTypeBase(
@@ -64,7 +65,13 @@ abstract class WebhookDataTypeBase(
                         val result = updateWebhookView(context, webhooks[webhookIndex], config)
                         emitter.updateView(result.remoteViews)
                     }
-                } catch (e: Exception) {
+                } catch (e: CancellationException) {
+
+                    Timber.d(e, "No hacemos nada, cancelacion normal")
+
+                }
+                catch (e: Exception) {
+
                     Timber.e(e, "Error cargando datos del webhook")
                     updateWebhookView(context, null, config).let { result ->
                         emitter.updateView(result.remoteViews)

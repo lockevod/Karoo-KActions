@@ -1,8 +1,8 @@
-# kNotify - Karoo Notification Extension
+# KActions - Notification Extension for Karoo
 
-This extension for Karoo devices allows you to send automatic WhatsApp notifications to selected contacts when you start, pause, resume, or finish a bike ride.
+This extension for Karoo devices allows you to send automated notifications when you start, pause, resume or finish a bike ride. Now compatible with multiple messaging providers and with webhook support.
 
-Compatible with Karoo 2 and Karoo 3 devices running Karoo OS version 1.524.2003 and later.
+Compatible with Karoo 2 and Karoo 3 running Karoo OS version 1.524.2003 and later.
 
 <a href="https://www.buymeacoffee.com/enderthor" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
@@ -10,86 +10,137 @@ Compatible with Karoo 2 and Karoo 3 devices running Karoo OS version 1.524.2003 
 
 ### For Karoo 2:
 
-1. Download the APK from the releases.
-2. Prepare your Karoo for sideloading by following the [step-by-step guide](https://www.dcrainmaker.com/2021/02/how-to-sideload-android-apps-on-your-hammerhead-karoo-1-karoo-2.html) by DC Rainmaker.
-3. Install the app using the command `adb install knotify.apk`.
+1. Download the APK from the releases section.
+2. Prepare your Karoo for sideloading by following [DC Rainmaker's step-by-step guide](https://www.dcrainmaker.com/2021/02/how-to-sideload-android-apps-on-your-hammerhead-karoo-1-karoo-2.html).
+3. Install the application with the command `adb install kactions.apk`.
 
 ### For Karoo 3 (v > 1.527):
 
 1. Open the APK download link from your mobile device.
 2. Share the file with the Hammerhead Companion app.
-3. Install the app through the Hammerhead Companion app.
+3. Install the app through Hammerhead Companion.
 
-## Whapi API Configuration
+## Supported Messaging Providers
 
-kNotify uses the Whapi service to send WhatsApp messages without requiring your phone to be connected. To set this up:
+KActions supports several providers to send notifications:
+
+### WhatsApp (WHAPI)
 
 1. **Create a Whapi account**:
-  - Visit [Whapi.io](https://whapi.io/) and register for an account. You can use your google account.
-  - You can see the dashboard and you'll have a trial channel created. You can use, but this channel is only for some days (you've to pay if you want to use more time).
-  - You need to create other channel and change from normal to sandbox channel. This sandbox channel allows to send every day 150 messages (1000 month)
-  - The free plan allows sending up to 20 messages per day, which is sufficient for most users.
+   - Visit [Whapi.io](https://whapi.io/) and register.
+   - The free plan allows you to send up to 20 messages per day.
 
-2. **Get your API Key and link your phone **:
-  - If you enter in this channel you can see the api (you need to use this in knotify) and you can also see device.
+2. **Get your API Key**:
+   - Once registered, go to the "API Keys" section in your dashboard.
+   - Create a new API Key or copy the existing one.
 
-3. **Configure kNotify**:
-  - Open kNotify on your Karoo.
-  - Paste your API Key in the "WHAPI API Key" field.
-  - Settings are saved automatically.
+3. **Configure KActions**:
+   - Open KActions on your Karoo.
+   - Select "WhatsApp (WHAPI)" as the provider.
+   - Paste your API Key in the corresponding field.
 
-4. **Test the connection**:
-  - Enter a test phone number (format: 34675123123, without the '+' sign).
-  - Click "Send test message" to verify everything works correctly.
+### WhatsApp (CallMeBot)
+
+1. **Get your CallMeBot API Key**:
+   - Visit [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/) and follow the instructions.
+   - You'll need to register your phone number with CallMeBot.
+
+2. **Configure KActions**:
+   - Open KActions on your Karoo.
+   - Select "WhatsApp (CallMeBot)" as the provider.
+   - Enter your CallMeBot API Key.
+
+### SMS (TextBelt)
+
+1. **About TextBelt**:
+   - TextBelt offers worldwide SMS sending.
+   - The free version allows 1 SMS per day.
+   - For more messages, you need to purchase credits at [TextBelt](https://textbelt.com/).
+
+2. **Configure TextBelt in KActions**:
+   - Select "SMS (TextBelt)" as the provider.
+   - To use the free version, leave the API Key field empty or type "textbelt".
+   - If you've purchased credits, enter your API Key.
+
+### Email (Resend)
+
+1. **Create a Resend account**:
+   - Visit [Resend.com](https://resend.com) and register.
+   - Get your API Key from the dashboard.
+
+2. **Configure Resend in KActions**:
+   - Select "Email (Resend)" as the provider.
+   - Enter your API Key.
+   - Configure the sender and recipient email addresses.
+
+## Webhook Configuration
+
+KActions allows you to configure webhooks to send data to external services when events occur during your ride:
+
+1. **Enable webhooks**:
+   - In the webhook configuration screen, activate the "Enable webhook" option.
+   - Enter a name to identify your webhook.
+
+2. **Configure URL and data**:
+   - Enter the URL of the service that will receive the data.
+   - Define the POST request body in JSON format.
+
+3. **Triggering events**:
+   - Select which events will trigger the webhook: start, pause, resume, or end of ride.
+
+4. **Location filter (optional)**:
+   - You can configure the webhook to activate only when you're at a specific location.
+
+5. **Webhook testing**:
+   - Use the "Send test to webhook" function to verify the configuration.
 
 ## Usage
 
 1. **Configure notification options**:
-  - Enable or disable notifications for different events: ride start, end, pause, and resume.
+   - Enable or disable notifications for different events: start, end, pause, and resumption of the ride.
 
 2. **Configure phone numbers**:
-  - Add up to 3 phone numbers that will receive notifications.
-  - Numbers must be entered without the '+' sign and with country code (example: 34675123123).
+   - Add up to 3 phone numbers that will receive notifications.
+   - Numbers should be entered without the '+' sign and with the country code (example: 34675123123).
 
 3. **Customize messages**:
-  - Personalize messages for each event type (start, end, pause, resume).
-  - Messages can include custom text according to your preferences.
-  - Enter you Karoo live key. For example if you live url is https://dashboard.hammerhead.io/live/ZC35WnpU you only have to fill ZC35WnpU
+   - Personalize messages for each type of event (start, end, pause, resumption).
 
 4. **During your ride**:
-  - Once configured, kNotify will automatically send messages when you start, pause, resume, or end a ride on your Karoo  with your tracking url (only if you've filled key before)
-  - No need to interact with the app during your ride; everything works in the background.
+   - Once configured, KActions will automatically send messages when you start, pause, resume, or end a ride on your Karoo.
+   - You don't need to interact with the app during the ride; everything works in the background.
 
 ## Features
 
-- Automatic notification sending to preset numbers.
-- Customizable messages for each event type.
-- Control of minimum time between messages of the same type (3 minutes by default).
-- Support for multiple languages (English and Spanish).
+- Automatic sending of notifications to preset numbers.
+- Customizable messages for each type of event.
+- Control of minimum time between messages of the same type.
+- Support for multiple languages.
 - Integration with Karoo Live for real-time tracking.
-- Knotify interacts with companion app, then you need to have your mobile and companion app (hammerhead official app) active and karoo connected to mobile.
+- Multiple messaging providers (WhatsApp, SMS, email).
+- Webhooks for integration with external services.
 
 ## Known Issues
 
-- Notifications may be delayed if there are connectivity issues. Knotify will retry several times if there is some connectivity problem.
-- Your Karoo needs internet connection for messages to be sent successfully.
-- The free Whapi service has a limit of 150 messages per day. You cannot use for business use, please read Whapi conditions before use it.
-- Make sure you have sufficient balance in your Whapi account if using a paid plan. 
+- Notifications may be delayed if there are connectivity issues.
+- Your Karoo needs an internet connection for messages to be sent correctly.
+- Each provider has its own usage limitations, especially in free plans.
+- Make sure you have sufficient balance if using paid plans.
 
 ## Privacy
 
-kNotify does not store or share any personal information beyond what's necessary for its operation. Phone numbers and messages are stored only on your Karoo device.
-KNotify use Whapi services but Knotify hasn't any relationship with Whapi. Whapi is a known service but I cannot provide any support, responsability with Whapi service, conditions and if they have any security issue in whapi service.
-Whapi works as a "gateway", you use a api and send messages linking your whatsapp account to Whapi service. Please, if you don't understand this, don't use Knotify.
- 
+KActions does not store or share personal information beyond what is necessary for its operation. Phone numbers and messages are stored only on your Karoo device.
+
 ## Credits
 
 - Developed by EnderThor.
-- Uses the Whapi API for message sending. Please read Whapi privacy policy, if you use Knotify you're agree with this, please you have to uninstall knotify if you aren't agree with this.
+- Uses Whapi, CallMeBot, TextBelt, and Resend APIs for message sending.
 - Uses the Karoo Extensions Framework developed by Hammerhead.
 
 ## Useful Links
 
 - [Whapi Documentation](https://docs.whapi.io/)
+- [CallMeBot API](https://www.callmebot.com/blog/free-api-whatsapp-messages/)
+- [TextBelt SMS API](https://textbelt.com/)
+- [Resend Email API](https://resend.com)
 - [Karoo Extensions Framework](https://github.com/hammerheadnav/karoo-ext)
-- [Whapi Privacy Policy](https://whapi.io/privacy-policy)

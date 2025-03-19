@@ -29,9 +29,9 @@
     <string name="notification_delay">Delay between send a new start ride message</string>
 
     <!-- PhonesScreen -->
-    <string name="phone_numbers">Phone Numbers</string>
-    <string name="enter_up_to_3_phones">Enter up to 3 phone numbers that will receive notifications</string>
-    <string name="number_1">Number 1</string>
+    <string name="phone_numbers">Phone Number</string>
+    <string name="enter_up_to_3_phones">Enter phone number that will receive notifications</string>
+    <string name="number_1">Number</string>
     <string name="number_2">Number 2</string>
     <string name="number_3">Number 3</string>
     <string name="error_no_plus">Phone number must be entered without the \'+\' symbol and with country code. Example: 34675123123</string>
@@ -61,9 +61,11 @@
     <string name="min_delay_between_notifications">Minimum delay between notifications (minutes)</string>
 
     <string name="whapi_provider">WhatsApp (WHAPI)</string>
+    <string name="callmebot_provider">WhatsApp (Callmebot)</string>
     <string name="textbelt_provider">SMS (TextBelt)</string>
     <string name="resend_provider">Email (Resend)</string>
     <string name="configure_whapi">Configure your WHAPI API key</string>
+    <string name="configure_callmebot">Configure your CallMeBot API key</string>
     <string name="configure_textbelt">Configure your TextBelt API key</string>
     <string name="configure_resend">Configure your Resend API key</string>
     <string name="textbelt_free_warning">You are using the free tier of TextBelt which allows only 1 SMS per day</string>
@@ -72,6 +74,8 @@
     <string name="textbelt_free_delay_warning">Minimum delay TextBelt free is 24 hours.</string>
     <string name="webhook_test_success">Test webhook ok </string>
     <string name="webhook_test_error">Error to send webhook</string>
+    <string name="email_1">Email</string>
+    <string name="email_addresses">Email address</string>
 
     <!-- WebhookScreen -->
     <string name="webhook_config_title">Webhook Configuration</string>

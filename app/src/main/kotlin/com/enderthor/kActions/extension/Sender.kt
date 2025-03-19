@@ -16,21 +16,28 @@ class Sender(
 ) {
 
     suspend fun sendNotification(phoneNumber: String? = null, message: String): Boolean {
-        val config = configManager.loadSenderConfigFlow().first()
-        val senderConfig = config.firstOrNull() ?: run {
-            Timber.e("No hay configuración del proveedor disponible")
-            return false
-        }
+
+        val configData = configManager.loadPreferencesFlow().first().firstOrNull()
+        val activeProvider = configData?.activeProvider ?: ProviderType.CALLMEBOT
+
+        val senderConfigs = configManager.loadSenderConfigFlow().first()
+        val senderConfig = senderConfigs.find { it.provider == activeProvider }
+            ?: senderConfigs.firstOrNull()
+            ?: run {
+                Timber.e("No hay configuración del proveedor disponible")
+                return false
+            }
 
         return when (senderConfig.provider) {
-            ProviderType.WHAPI -> sendMessage(phoneNumber ?: return false, message)
+            ProviderType.CALLMEBOT -> sendMessage(phoneNumber ?: return false, message, activeProvider)
+            ProviderType.WHAPI -> sendMessage(phoneNumber ?: return false, message, activeProvider)
             ProviderType.TEXTBELT -> sendSMSMessage(phoneNumber ?: return false, message)
             ProviderType.RESEND -> sendEmailMessage(message)
         }
     }
 
 
-   suspend fun sendMessage(phoneNumber: String, message: String): Boolean {
+   suspend fun sendMessage(phoneNumber: String, message: String,senderProvider: ProviderType): Boolean {
         var totalAttempts = 0
         var currentCycle = 0
 
@@ -52,7 +59,7 @@ class Sender(
 
 
                     val result = withTimeoutOrNull(30_000L) {
-                        attemptSendMessage(phoneNumber, message)
+                        attemptSendMessage(phoneNumber, message,senderProvider)
                     } == true
 
                     if (result) {
@@ -81,15 +88,17 @@ class Sender(
 
     suspend fun sendSMSMessage(phoneNumber: String, message: String): Boolean {
         try {
-            val config = configManager.loadSenderConfigFlow().first().firstOrNull() ?: return false
-
+            val configs = configManager.loadSenderConfigFlow().first()
+            val config = configs.find { it.provider == ProviderType.TEXTBELT }
+                ?: configs.firstOrNull()
+                ?: return false
 
             if (karooSystem == null) {
                 Timber.e("KarooSystemService es necesario para enviar mensajes")
                 return false
             }
 
-            val formattedPhone = phoneNumber.trim()
+            val formattedPhone = "+" +phoneNumber.trim()
 
             val jsonBody = buildJsonObject {
                 put("phone", formattedPhone)
@@ -127,7 +136,11 @@ class Sender(
 
     suspend fun sendEmailMessage(message: String): Boolean {
         try {
-            val config = configManager.loadSenderConfigFlow().first().firstOrNull() ?: return false
+            val configs = configManager.loadSenderConfigFlow().first()
+            val config = configs.find { it.provider == ProviderType.RESEND }
+                ?: configs.firstOrNull()
+                ?: return false
+
             val configData = configManager.loadPreferencesFlow().first().firstOrNull() ?: return false
 
 
@@ -181,45 +194,76 @@ class Sender(
     }
 
 
-    private suspend fun attemptSendMessage(phoneNumber: String, message: String): Boolean {
+    private suspend fun attemptSendMessage(phoneNumber: String, message: String,senderProvider: ProviderType): Boolean {
         try {
-            val config = configManager.loadSenderConfigFlow().first().firstOrNull() ?: return false
-
+            val configs = configManager.loadSenderConfigFlow().first()
+            val config = configs.find { it.provider == senderProvider }
+                ?: configs.firstOrNull()
+                ?: return false
             if (karooSystem == null) {
                 Timber.Forest.e("KarooSystemService is required to send messages")
                 return false
             }
 
 
-            val formattedPhone = phoneNumber.trim()
+            val formattedPhone = if (senderProvider == ProviderType.WHAPI) "+" + phoneNumber.trim() else phoneNumber.trim()
 
-            val jsonBody = buildJsonObject {
-                put("to", formattedPhone)
-                put("body", message)
-            }.toString()
+            when (senderProvider) {
+                ProviderType.WHAPI -> {
+                    val jsonBody = buildJsonObject {
+                        put("to", formattedPhone)
+                        put("body", message)
+                    }.toString()
 
+                    val url = "https://gate.whapi.cloud/messages/text"
 
-            val url = "https://gate.whapi.cloud/messages/text"
+                    val headers = mapOf(
+                        "Content-Type" to "application/json",
+                        "Authorization" to "Bearer ${config.apiKey}"
+                    )
 
-            val headers = mapOf(
-                "Content-Type" to "application/json",
-                "Authorization" to "Bearer ${config.apiKey}"
-            )
+                    val response = karooSystem.makeHttpRequest(
+                        method = "POST",
+                        url = url,
+                        headers = headers,
+                        body = jsonBody.toByteArray()
+                    ).first()
 
-            val response = karooSystem.makeHttpRequest(
-                method = "POST",
-                url = url,
-                headers = headers,
-                body = jsonBody.toByteArray()
-            ).first()
+                    val responseText = response.body?.toString(Charsets.UTF_8) ?: ""
+                    return if (response.statusCode in 200..299 || responseText.contains("message_id")) {
+                        Timber.Forest.d("WhatsApp message sent successfully to $formattedPhone")
+                        true
+                    } else {
+                        Timber.Forest.e("Error in WhAPI response: Code ${response.statusCode}, $responseText")
+                        false
+                    }
+                }
 
-            val responseText = response.body?.toString(Charsets.UTF_8) ?: ""
-            return if (response.statusCode in 200..299 || responseText.contains("message_id")) {
-                Timber.Forest.d("WhatsApp message sent successfully to $formattedPhone")
-                true
-            } else {
-                Timber.Forest.e("Error in WhAPI response: Code ${response.statusCode}, $responseText")
-                false
+                ProviderType.CALLMEBOT -> {
+                    val encodedMessage = java.net.URLEncoder.encode(message, "UTF-8")
+                    val url = "https://api.callmebot.com/whatsapp.php?phone=$formattedPhone&text=$encodedMessage&apikey=${config.apiKey}"
+
+                    val response = karooSystem.makeHttpRequest(
+                        method = "GET",
+                        url = url,
+                        headers = emptyMap(),
+                        body = null
+                    ).first()
+
+                    val responseText = response.body?.toString(Charsets.UTF_8) ?: ""
+                    return if (response.statusCode in 200..299 && !responseText.contains("ERROR")) {
+                        Timber.Forest.d("CallMeBot message sent successfully to $formattedPhone")
+                        true
+                    } else {
+                        Timber.Forest.e("Error in CallMeBot response: Code ${response.statusCode}, $responseText")
+                        false
+                    }
+                }
+
+                else -> {
+                    Timber.Forest.e("Proveedor no soportado: $senderProvider")
+                    return false
+                }
             }
         } catch (e: Exception) {
             Timber.Forest.e(e, "Error sending WhatsApp message: ${e.message}")

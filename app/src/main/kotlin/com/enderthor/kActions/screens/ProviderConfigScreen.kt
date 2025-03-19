@@ -35,15 +35,19 @@ fun ProviderConfigScreen() {
 
     var senderConfig by remember { mutableStateOf<SenderConfig?>(null) }
     var configData by remember { mutableStateOf<ConfigData?>(null) }
-    var selectedProvider by remember { mutableStateOf(ProviderType.WHAPI) }
+    var selectedProvider by remember { mutableStateOf(ProviderType.TEXTBELT) }
     var apiKey by remember { mutableStateOf("") }
+    var testPhoneNumber by remember { mutableStateOf("") } // Esta variable ya no será necesaria para entrada
+    var savedPhoneNumber by remember { mutableStateOf("") } // Para guardar el teléfono de configuración
+    var savedEmail by remember { mutableStateOf("") } // Para guardar el email de configuración
     var emailTo by remember { mutableStateOf("") }
-    var emailFrom by remember { mutableStateOf("") }
-    var testPhoneNumber by remember { mutableStateOf("") }
 
     var isLoading by remember { mutableStateOf(false) }
     var statusMessage by remember { mutableStateOf<String?>(null) }
     var ignoreAutoSave by remember { mutableStateOf(true) }
+
+    var providerConfigs by remember { mutableStateOf<Map<ProviderType, SenderConfig>>(emptyMap()) }
+
 
     val test_message_content = stringResource(R.string.test_message_content)
     val error_sending_message = stringResource(R.string.error_sending_message)
@@ -55,30 +59,60 @@ fun ProviderConfigScreen() {
 
 
     LaunchedEffect(Unit) {
+
+
+        launch {
+            try {
+                configManager.loadPreferencesFlow().collect { configDatas ->
+                    configData = configDatas.firstOrNull()
+
+
+                    if (configData?.phoneNumbers?.isNotEmpty() == true) {
+                        savedPhoneNumber = configData?.phoneNumbers?.first() ?: ""
+                    }
+
+                    if (configData?.emails?.isNotEmpty() == true) {
+                        savedEmail = configData?.emails?.first() ?: ""
+                        emailTo = savedEmail
+                    }
+
+                    val newSelectedProvider = configData?.activeProvider ?: ProviderType.TEXTBELT
+                    if (selectedProvider != newSelectedProvider) {
+                        selectedProvider = newSelectedProvider
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error cargando configuración")
+            }
+        }
         launch {
             try {
                 configManager.loadSenderConfigFlow().collect { configs ->
-                    val savedConfig = configs.firstOrNull()
-                    senderConfig = savedConfig
-                    selectedProvider = configData?.activeProvider ?: ProviderType.WHAPI
-                    apiKey = savedConfig?.apiKey ?: ""
+
+                    providerConfigs = configs.associateBy { it.provider }
 
 
-                    configManager.loadPreferencesFlow().collect { configDatas ->
-                        configData = configDatas.firstOrNull()
-                        if (configData?.emails?.isNotEmpty() == true) {
-                            emailFrom = configData?.emails?.getOrNull(0) ?: ""
-                            emailTo = configData?.emails?.getOrNull(1) ?: ""
-                        }
-                    }
+                    val config = providerConfigs[selectedProvider]
+                    apiKey = config?.apiKey ?: ""
+                    senderConfig = config
                 }
 
                 delay(500)
                 ignoreAutoSave = false
             } catch (e: Exception) {
-                Timber.e(e, "Error cargando configuración")
+                Timber.e(e, "Error cargando configuración de proveedores")
             }
         }
+    }
+
+    fun updateFieldsForProvider() {
+        val config = providerConfigs[selectedProvider]
+        apiKey = config?.apiKey ?: ""
+        senderConfig = config
+    }
+
+    LaunchedEffect(selectedProvider) {
+        updateFieldsForProvider()
     }
 
 
@@ -102,23 +136,28 @@ fun ProviderConfigScreen() {
                     configManager.savePreferences(mutableListOf(updatedConfig))
                 }
 
-                val updatedSenderConfig = senderConfig?.copy(
-                    provider = selectedProvider,
-                    apiKey = apiKey
-                ) ?: SenderConfig(
-                    provider = selectedProvider,
-                    apiKey = apiKey
-                )
+                val updatedConfigs = ProviderType.entries.map { providerType ->
+                    if (providerType == selectedProvider) {
 
-                configManager.saveSenderConfig(updatedSenderConfig)
+                        SenderConfig(
+                            provider = selectedProvider,
+                            apiKey = apiKey
+                        )
+                    } else {
+
+                        providerConfigs[providerType] ?: SenderConfig(provider = providerType)
+                    }
+                }
+
+                configManager.saveSenderConfig(updatedConfigs.first())
 
 
 
                 if (selectedProvider == ProviderType.RESEND) {
                     val updatedConfigData = configData?.copy(
-                        emails = listOf(emailFrom.trim(), emailTo.trim())
+                        emails = listOf(emailTo.trim())
                     ) ?: ConfigData(
-                        emails = listOf(emailFrom.trim(), emailTo.trim())
+                        emails = listOf(emailTo.trim())
                     )
 
                     configManager.savePreferences(mutableListOf(updatedConfigData))
@@ -141,14 +180,22 @@ fun ProviderConfigScreen() {
             isLoading = true
             statusMessage = null
 
+            val contactToUse = if (selectedProvider == ProviderType.RESEND) savedEmail else savedPhoneNumber
+
             try {
                 val success = when (selectedProvider) {
+                    ProviderType.CALLMEBOT -> sender.sendMessage(
+                        phoneNumber = contactToUse,
+                        message = test_message_content,
+                        ProviderType.CALLMEBOT
+                    )
                     ProviderType.WHAPI -> sender.sendMessage(
-                        phoneNumber = testPhoneNumber,
-                        message = test_message_content
+                        phoneNumber = contactToUse,
+                        message = test_message_content,
+                        ProviderType.WHAPI
                     )
                     ProviderType.TEXTBELT -> sender.sendSMSMessage(
-                        phoneNumber = testPhoneNumber,
+                        phoneNumber = contactToUse,
                         message = test_message_content
                     )
                     ProviderType.RESEND -> sender.sendEmailMessage(
@@ -157,7 +204,7 @@ fun ProviderConfigScreen() {
                 }
 
                 statusMessage = if (success) test_message_sent
-                               else error_sending_message
+                else error_sending_message
             } catch (e: Exception) {
                 statusMessage = "Error: ${e.message}"
             } finally {
@@ -192,6 +239,38 @@ fun ProviderConfigScreen() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             RadioButton(
+                                selected = selectedProvider == ProviderType.TEXTBELT,
+                                onClick = {
+                                    selectedProvider = ProviderType.TEXTBELT
+                                    saveData()
+                                }
+                            )
+                            Text(
+                                stringResource(R.string.textbelt_provider),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            RadioButton(
+                                selected = selectedProvider == ProviderType.CALLMEBOT,
+                                onClick = {
+                                    selectedProvider = ProviderType.CALLMEBOT
+                                    saveData()
+                                }
+                            )
+                            Text(
+                                stringResource(R.string.callmebot_provider),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            RadioButton(
                                 selected = selectedProvider == ProviderType.WHAPI,
                                 onClick = {
                                     selectedProvider = ProviderType.WHAPI
@@ -204,22 +283,7 @@ fun ProviderConfigScreen() {
                             )
                         }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            RadioButton(
-                                selected = selectedProvider == ProviderType.TEXTBELT,
-                                onClick = {
-                                    selectedProvider = ProviderType.TEXTBELT
-                                    saveData()
-                                }
-                            )
-                            Text(
-                                stringResource(R.string.textbelt_provider),
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
+
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -253,6 +317,23 @@ fun ProviderConfigScreen() {
                     )
 
                     when (selectedProvider) {
+                        ProviderType.CALLMEBOT -> {
+                            Text(stringResource(R.string.configure_callmebot))
+                            OutlinedTextField(
+                                value = apiKey,
+                                onValueChange = {
+                                    apiKey = it
+                                    saveData()
+                                },
+                                label = { Text(stringResource(R.string.api_key)) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .onFocusChanged { if (!it.isFocused) saveData() },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(onDone = { saveData() })
+                            )
+                        }
                         ProviderType.WHAPI -> {
                             Text(stringResource(R.string.configure_whapi))
                             OutlinedTextField(
@@ -321,26 +402,6 @@ fun ProviderConfigScreen() {
                             )
 
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(stringResource(R.string.email_from))
-                            OutlinedTextField(
-                                value = emailFrom,
-                                onValueChange = {
-                                    emailFrom = it
-                                    saveData()
-                                },
-                                label = { Text(stringResource(R.string.email_from)) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .onFocusChanged { if (!it.isFocused) saveData() },
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Email,
-                                    imeAction = ImeAction.Done
-                                ),
-                                keyboardActions = KeyboardActions(onDone = { saveData() })
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
                             Text(stringResource(R.string.email_to))
                             OutlinedTextField(
                                 value = emailTo,
@@ -364,7 +425,6 @@ fun ProviderConfigScreen() {
                 }
             }
 
-            // Test del mensaje
             if (apiKey.isNotBlank()) {
                 Card {
                     Column(
@@ -377,17 +437,14 @@ fun ProviderConfigScreen() {
                         )
 
                         if (selectedProvider != ProviderType.RESEND) {
-                            OutlinedTextField(
-                                value = testPhoneNumber,
-                                onValueChange = { testPhoneNumber = it },
-                                label = { Text(stringResource(R.string.test_phone_number)) },
-                                placeholder = { Text(stringResource(R.string.phone_placeholder)) },
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Phone,
-                                    imeAction = ImeAction.Done
-                                )
+                            Text(
+                                "Se enviará a: $savedPhoneNumber",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        } else {
+                            Text(
+                                "Se enviará a: $savedEmail",
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
 
@@ -395,7 +452,8 @@ fun ProviderConfigScreen() {
                             onClick = { sendTestMessage() },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isLoading &&
-                                    (selectedProvider == ProviderType.RESEND || testPhoneNumber.isNotBlank())
+                                    ((selectedProvider == ProviderType.RESEND && savedEmail.isNotBlank()) ||
+                                            (selectedProvider != ProviderType.RESEND && savedPhoneNumber.isNotBlank()))
                         ) {
                             Text(stringResource(R.string.send_test_message))
                         }
