@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -51,6 +53,9 @@ fun WebhookConfigScreen() {
     var ignoreAutoSave by remember { mutableStateOf(true) }
     var isConnecting by remember { mutableStateOf(false) }
 
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     val settingsSaved = stringResource(R.string.settings_saved)
     val testSuccess = stringResource(R.string.webhook_test_success)
     val testError = stringResource(R.string.webhook_test_error)
@@ -90,7 +95,7 @@ fun WebhookConfigScreen() {
         }
     }
 
-    fun saveData() {
+   fun saveData() {
         if (ignoreAutoSave) return
 
         scope.launch {
@@ -226,47 +231,65 @@ fun WebhookConfigScreen() {
                         value = name,
                         onValueChange = {
                             name = it
-                            saveData()
                         },
                         label = { Text(stringResource(R.string.webhook_name)) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .onFocusChanged { if (!it.isFocused) saveData() },
+                            .onFocusChanged {  if (!it.isFocused) {
+                                keyboardController?.hide()
+                                saveData()
+                            } },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { saveData() })
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
                     )
 
                     OutlinedTextField(
                         value = url,
                         onValueChange = {
                             url = it
-                            saveData()
                         },
                         label = { Text(stringResource(R.string.webhook_url)) },
                         placeholder = { Text(stringResource(R.string.webhook_url_placeholder)) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .onFocusChanged { if (!it.isFocused) saveData() },
+                            .onFocusChanged {  if (!it.isFocused) {
+                                keyboardController?.hide()
+                                saveData()
+                            } },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { saveData() })
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
                     )
 
                     OutlinedTextField(
                         value = postBody,
                         onValueChange = {
                             postBody = it
-                            saveData()
                         },
                         label = { Text(stringResource(R.string.webhook_post_body)) },
                         placeholder = { Text(stringResource(R.string.webhook_post_body_placeholder)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp)
-                            .onFocusChanged { if (!it.isFocused) saveData() },
+                            .onFocusChanged {  if (!it.isFocused) {
+                                keyboardController?.hide()
+                                saveData()
+                            } },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { saveData() })
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
                     )
                 }
             }
@@ -308,34 +331,6 @@ fun WebhookConfigScreen() {
                             }
                         )
                     }
-
-                   /*Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.webhook_on_pause), modifier = Modifier.weight(1f))
-                        Switch(
-                            checked = actionOnPause,
-                            onCheckedChange = {
-                                actionOnPause = it
-                                saveData()
-                            }
-                        )
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.webhook_on_resume), modifier = Modifier.weight(1f))
-                        Switch(
-                            checked = actionOnResume,
-                            onCheckedChange = {
-                                actionOnResume = it
-                                saveData()
-                            }
-                        )
-                    }*/
 
                 }
             }

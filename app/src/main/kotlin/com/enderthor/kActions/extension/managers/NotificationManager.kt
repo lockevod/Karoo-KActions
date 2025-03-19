@@ -29,7 +29,7 @@ class NotificationManager(
         val isTextBeltFree = senderConfig?.let {
             it.provider == ProviderType.TEXTBELT &&
                     (it.apiKey.isBlank() || it.apiKey == "textbelt")
-        } ?: false
+        } == true
 
         val configuredDelay = (configs.firstOrNull()?.delayIntents ?: 0.0) * 60 * 1000
 
@@ -65,7 +65,6 @@ class NotificationManager(
                 }
             }
         } else {
-            val minutosRestantes = (minTimeBetweenMessages - timeElapsed) / (60 * 1000.0)
             Timber.d("Mensaje tipo $eventType ignorado - tiempo insuficiente entre mensajes")
         }
         return false

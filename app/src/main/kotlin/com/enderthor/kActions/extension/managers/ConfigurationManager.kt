@@ -70,9 +70,9 @@ class ConfigurationManager(
     }
 
 
-    suspend fun saveSenderConfig(config: SenderConfig) {
+    suspend fun saveSenderConfig(configs: MutableList<SenderConfig>) {
         context.dataStore.edit { preferences ->
-            preferences[senderConfigKey] = Json.encodeToString(config)
+            preferences[senderConfigKey] = Json.encodeToString(configs)
         }
     }
 

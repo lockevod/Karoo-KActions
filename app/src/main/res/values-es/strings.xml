@@ -35,9 +35,9 @@
     <string name="number_1">Número</string>
     <string name="number_2">Número 2</string>
     <string name="number_3">Número 3</string>
-    <string name="error_no_plus">El número de teléfono debe introducirse sin el símbolo \'+\' y con código de país. Ejemplo: 34675123123</string>
-    <string name="error_digits_only">El número de teléfono solo debe contener dígitos. Ejemplo: 34675123123</string>
-    <string name="error_length">El número de teléfono debe tener entre 10-15 dígitos, el código de país es obligatorio. Ejemplo: 34675123123</string>
+    <string name="error_no_plus">El número de teléfono debe introducirse con el símbolo \'+\' y con código de país. Ejemplo: +34675123123</string>
+    <string name="error_digits_only">El número de teléfono solo debe contener dígitos y +. Ejemplo: +34675123123</string>
+    <string name="error_length">El número de teléfono debe tener entre 10-15 dígitos, el código de país es obligatorio. Ejemplo: +34675123123</string>
     <string name="phone_numbers_saved">Números de teléfono guardados</string>
     <string name="cannot_save_invalid_format">No se puede guardar: Algunos números de teléfono tienen un formato inválido</string>
     <string name="email_1">Email</string>

@@ -34,9 +34,9 @@
     <string name="number_1">Number</string>
     <string name="number_2">Number 2</string>
     <string name="number_3">Number 3</string>
-    <string name="error_no_plus">Phone number must be entered without the \'+\' symbol and with country code. Example: 34675123123</string>
-    <string name="error_digits_only">Phone number must contain only digits. Example: 34675123123</string>
-    <string name="error_length">Phone number must have between 10-15 digits, country code is required. Example: 34675123123</string>
+    <string name="error_no_plus">Phone number must be entered with the \'+\' symbol and with country code. Example: +34675123123</string>
+    <string name="error_digits_only">Phone number must contain only digits and +. Example: +34675123123</string>
+    <string name="error_length">Phone number must have between 10-15 digits, country code is required. Example: +34675123123</string>
     <string name="phone_numbers_saved">Phone numbers saved</string>
     <string name="cannot_save_invalid_format">Cannot save: Some phone numbers have invalid format</string>
 

@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TabLayout() {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Conf.", "Prov.","WH")
+    val tabs = listOf("Conf.","Prov.","WH")
 
 
     Column(modifier = Modifier.fillMaxSize()) {

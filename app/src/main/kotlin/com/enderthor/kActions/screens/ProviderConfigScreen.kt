@@ -11,15 +11,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.enderthor.kActions.R
 import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.data.SenderConfig
-import com.enderthor.kActions.extension.Sender
 import com.enderthor.kActions.extension.managers.ConfigurationManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -31,16 +31,14 @@ fun ProviderConfigScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val configManager = remember { ConfigurationManager(context) }
-    val sender = remember { Sender(karooSystem = null, configManager = configManager) }
+
 
     var senderConfig by remember { mutableStateOf<SenderConfig?>(null) }
     var configData by remember { mutableStateOf<ConfigData?>(null) }
     var selectedProvider by remember { mutableStateOf(ProviderType.TEXTBELT) }
     var apiKey by remember { mutableStateOf("") }
-    var testPhoneNumber by remember { mutableStateOf("") } // Esta variable ya no será necesaria para entrada
-    var savedPhoneNumber by remember { mutableStateOf("") } // Para guardar el teléfono de configuración
-    var savedEmail by remember { mutableStateOf("") } // Para guardar el email de configuración
-    var emailTo by remember { mutableStateOf("") }
+    var savedPhoneNumber by remember { mutableStateOf("") }
+    var savedEmail by remember { mutableStateOf("") }
 
     var isLoading by remember { mutableStateOf(false) }
     var statusMessage by remember { mutableStateOf<String?>(null) }
@@ -48,32 +46,33 @@ fun ProviderConfigScreen() {
 
     var providerConfigs by remember { mutableStateOf<Map<ProviderType, SenderConfig>>(emptyMap()) }
 
-
-    val test_message_content = stringResource(R.string.test_message_content)
     val error_sending_message = stringResource(R.string.error_sending_message)
-    val test_message_sent = stringResource(R.string.test_message_sent)
     val settings_saved = stringResource(R.string.settings_saved)
-
     val isTextBeltFree = selectedProvider == ProviderType.TEXTBELT &&
             (apiKey.isBlank() || apiKey == "textbelt")
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
 
     LaunchedEffect(Unit) {
-
+        launch {
+            delay(500)
+            Timber.d("Cambiando ignoreAutoSave de $ignoreAutoSave a false")
+            ignoreAutoSave = false  // Esto debe ejecutarse siempre
+        }
 
         launch {
             try {
                 configManager.loadPreferencesFlow().collect { configDatas ->
                     configData = configDatas.firstOrNull()
 
-
+                    // Actualizar las variables con los datos de configuración
                     if (configData?.phoneNumbers?.isNotEmpty() == true) {
                         savedPhoneNumber = configData?.phoneNumbers?.first() ?: ""
                     }
 
                     if (configData?.emails?.isNotEmpty() == true) {
                         savedEmail = configData?.emails?.first() ?: ""
-                        emailTo = savedEmail
                     }
 
                     val newSelectedProvider = configData?.activeProvider ?: ProviderType.TEXTBELT
@@ -107,8 +106,15 @@ fun ProviderConfigScreen() {
 
     fun updateFieldsForProvider() {
         val config = providerConfigs[selectedProvider]
-        apiKey = config?.apiKey ?: ""
-        senderConfig = config
+        if (config != null) {
+            Timber.d("Actualizando campos para proveedor $selectedProvider con apiKey: ${config.apiKey}")
+            apiKey = config.apiKey
+            senderConfig = config
+        } else {
+            Timber.d("No hay configuración para el proveedor $selectedProvider")
+            apiKey = ""
+            senderConfig = null
+        }
     }
 
     LaunchedEffect(selectedProvider) {
@@ -117,18 +123,25 @@ fun ProviderConfigScreen() {
 
 
     fun saveData() {
-        if (ignoreAutoSave) return
+        Timber.d("saveData llamado, ignoreAutoSave=$ignoreAutoSave")
+        if (ignoreAutoSave) {
+            Timber.d("saveData - Ignorando guardado debido a ignoreAutoSave=true")
+            return
+        }
 
         scope.launch {
             isLoading = true
             statusMessage = null
 
             try {
-
-                if (apiKey.isBlank() && selectedProvider == ProviderType.TEXTBELT) {
-                    apiKey = "textbelt"
+                // Configurar API key para TextBelt si está vacía
+                val currentApiKey = if (apiKey.isBlank() && selectedProvider == ProviderType.TEXTBELT) {
+                    "textbelt"
+                } else {
+                    apiKey
                 }
 
+                // Actualizar configuración activa
                 configData?.let { currentConfig ->
                     val updatedConfig = currentConfig.copy(
                         activeProvider = selectedProvider
@@ -136,77 +149,33 @@ fun ProviderConfigScreen() {
                     configManager.savePreferences(mutableListOf(updatedConfig))
                 }
 
-                val updatedConfigs = ProviderType.entries.map { providerType ->
+                // Crear lista actualizada de configuraciones
+                val updatedConfigs = mutableListOf<SenderConfig>()
+
+                // Mantener todas las configuraciones existentes
+                ProviderType.entries.forEach { providerType ->
                     if (providerType == selectedProvider) {
-
-                        SenderConfig(
-                            provider = selectedProvider,
-                            apiKey = apiKey
-                        )
+                        // Actualizar solo el proveedor seleccionado
+                        updatedConfigs.add(SenderConfig(providerType, currentApiKey))
                     } else {
-
-                        providerConfigs[providerType] ?: SenderConfig(provider = providerType)
+                        // Mantener configuración existente para otros proveedores
+                        val existingConfig = providerConfigs[providerType]
+                        if (existingConfig != null) {
+                            updatedConfigs.add(existingConfig)
+                        } else {
+                            updatedConfigs.add(SenderConfig(providerType, ""))
+                        }
                     }
                 }
 
-                configManager.saveSenderConfig(updatedConfigs.first())
-
-
-
-                if (selectedProvider == ProviderType.RESEND) {
-                    val updatedConfigData = configData?.copy(
-                        emails = listOf(emailTo.trim())
-                    ) ?: ConfigData(
-                        emails = listOf(emailTo.trim())
-                    )
-
-                    configManager.savePreferences(mutableListOf(updatedConfigData))
-                }
+                Timber.d("Guardando configuraciones: $updatedConfigs")
+                configManager.saveSenderConfig(updatedConfigs)
 
                 statusMessage = settings_saved
                 delay(2000)
                 statusMessage = null
             } catch (e: Exception) {
                 statusMessage = error_sending_message
-            } finally {
-                isLoading = false
-            }
-        }
-    }
-
-
-    fun sendTestMessage() {
-        scope.launch {
-            isLoading = true
-            statusMessage = null
-
-            val contactToUse = if (selectedProvider == ProviderType.RESEND) savedEmail else savedPhoneNumber
-
-            try {
-                val success = when (selectedProvider) {
-                    ProviderType.CALLMEBOT -> sender.sendMessage(
-                        phoneNumber = contactToUse,
-                        message = test_message_content,
-                        ProviderType.CALLMEBOT
-                    )
-                    ProviderType.WHAPI -> sender.sendMessage(
-                        phoneNumber = contactToUse,
-                        message = test_message_content,
-                        ProviderType.WHAPI
-                    )
-                    ProviderType.TEXTBELT -> sender.sendSMSMessage(
-                        phoneNumber = contactToUse,
-                        message = test_message_content
-                    )
-                    ProviderType.RESEND -> sender.sendEmailMessage(
-                        message = test_message_content
-                    )
-                }
-
-                statusMessage = if (success) test_message_sent
-                else error_sending_message
-            } catch (e: Exception) {
-                statusMessage = "Error: ${e.message}"
             } finally {
                 isLoading = false
             }
@@ -241,8 +210,18 @@ fun ProviderConfigScreen() {
                             RadioButton(
                                 selected = selectedProvider == ProviderType.TEXTBELT,
                                 onClick = {
-                                    selectedProvider = ProviderType.TEXTBELT
-                                    saveData()
+                                    if (selectedProvider != ProviderType.TEXTBELT) {
+                                        // Guardar la configuración actual antes de cambiar
+                                        if (!ignoreAutoSave) {
+                                            saveData()
+                                        }
+
+                                        // Cambiar al nuevo proveedor
+                                        selectedProvider = ProviderType.TEXTBELT
+
+                                        // Actualizar UI con la configuración del nuevo proveedor
+                                        updateFieldsForProvider()
+                                    }
                                 }
                             )
                             Text(
@@ -257,8 +236,18 @@ fun ProviderConfigScreen() {
                             RadioButton(
                                 selected = selectedProvider == ProviderType.CALLMEBOT,
                                 onClick = {
-                                    selectedProvider = ProviderType.CALLMEBOT
-                                    saveData()
+                                    if (selectedProvider != ProviderType.CALLMEBOT) {
+                                        // Guardar la configuración actual antes de cambiar
+                                        if (!ignoreAutoSave) {
+                                            saveData()
+                                        }
+
+                                        // Cambiar al nuevo proveedor
+                                        selectedProvider = ProviderType.CALLMEBOT
+
+                                        // Actualizar UI con la configuración del nuevo proveedor
+                                        updateFieldsForProvider()
+                                    }
                                 }
                             )
                             Text(
@@ -273,8 +262,18 @@ fun ProviderConfigScreen() {
                             RadioButton(
                                 selected = selectedProvider == ProviderType.WHAPI,
                                 onClick = {
-                                    selectedProvider = ProviderType.WHAPI
-                                    saveData()
+                                    if (selectedProvider != ProviderType.WHAPI) {
+                                        // Guardar la configuración actual antes de cambiar
+                                        if (!ignoreAutoSave) {
+                                            saveData()
+                                        }
+
+                                        // Cambiar al nuevo proveedor
+                                        selectedProvider = ProviderType.WHAPI
+
+                                        // Actualizar UI con la configuración del nuevo proveedor
+                                        updateFieldsForProvider()
+                                    }
                                 }
                             )
                             Text(
@@ -285,7 +284,7 @@ fun ProviderConfigScreen() {
 
 
 
-                        Row(
+                       /* Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -300,7 +299,7 @@ fun ProviderConfigScreen() {
                                 stringResource(R.string.resend_provider),
                                 modifier = Modifier.weight(1f)
                             )
-                        }
+                        }*/
                     }
                 }
             }
@@ -323,15 +322,21 @@ fun ProviderConfigScreen() {
                                 value = apiKey,
                                 onValueChange = {
                                     apiKey = it
-                                    saveData()
                                 },
                                 label = { Text(stringResource(R.string.api_key)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .onFocusChanged { if (!it.isFocused) saveData() },
+                                    .onFocusChanged {  if (!it.isFocused) {
+                                        keyboardController?.hide()
+                                        saveData()
+                                    } },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = { saveData() })
+                                keyboardActions = KeyboardActions( onDone = {
+                                    focusManager.clearFocus()
+                                    keyboardController?.hide()
+                                    saveData()
+                                })
                             )
                         }
                         ProviderType.WHAPI -> {
@@ -340,15 +345,20 @@ fun ProviderConfigScreen() {
                                 value = apiKey,
                                 onValueChange = {
                                     apiKey = it
-                                    saveData()
                                 },
                                 label = { Text(stringResource(R.string.api_key)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .onFocusChanged { if (!it.isFocused) saveData() },
+                                    .onFocusChanged { if (!it.isFocused) {
+                                        keyboardController?.hide()
+                                        saveData()
+                                    } },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = { saveData() })
+                                keyboardActions = KeyboardActions(onDone = {
+                                    focusManager.clearFocus()
+                                    keyboardController?.hide()
+                                    saveData() })
                             )
                         }
                         ProviderType.TEXTBELT -> {
@@ -357,15 +367,20 @@ fun ProviderConfigScreen() {
                                 value = apiKey,
                                 onValueChange = {
                                     apiKey = it
-                                    saveData()
                                 },
                                 label = { Text(stringResource(R.string.api_key)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .onFocusChanged { if (!it.isFocused) saveData() },
+                                    .onFocusChanged { if (!it.isFocused) {
+                                        keyboardController?.hide()
+                                        saveData()
+                                    } },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = { saveData() })
+                                keyboardActions = KeyboardActions(onDone = {
+                                    focusManager.clearFocus()
+                                    keyboardController?.hide()
+                                    saveData() })
                             )
 
                             if (isTextBeltFree) {
@@ -401,62 +416,18 @@ fun ProviderConfigScreen() {
                                 keyboardActions = KeyboardActions(onDone = { saveData() })
                             )
 
+
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(stringResource(R.string.email_to))
-                            OutlinedTextField(
-                                value = emailTo,
-                                onValueChange = {
-                                    emailTo = it
-                                    saveData()
-                                },
-                                label = { Text(stringResource(R.string.email_to)) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .onFocusChanged { if (!it.isFocused) saveData() },
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Email,
-                                    imeAction = ImeAction.Done
-                                ),
-                                keyboardActions = KeyboardActions(onDone = { saveData() })
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (apiKey.isNotBlank()) {
-                Card {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            stringResource(R.string.test_sending),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-
-                        if (selectedProvider != ProviderType.RESEND) {
                             Text(
-                                "Se enviará a: $savedPhoneNumber",
+                                "Email configurado: $savedEmail",
                                 style = MaterialTheme.typography.bodyMedium
                             )
-                        } else {
                             Text(
-                                "Se enviará a: $savedEmail",
-                                style = MaterialTheme.typography.bodyMedium
+                                "Para modificarlo, ve a la pantalla de Configuración",
+                                style = MaterialTheme.typography.bodySmall
                             )
                         }
 
-                        Button(
-                            onClick = { sendTestMessage() },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = !isLoading &&
-                                    ((selectedProvider == ProviderType.RESEND && savedEmail.isNotBlank()) ||
-                                            (selectedProvider != ProviderType.RESEND && savedPhoneNumber.isNotBlank()))
-                        ) {
-                            Text(stringResource(R.string.send_test_message))
-                        }
                     }
                 }
             }

@@ -133,7 +133,7 @@ class Sender(
         }
     }
 
-
+/*
     suspend fun sendEmailMessage(message: String): Boolean {
         try {
             val configs = configManager.loadSenderConfigFlow().first()
@@ -143,9 +143,8 @@ class Sender(
 
             val configData = configManager.loadPreferencesFlow().first().firstOrNull() ?: return false
 
-
-            if (configData.emails.isEmpty() || configData.emails.size < 2) {
-                Timber.e("No hay suficientes direcciones de email configuradas")
+            if (configData.emails.isEmpty()) {
+                Timber.e("No hay direcciones de email configuradas")
                 return false
             }
 
@@ -154,9 +153,9 @@ class Sender(
                 return false
             }
 
-            val emailFrom = configData.emails[0]
-            val emailTo = configData.emails[1]
-
+            // Usar el mismo email como remitente y destinatario si solo hay uno configurado
+            val emailFrom = "karoo@resend.dev" // Email genérico como remitente
+            val emailTo = configData.emails[0]
 
             val jsonBody = buildJsonObject {
                 put("from", emailFrom)
@@ -191,6 +190,91 @@ class Sender(
             Timber.e(e, "Error enviando email: ${e.message}")
             return false
         }
+    }*/
+
+
+
+
+    suspend fun sendEmailMessage(message: String): Boolean {
+        try {
+            val configs = configManager.loadSenderConfigFlow().first()
+            val config = configs.find { it.provider == ProviderType.RESEND }
+                ?: configs.firstOrNull()
+                ?: return false
+
+            val configData = configManager.loadPreferencesFlow().first().firstOrNull() ?: return false
+
+            if (configData.emails.isEmpty()) {
+                Timber.e("No hay direcciones de email configuradas")
+                return false
+            }
+
+            if (karooSystem == null) {
+                Timber.e("KarooSystemService es necesario para enviar emails")
+                return false
+            }
+
+            // Usar la primera dirección de correo configurada como destinatario
+            val emailTo = configData.emails[0]
+
+            // Remitente para Elastic Email (debe ser un dominio verificado)
+            val emailFrom = configData.emailFrom
+
+            // Datos para la API de Elastic Email
+            val formParams = mapOf(
+                "apikey" to config.apiKey,
+                "from" to emailFrom,
+                "to" to emailTo,
+                "subject" to "Karoo Notification",
+                "bodyHtml" to "<p>$message</p>",
+                "bodyText" to message,
+                "isTransactional" to "true"
+            )
+
+            val formBody = formParams.entries.joinToString("&") { (key, value) ->
+                "${key}=${java.net.URLEncoder.encode(value, "UTF-8")}"
+            }
+
+            val url = "https://api.elasticemail.com/v2/email/send"
+
+            val headers = mapOf(
+                "Content-Type" to "application/x-www-form-urlencoded"
+            )
+
+            val response = karooSystem.makeHttpRequest(
+                method = "POST",
+                url = url,
+                headers = headers,
+                body = formBody.toByteArray()
+            ).first()
+
+            val responseText = response.body?.toString(Charsets.UTF_8) ?: ""
+            return if (response.statusCode in 200..299 && responseText.contains("\"success\":true")) {
+                Timber.d("Email enviado correctamente a $emailTo mediante Elastic Email")
+                true
+            } else {
+                Timber.e("Error en respuesta de Elastic Email: Código ${response.statusCode}, $responseText")
+                false
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error enviando email mediante Elastic Email: ${e.message}")
+            return false
+        }
+    }
+
+    private fun formatPhoneForWhapi(phoneNumber: String): String {
+
+        var formattedNumber = phoneNumber.trim()
+        if (formattedNumber.startsWith("+")) {
+            formattedNumber = formattedNumber.substring(1)
+        }
+
+
+        if (!formattedNumber.all { it.isDigit() || it == '-' }) {
+            formattedNumber = formattedNumber.filter { it.isDigit() }
+        }
+
+        return formattedNumber
     }
 
 
@@ -206,7 +290,10 @@ class Sender(
             }
 
 
-            val formattedPhone = if (senderProvider == ProviderType.WHAPI) "+" + phoneNumber.trim() else phoneNumber.trim()
+            val formattedPhone = when (senderProvider) {
+                ProviderType.WHAPI -> formatPhoneForWhapi(phoneNumber)
+                else -> phoneNumber.trim()
+            }
 
             when (senderProvider) {
                 ProviderType.WHAPI -> {
@@ -222,6 +309,7 @@ class Sender(
                         "Authorization" to "Bearer ${config.apiKey}"
                     )
 
+                    Timber.d("Sending WhatsApp message to $formattedPhone: $jsonBody")
                     val response = karooSystem.makeHttpRequest(
                         method = "POST",
                         url = url,

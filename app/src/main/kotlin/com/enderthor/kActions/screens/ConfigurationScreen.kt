@@ -22,10 +22,13 @@ import androidx.compose.ui.unit.dp
 import com.enderthor.kActions.R
 import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.ProviderType
+import com.enderthor.kActions.extension.Sender
 import com.enderthor.kActions.extension.managers.ConfigurationManager
 import io.hammerhead.karooext.KarooSystemService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,8 +67,14 @@ fun ConfigurationScreen() {
     var email1 by remember { mutableStateOf("") }
     var isEmail1Valid by remember { mutableStateOf(true) }
     var email1ErrorMessage by remember { mutableStateOf("") }
+    var emailFrom by remember { mutableStateOf("") }
+    var isEmailFromValid by remember { mutableStateOf(true) }
+    var emailFromErrorMessage by remember { mutableStateOf("") }
 
     var delayBetweenNotificationsInt by remember { mutableStateOf("0") }
+
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
 
 
@@ -74,29 +83,28 @@ fun ConfigurationScreen() {
     val errorLength = stringResource(R.string.error_length)
     val settingsSaved = stringResource(R.string.settings_saved)
     val cannotSaveMessage = stringResource(R.string.cannot_save_invalid_format)
+    val sender = remember { Sender(karooSystem = karooSystem, configManager = configManager) }
+    val test_message_content = stringResource(R.string.test_message_content)
+    val error_sending_message = stringResource(R.string.error_sending_message)
+    val test_message_sent = stringResource(R.string.test_message_sent)
 
     LaunchedEffect(Unit) {
-        isConnecting = true
-        karooSystem.connect { connected ->
-            karooConnected = connected
-            isConnecting = false
-            Timber.d(if (connected) "Conectado a Karoo System" else "Error conectando a Karoo System")
-        }
+
 
         launch {
             delay(500)
+            Timber.d("Estableciendo ignoreAutoSave a false")
             ignoreAutoSave = false
         }
-
         launch {
-            configManager.loadSenderConfigFlow().collect { senderConfigs ->
-                if (senderConfigs.isNotEmpty()) {
-                    val resendConfig = senderConfigs.find { it.provider == ProviderType.RESEND }
-                    val config = resendConfig ?: senderConfigs.first()
-                    selectedProvider = config.provider
-                }
+            isConnecting = true
+            karooSystem.connect { connected ->
+                karooConnected = connected
+                isConnecting = false
+                Timber.d(if (connected) "Conectado a Karoo System" else "Error conectando a Karoo System")
             }
         }
+
 
         launch {
             configManager.loadPreferencesFlow().collect { configs ->
@@ -110,11 +118,17 @@ fun ConfigurationScreen() {
                     delayBetweenNotificationsInt = savedConfig.delayIntents.toInt().toString()
 
 
+                    selectedProvider = savedConfig.activeProvider
 
                     val phoneNumbers = savedConfig.phoneNumbers
                     if (phoneNumbers.isNotEmpty()) {
                         phoneNumber1 = phoneNumbers[0]
                     }
+
+                    if (savedConfig.emails.isNotEmpty()) {
+                        email1 = savedConfig.emails[0]
+                    }
+                    emailFrom = savedConfig.emailFrom
 
                     startMessage = savedConfig.startMessage
                     stopMessage = savedConfig.stopMessage
@@ -163,9 +177,63 @@ fun ConfigurationScreen() {
         return Pair(true, "")
     }
 
+    fun sendTestMessage() {
+
+        if (selectedProvider == ProviderType.RESEND && (email1.isBlank() || emailFrom.isBlank())) {
+            statusMessage = "Error: Se requiere una dirección de email"
+            return
+        }
+        if (selectedProvider != ProviderType.RESEND && phoneNumber1.isBlank()) {
+            statusMessage = "Error: Se requiere un número de teléfono"
+            return
+        }
+        scope.launch {
+            isLoading = true
+            statusMessage = null
+
+
+            val contactToUse = if (selectedProvider == ProviderType.RESEND) email1 else phoneNumber1
+
+
+            try {
+                val success = when (selectedProvider) {
+                    ProviderType.CALLMEBOT -> sender.sendMessage(
+                        phoneNumber = contactToUse,
+                        message = test_message_content,
+                        senderProvider = ProviderType.CALLMEBOT
+                    )
+                    ProviderType.WHAPI -> sender.sendMessage(
+                        phoneNumber = contactToUse,
+                        message = test_message_content,
+                        senderProvider = ProviderType.WHAPI
+                    )
+                    ProviderType.TEXTBELT -> sender.sendSMSMessage(
+                        phoneNumber = contactToUse,
+                        message = test_message_content
+                    )
+                    ProviderType.RESEND -> sender.sendEmailMessage(
+                        message = test_message_content
+                    )
+                }
+
+                statusMessage = if (success) test_message_sent
+                else error_sending_message
+            } catch (e: Exception) {
+                statusMessage = "Error: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
 
     fun saveData() {
-        if (ignoreAutoSave) return
+
+        Timber.d("ConfigurationScreen: saveData llamado, ignoreAutoSave=$ignoreAutoSave")
+        if (ignoreAutoSave) {
+            Timber.d("ConfigurationScreen: Ignorando guardado (ignoreAutoSave=true)")
+            return
+        }
 
         val phone1Result = validatePhoneNumber(phoneNumber1)
         isPhone1Valid = phone1Result.first
@@ -175,12 +243,33 @@ fun ConfigurationScreen() {
         isEmail1Valid = email1Result.first
         email1ErrorMessage = email1Result.second
 
-        if (isPhone1Valid && isEmail1Valid) {
+        val emailFromResult = validateEmail(emailFrom)
+        isEmailFromValid = emailFromResult.first
+        emailFromErrorMessage = emailFromResult.second
+
+        // Verificar requisitos específicos según el proveedor seleccionado
+        val isEmailProviderSelected = selectedProvider == ProviderType.RESEND
+
+        // Para proveedores de email, se requiere tanto email del destinatario como del remitente
+        val isEmailConfigValid = !isEmailProviderSelected ||
+                (email1.isNotBlank() && isEmail1Valid && emailFrom.isNotBlank() && isEmailFromValid)
+
+        // Para proveedores de SMS/WhatsApp, se requiere un número de teléfono válido
+        val isPhoneConfigValid = isEmailProviderSelected ||
+                (phoneNumber1.isNotBlank() && isPhone1Valid)
+
+        // Solo guardamos si todas las validaciones necesarias pasan
+        if (isEmailConfigValid && isPhoneConfigValid) {
+
             scope.launch {
                 isLoading = true
                 statusMessage = null
 
                 try {
+                    Timber.d("ConfigurationScreen: Guardando provider: $selectedProvider")
+                    Timber.d("ConfigurationScreen: Guardando teléfono: $phoneNumber1")
+                    Timber.d("ConfigurationScreen: Guardando email: $email1")
+
                     val phoneNumbers = listOfNotNull(
                         phoneNumber1.trim().takeIf { it.isNotBlank() }
                     )
@@ -197,7 +286,9 @@ fun ConfigurationScreen() {
                         startMessage = startMessage.trim(),
                         stopMessage = stopMessage.trim(),
                         pauseMessage = pauseMessage.trim(),
-                        resumeMessage = resumeMessage.trim()
+                        resumeMessage = resumeMessage.trim(),
+                        activeProvider = selectedProvider,
+                        emailFrom = emailFrom.trim()
                     ) ?: ConfigData(
                         isActive = isActive,
                         karooKey = karooKey.trim(),
@@ -207,7 +298,9 @@ fun ConfigurationScreen() {
                         startMessage = startMessage.trim(),
                         stopMessage = stopMessage.trim(),
                         pauseMessage = pauseMessage.trim(),
-                        resumeMessage = resumeMessage.trim()
+                        resumeMessage = resumeMessage.trim(),
+                        activeProvider = selectedProvider,
+                        emailFrom = emailFrom.trim()
                     )
 
                     configManager.savePreferences(mutableListOf(updatedConfig))
@@ -215,15 +308,25 @@ fun ConfigurationScreen() {
                     delay(2000)
                     statusMessage = null
                 } catch (e: Exception) {
+                    Timber.e(e, "ConfigurationScreen: Error guardando: ${e.message}")
                     statusMessage = "Error: ${e.message}"
                 } finally {
                     isLoading = false
                 }
             }
         } else {
-            statusMessage = cannotSaveMessage
+            if (isEmailProviderSelected && (emailFrom.isBlank() || !isEmailFromValid)) {
+                statusMessage = "Error: Se requiere un email de remitente válido"
+            } else if (isEmailProviderSelected && (email1.isBlank() || !isEmail1Valid)) {
+                statusMessage = "Error: Se requiere un email de destinatario válido"
+            } else if (!isEmailProviderSelected && (phoneNumber1.isBlank() || !isPhone1Valid)) {
+                statusMessage = cannotSaveMessage
+            } else {
+                statusMessage = cannotSaveMessage
+            }
+
             scope.launch {
-                delay(3000)
+                delay(2000)
                 statusMessage = null
             }
         }
@@ -280,7 +383,9 @@ fun ConfigurationScreen() {
                             keyboardType = KeyboardType.Number,
                             imeAction = ImeAction.Done
                         ),
-                        keyboardActions = KeyboardActions(onDone = { saveData() })
+                        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData() })
                     )
                 }
             }
@@ -291,7 +396,43 @@ fun ConfigurationScreen() {
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (selectedProvider == ProviderType.RESEND) {
+                   /* if (selectedProvider == ProviderType.RESEND) {
+                        OutlinedTextField(
+                            value = emailFrom,
+                            onValueChange = {
+                                emailFrom = it
+                                val (valid, message) = validateEmail(it)
+                                isEmailFromValid = valid
+                                emailFromErrorMessage = message
+                            },
+                            label = { Text("Email remitente") },
+                            placeholder = { Text("remitente@tudominio.com") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { if (!it.isFocused) {
+                                    keyboardController?.hide()
+                                    saveData()
+                                }},
+                            singleLine = true,
+                            isError = !isEmailFromValid,
+                            supportingText = {
+                                if (!isEmailFromValid) {
+                                    Text(emailFromErrorMessage)
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                    keyboardController?.hide()
+                                    saveData()
+                                }
+                            )
+                        )
+
                         Text(
                             stringResource(R.string.email_addresses),
                             style = MaterialTheme.typography.titleMedium
@@ -324,7 +465,7 @@ fun ConfigurationScreen() {
                                 if (!focusState.isFocused) saveData()
                             }
                         )
-                    } else {
+                    } else {*/
                         Text(
                             stringResource(R.string.phone_numbers),
                             style = MaterialTheme.typography.titleMedium
@@ -357,7 +498,7 @@ fun ConfigurationScreen() {
                                 if (!focusState.isFocused) saveData()
                             }
                         )
-                    }
+                    //}
                 }
             }
 
@@ -383,7 +524,10 @@ fun ConfigurationScreen() {
                             .onFocusChanged { if (!it.isFocused) saveData() },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { saveData() })
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData() })
                     )
                 }
             }
@@ -411,7 +555,13 @@ fun ConfigurationScreen() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .onFocusChanged { if (!it.isFocused) saveData() },
-                        minLines = 2
+                        minLines = 2,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData() })
+
                     )
 
                     OutlinedTextField(
@@ -421,28 +571,48 @@ fun ConfigurationScreen() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .onFocusChanged { if (!it.isFocused) saveData() },
-                        minLines = 2
+                        minLines = 2,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData() })
                     )
 
-                   /* OutlinedTextField(
-                        value = pauseMessage,
-                        onValueChange = { pauseMessage = it },
-                        label = { Text(stringResource(R.string.pause_message)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { if (!it.isFocused) saveData() },
-                        minLines = 2
+                }
+            }
+
+            Card {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        stringResource(R.string.test_sending),
+                        style = MaterialTheme.typography.titleMedium
                     )
 
-                    OutlinedTextField(
-                        value = resumeMessage,
-                        onValueChange = { resumeMessage = it },
-                        label = { Text(stringResource(R.string.resume_message)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { if (!it.isFocused) saveData() },
-                        minLines = 2
-                    )*/
+                    if (selectedProvider == ProviderType.RESEND) {
+                        Text(
+                            "Se enviará a: $email1",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    } else {
+                        Text(
+                            "Se enviará a: $phoneNumber1",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+
+                    Button(
+                        onClick = { sendTestMessage() },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading &&
+                                ((selectedProvider == ProviderType.RESEND && isEmail1Valid && email1.isNotBlank()) ||
+                                        (selectedProvider != ProviderType.RESEND && isPhone1Valid && phoneNumber1.isNotBlank()))
+                    ) {
+                        Text(stringResource(R.string.send_test_message))
+                    }
                 }
             }
 
@@ -474,15 +644,17 @@ fun EmailInput(
     onDone: () -> Unit,
     onFocusChange: (FocusState) -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = onValueChange,  // Solo actualiza el valor sin más acciones
         label = { Text(label) },
         placeholder = { Text("nombre@dominio.com") },
         modifier = Modifier
             .fillMaxWidth()
-            .onFocusChanged(onFocusChange)
-            .focusable(),
+            .onFocusChanged(onFocusChange),  // Elimina .focusable()
         singleLine = true,
         isError = !isValid,
         supportingText = {
@@ -495,7 +667,11 @@ fun EmailInput(
             imeAction = ImeAction.Done
         ),
         keyboardActions = KeyboardActions(
-            onDone = { onDone() }
+            onDone = {
+                focusManager.clearFocus()
+                keyboardController?.hide()
+                onDone()
+            }
         ),
         trailingIcon = {
             if (value.isNotEmpty()) {
@@ -506,7 +682,6 @@ fun EmailInput(
         }
     )
 }
-
 @Composable
 fun PhoneNumberInput(
     value: String,
@@ -519,16 +694,17 @@ fun PhoneNumberInput(
     onFocusChange: (FocusState) -> Unit
 ) {
     val phonePlaceholder = stringResource(R.string.phone_placeholder)
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = onValueChange,  // Solo actualiza el valor sin más acciones
         label = { Text(label) },
         placeholder = { Text(phonePlaceholder) },
         modifier = Modifier
             .fillMaxWidth()
-            .onFocusChanged(onFocusChange)
-            .focusable(),
+            .onFocusChanged(onFocusChange),  // No agregues .focusable() aquí
         singleLine = true,
         isError = !isValid,
         supportingText = {
@@ -541,7 +717,11 @@ fun PhoneNumberInput(
             imeAction = ImeAction.Done
         ),
         keyboardActions = KeyboardActions(
-            onDone = { onDone() }
+            onDone = {
+                focusManager.clearFocus()
+                keyboardController?.hide()
+                onDone()
+            }
         ),
         trailingIcon = {
             if (value.isNotEmpty()) {
@@ -552,6 +732,7 @@ fun PhoneNumberInput(
         }
     )
 }
+
 
 
 
