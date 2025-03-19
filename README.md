@@ -28,13 +28,9 @@ KActions supports several providers to send notifications:
 
 1. **Create a Whapi account**:
    - Visit [Whapi.io](https://whapi.io/) and register.
-   - The free plan allows you to send up to 20 messages per day.
+   - Whapi isn't free but they've sandbox and it's free (aroung 1000 whats/month). Please read whapi conditions because you've to link a real number if you use a sandbox. If you don't understant it, please don't use it.
 
-2. **Get your API Key**:
-   - Once registered, go to the "API Keys" section in your dashboard.
-   - Create a new API Key or copy the existing one.
-
-3. **Configure KActions**:
+2. **Configure KActions**:
    - Open KActions on your Karoo.
    - Select "WhatsApp (WHAPI)" as the provider.
    - Paste your API Key in the corresponding field.
@@ -43,7 +39,7 @@ KActions supports several providers to send notifications:
 
 1. **Get your CallMeBot API Key**:
    - Visit [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/) and follow the instructions.
-   - You'll need to register your phone number with CallMeBot.
+   - CallMeBot is free and you don't need to link your number (only has to send a message and you'll have the key code) but you can only use with one number (destination number).
 
 2. **Configure KActions**:
    - Open KActions on your Karoo.
@@ -54,8 +50,9 @@ KActions supports several providers to send notifications:
 
 1. **About TextBelt**:
    - TextBelt offers worldwide SMS sending.
-   - The free version allows 1 SMS per day.
+   - The free version allows 1 SMS per day. 
    - For more messages, you need to purchase credits at [TextBelt](https://textbelt.com/).
+   - You'll receive from different numbers (TextBelt has a significant pool number)
 
 2. **Configure TextBelt in KActions**:
    - Select "SMS (TextBelt)" as the provider.
@@ -65,7 +62,7 @@ KActions supports several providers to send notifications:
 ### Email (Resend)
 
 1. **Create a Resend account**:
-   - Visit [Resend.com](https://resend.com) and register.
+   - Visit [Resend.com](https://resend.com) and register. Resend has a free tier, you can register an own domain (with free tier) and send from this domain, but if you don't have you'll receive mails from resend.dev
    - Get your API Key from the dashboard.
 
 2. **Configure Resend in KActions**:
@@ -100,8 +97,8 @@ KActions allows you to configure webhooks to send data to external services when
    - Enable or disable notifications for different events: start, end, pause, and resumption of the ride.
 
 2. **Configure phone numbers**:
-   - Add up to 3 phone numbers that will receive notifications.
-   - Numbers should be entered without the '+' sign and with the country code (example: 34675123123).
+   - Add one phone numbers that will receive notifications.
+   - Numbers should be entered with E164 format (with the '+' sign and with the country code example: 34675123123).
 
 3. **Customize messages**:
    - Personalize messages for each type of event (start, end, pause, resumption).
@@ -112,7 +109,7 @@ KActions allows you to configure webhooks to send data to external services when
 
 ## Features
 
-- Automatic sending of notifications to preset numbers.
+- Automatic sending of notifications to preset number.
 - Customizable messages for each type of event.
 - Control of minimum time between messages of the same type.
 - Support for multiple languages.
