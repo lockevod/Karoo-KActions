@@ -24,7 +24,10 @@ class ExecuteWebhookAction : ActionCallback {
         parameters: ActionParameters
     ) {
         try {
-            Timber.d("Ejecutando webhook con ID: ${parameters[WEBHOOK_ID]}")
+            Timber.d("DENTRO webhook con ID: ${parameters[WEBHOOK_ID]}")
+            Timber.d("Webhook URL: ${parameters[WEBHOOK_URL]}")
+            Timber.d("Webhook Status: ${parameters[CURRENT_STATUS]}")
+
             val extension = KActionsExtension.getInstance()
             val webhookId = parameters[WEBHOOK_ID]
             val currentStatusStr = parameters[CURRENT_STATUS]
@@ -38,6 +41,7 @@ class ExecuteWebhookAction : ActionCallback {
             }
 
             if (extension != null) {
+                Timber.d("Ejecutando webhook con ID: $webhookId y Webhook URL: ${parameters[WEBHOOK_URL]} y estado: $currentStatus")
                 withContext(Dispatchers.IO) {
                     when (currentStatus) {
                         WebhookStatus.IDLE -> {

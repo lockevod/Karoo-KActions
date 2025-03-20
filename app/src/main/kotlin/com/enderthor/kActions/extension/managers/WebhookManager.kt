@@ -13,7 +13,7 @@ import com.enderthor.kActions.extension.getHomeFlow
 import io.hammerhead.karooext.KarooSystemService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
@@ -27,12 +27,15 @@ import kotlin.math.sqrt
 
 class WebhookManager(
     private val context: Context,
-    private val karooSystem: KarooSystemService
+    private val karooSystem: KarooSystemService,
+    private val scope: CoroutineScope
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private val webhookStateStore = WebhookStateStore(context)
+    private val configManager = ConfigurationManager(context)
     private var webhookConfig: WebhookData? = null
     private val webhooksKey = stringPreferencesKey("webhooks")
-    private val configManager = ConfigurationManager(context)
+
 
     suspend fun loadWebhookConfiguration(webhookId: Int? = null) {
         val webhooks = configManager.loadWebhookDataFlow().first()
@@ -78,6 +81,84 @@ class WebhookManager(
         }
     }
 
+    fun triggerCustomWebhook(webhookId: Int?) {
+        webhookId?.let { id ->
+            scope.launch(Dispatchers.IO) {
+                Timber.d("Activando webhook: $id")
+                handleEvent("custom", id)
+            }
+        } ?: run {
+            Timber.w("Webhook ID no proporcionado")
+        }
+    }
+
+    fun restorePendingWebhookStates() {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val webhooks = configManager.loadWebhookDataFlow().first()
+
+                webhooks.forEach { webhook ->
+                    val (statusStr, targetTime) = webhookStateStore.getWebhookState(webhook.id)
+
+                    if (statusStr != null) {
+                        val status = WebhookStatus.valueOf(statusStr)
+                        val currentTime = System.currentTimeMillis()
+                        val remainingTime = targetTime - currentTime
+
+                        if (remainingTime > 0) {
+                            // Restaurar el estado actual
+                            updateWebhookStatus(webhook.id, status)
+
+                            // Esperar el tiempo restante
+                            delay(remainingTime)
+
+                            // Realizar la siguiente transición
+                            when (status) {
+                                WebhookStatus.FIRST -> {
+                                    updateWebhookStatus(webhook.id, WebhookStatus.IDLE)
+                                    webhookStateStore.clearWebhookState(webhook.id)
+                                }
+                                WebhookStatus.EXECUTING -> {
+                                    updateWebhookStatus(webhook.id, WebhookStatus.SUCCESS)
+                                    scheduleResetToIdle(webhook.id, 5_000)
+                                }
+                                WebhookStatus.SUCCESS, WebhookStatus.ERROR -> {
+                                    updateWebhookStatus(webhook.id, WebhookStatus.IDLE)
+                                    webhookStateStore.clearWebhookState(webhook.id)
+                                }
+                                else -> webhookStateStore.clearWebhookState(webhook.id)
+                            }
+                        } else {
+                            // Si el tiempo ya pasó, limpiar
+                            updateWebhookStatus(webhook.id, WebhookStatus.IDLE)
+                            webhookStateStore.clearWebhookState(webhook.id)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error restaurando estados de webhooks: ${e.message}")
+            }
+        }
+    }
+
+
+    fun updateWebhookStatus(webhookId: Int, newStatus: WebhookStatus) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val webhooks = configManager.loadWebhookDataFlow().first().toMutableList()
+                val index = webhooks.indexOfFirst { it.id == webhookId }
+
+                if (index != -1) {
+                    webhooks[index] = webhooks[index].copy(status = newStatus)
+                    configManager.saveWebhookData(webhooks)
+                    Timber.d("Webhook $webhookId actualizado a estado $newStatus")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error actualizando estado del webhook")
+            }
+        }
+    }
+
     private fun distanceTo(first: GpsCoordinates, other: GpsCoordinates): Double {
         val lat1 = Math.toRadians(first.lat)
         val lon1 = Math.toRadians(first.lng)
@@ -108,24 +189,7 @@ class WebhookManager(
 
     }
 
-    fun updateWebhookStatus(webhookId: Int, status: WebhookStatus) {
-        scope.launch(Dispatchers.IO) {
-            try {
-                val webhooks = loadWebhooks()
-                val updatedWebhooks = webhooks.map { webhook ->
-                    if (webhook.id == webhookId) {
-                        webhook.copy(status = status)
-                    } else {
-                        webhook
-                    }
-                }
-                saveWebhooks(updatedWebhooks)
-                Timber.d("Estado de webhook $webhookId actualizado a $status")
-            } catch (e: Exception) {
-                Timber.e(e, "Error actualizando estado del webhook")
-            }
-        }
-    }
+
 
     private suspend fun loadWebhooks(): List<WebhookData> {
         return configManager.loadWebhookDataFlow().first()
@@ -134,6 +198,65 @@ class WebhookManager(
     private suspend fun saveWebhooks(webhooks: List<WebhookData>) {
         context.dataStore.edit { preferences ->
             preferences[webhooksKey] = Json.encodeToString(webhooks)
+        }
+    }
+
+    fun scheduleResetToIdle(webhookId: Int, delayMillis: Long) {
+        webhookStateStore.saveWebhookState(
+            webhookId,
+            WebhookStatus.FIRST.name,
+            System.currentTimeMillis() + delayMillis
+        )
+
+        scope.launch(Dispatchers.IO) {
+            delay(delayMillis)
+            updateWebhookStatus(webhookId, WebhookStatus.IDLE)
+            webhookStateStore.clearWebhookState(webhookId)
+        }
+    }
+
+    fun executeWebhookWithStateTransitions(webhookId: Int) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                // Guardar estado inicial
+                webhookStateStore.saveWebhookState(
+                    webhookId,
+                    WebhookStatus.EXECUTING.name,
+                    System.currentTimeMillis() + 10_000
+                )
+
+                updateWebhookStatus(webhookId, WebhookStatus.EXECUTING)
+                handleEvent("custom", webhookId)
+
+                delay(10_000)
+                updateWebhookStatus(webhookId, WebhookStatus.SUCCESS)
+
+                // Guardar estado para transición a IDLE
+                webhookStateStore.saveWebhookState(
+                    webhookId,
+                    WebhookStatus.SUCCESS.name,
+                    System.currentTimeMillis() + 5_000
+                )
+
+                delay(5_000)
+                updateWebhookStatus(webhookId, WebhookStatus.IDLE)
+                webhookStateStore.clearWebhookState(webhookId)
+
+            } catch (e: Exception) {
+                Timber.e(e, "Error al ejecutar webhook $webhookId: ${e.message}")
+                updateWebhookStatus(webhookId, WebhookStatus.ERROR)
+
+                // Guardar estado para transición a ERROR
+                webhookStateStore.saveWebhookState(
+                    webhookId,
+                    WebhookStatus.ERROR.name,
+                    System.currentTimeMillis() + 10_000
+                )
+
+                delay(10_000)
+                updateWebhookStatus(webhookId, WebhookStatus.IDLE)
+                webhookStateStore.clearWebhookState(webhookId)
+            }
         }
     }
 

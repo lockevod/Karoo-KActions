@@ -2,7 +2,6 @@ package com.enderthor.kActions.datatype
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -24,7 +23,6 @@ import androidx.glance.text.TextStyle
 import com.enderthor.kActions.data.WebhookData
 import com.enderthor.kActions.data.WebhookStatus
 import com.enderthor.kActions.extension.managers.ConfigurationManager
-import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.internal.ViewEmitter
 import io.hammerhead.karooext.models.UpdateGraphicConfig
@@ -43,7 +41,6 @@ import kotlin.coroutines.cancellation.CancellationException
 
 @OptIn(ExperimentalGlanceRemoteViewsApi::class)
 abstract class WebhookDataTypeBase(
-    protected val karooSystem: KarooSystemService,
     datatype: String,
     protected val context: Context,
     protected val webhookIndex: Int
@@ -100,7 +97,7 @@ abstract class WebhookDataTypeBase(
         val status = webhookData?.status ?: WebhookStatus.NOT_AVAILABLE
         val name = webhookData?.name ?: ""
 
-        // Obtener strings directamente del contexto
+
         val idleActionString = context.getString(R.string.webhook_idle_action)
         val firstActionString = context.getString(R.string.webhook_first_action)
         val executingActionString = context.getString(R.string.webhook_excuting_action)
@@ -109,7 +106,7 @@ abstract class WebhookDataTypeBase(
         val errorActionString = context.getString(R.string.webhook_error_action)
         val notAvailableActionString = context.getString(R.string.webhook_notavailable_action)
 
-        // Determinar mensaje basado en estado
+
         val webhookMessage = when (status) {
             WebhookStatus.IDLE -> "$idleActionString\n$name"
             WebhookStatus.FIRST -> firstActionString

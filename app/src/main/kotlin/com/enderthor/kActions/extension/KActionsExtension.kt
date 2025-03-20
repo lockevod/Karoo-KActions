@@ -29,7 +29,7 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
 
     override val types by lazy {
         listOf(
-            WebhookDataType(karooSystem, "webhook-one", applicationContext,0),
+            WebhookDataType("webhook-one", applicationContext,0),
         )
     }
 
@@ -68,8 +68,8 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
         configManager = ConfigurationManager(applicationContext)
         sender = Sender(karooSystem, configManager)
 
-        notificationManager = NotificationManager(sender)
-        webhookManager = WebhookManager(applicationContext, karooSystem)
+        notificationManager = NotificationManager(sender, applicationContext)
+        webhookManager = WebhookManager(applicationContext, karooSystem, this)
         rideStateManager = RideStateManager(
             karooSystem,
             notificationManager,
@@ -96,10 +96,10 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
                 configManager.loadPreferencesFlow().collect { configs ->
                     activeConfigs = configs
 
-                    // Obtener el activeProvider del primer config (si existe)
+
                     val activeProvider = configs.first().activeProvider
 
-                    // Si ya tenemos los senderConfigs, buscar el activo basado en activeProvider
+
                     if (senderConfig == null) {
                         configManager.loadSenderConfigFlow().first().let { senderConfigs ->
                             senderConfig = findActiveSenderConfig(senderConfigs, activeProvider)

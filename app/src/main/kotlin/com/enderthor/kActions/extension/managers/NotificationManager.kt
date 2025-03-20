@@ -1,21 +1,23 @@
 package com.enderthor.kActions.extension.managers
 
+import android.content.Context
 import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.data.SenderConfig
 import com.enderthor.kActions.data.karooUrl
 import com.enderthor.kActions.extension.Sender
+import com.enderthor.kActions.data.MIN_TIME_BETWEEN_SAME_MESSAGES
+import com.enderthor.kActions.data.MIN_TIME_TEXTBELT_FREE
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import timber.log.Timber
 
 class NotificationManager(
-    private val sender: Sender
+private val sender: Sender,
+context: Context
 ) {
-    private val lastMessageTimeByType = mutableMapOf<String, Long>()
-    private val sentMessageStates = mutableSetOf<String>()
-    private val MIN_TIME_BETWEEN_SAME_MESSAGES = 3 * 60 * 1000L
+    private val notificationStateStore = NotificationStateStore(context)
 
     suspend fun handleEventWithTimeLimit(
         eventType: String,
@@ -23,7 +25,7 @@ class NotificationManager(
         configs: List<ConfigData>,
         senderConfig: SenderConfig?
     ): Boolean {
-        val lastTime = lastMessageTimeByType[eventType] ?: 0L
+        val lastTime = notificationStateStore.getLastNotificationTime(eventType)
         val timeElapsed = currentTime - lastTime
 
         val isTextBeltFree = senderConfig?.let {
@@ -34,7 +36,7 @@ class NotificationManager(
         val configuredDelay = (configs.firstOrNull()?.delayIntents ?: 0.0) * 60 * 1000
 
         val minTimeBetweenMessages = when {
-            isTextBeltFree -> 24 * 60 * 60 * 1000L // 24 horas
+            isTextBeltFree -> MIN_TIME_TEXTBELT_FREE
             else -> maxOf(configuredDelay.toLong(), MIN_TIME_BETWEEN_SAME_MESSAGES)
         }
 
@@ -48,20 +50,15 @@ class NotificationManager(
             }
 
             if (configsWithNotify.isNotEmpty()) {
-                lastMessageTimeByType[eventType] = currentTime
+                notificationStateStore.saveNotificationTime(eventType, currentTime)
                 val stateKey = "$eventType-$currentTime"
 
-                if (!sentMessageStates.contains(stateKey)) {
-                    sendMessageForEvent(eventType, configs, senderConfig)
-                    sentMessageStates.add(stateKey)
-
-                    if (sentMessageStates.size > 10) {
-                        val keysToRemove = sentMessageStates.toList()
-                            .sortedBy { it.split("-").last().toLongOrNull() ?: 0L }
-                            .take(sentMessageStates.size - 10)
-                        sentMessageStates.removeAll(keysToRemove.toSet())
+                if (!notificationStateStore.hasSentMessage(stateKey)) {
+                    val success = sendMessageForEvent(eventType, configs, senderConfig)
+                    if (success) {
+                        notificationStateStore.saveSentMessage(stateKey)
                     }
-                    return true
+                    return success
                 }
             }
         } else {
