@@ -13,6 +13,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import timber.log.Timber
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -255,7 +257,39 @@ class WebhookManager(
             } else emptyMap()
 
             val headers = defaultHeaders + customHeaders
-            val body = if (config.post.isBlank()) null else config.post.toByteArray()
+
+            val contentType = customHeaders["Content-Type"]?.lowercase()
+
+            val postBody = config.post
+
+            val body = when {
+                postBody.isBlank() -> null
+                contentType?.contains("json") == true -> {
+
+                    if (postBody.trim().startsWith("{") && postBody.trim().endsWith("}")) {
+
+                        postBody.toByteArray()
+                    } else {
+
+                        try {
+                            val jsonObject = buildJsonObject {
+                                postBody.split("\n").forEach { line ->
+                                    val parts = line.split(":", limit = 2)
+                                    if (parts.size == 2) {
+                                        put(parts[0].trim(), JsonPrimitive(parts[1].trim()))
+                                    }
+                                }
+                            }
+                            jsonObject.toString().toByteArray()
+                        } catch (e: Exception) {
+                            postBody.toByteArray()
+                        }
+                    }
+                }
+                else -> postBody.toByteArray()
+            }
+
+
 
             val response = karooSystem.makeHttpRequest(
                 method = "POST",
