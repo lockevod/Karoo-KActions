@@ -28,7 +28,7 @@ KActions supports several providers to send notifications:
 
 1. **Create a Whapi account**:
    - Visit [Whapi.io](https://whapi.io/) and register.
-   - Whapi isn't free but they've sandbox and it's free (aroung 1000 whats/month). Please read whapi conditions because you've to link a real number if you use a sandbox. If you don't understant it, please don't use it.
+   - Whapi isn't free but they've sandbox and it's free (aroung 1000 whats/month). Please read whapi conditions because you've to link a real number if you use a sandbox. If you don't understand it, please don't use it.
 
 2. **Configure KActions**:
    - Open KActions on your Karoo.
@@ -39,7 +39,7 @@ KActions supports several providers to send notifications:
 
 1. **Get your CallMeBot API Key**:
    - Visit [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/) and follow the instructions.
-   - CallMeBot is free and you don't need to link your number (only has to send a message and you'll have the key code) but you can only use with one number (destination number).
+   - CallMeBot is free and you don't need to link your number (only has to send a message and you'll have the key code) but you can only use with one number, then you can generate the key from the destination number (where you want to receive notifications).
 
 2. **Configure KActions**:
    - Open KActions on your Karoo.
@@ -51,24 +51,13 @@ KActions supports several providers to send notifications:
 1. **About TextBelt**:
    - TextBelt offers worldwide SMS sending.
    - The free version allows 1 SMS per day. 
-   - For more messages, you need to purchase credits at [TextBelt](https://textbelt.com/).
+   - For more messages, you need to purchase credits at [TextBelt](https://textbelt.com/). 
    - You'll receive from different numbers (TextBelt has a significant pool number)
 
 2. **Configure TextBelt in KActions**:
    - Select "SMS (TextBelt)" as the provider.
    - To use the free version, leave the API Key field empty or type "textbelt".
    - If you've purchased credits, enter your API Key.
-
-### Email (Resend)
-
-1. **Create a Resend account**:
-   - Visit [Resend.com](https://resend.com) and register. Resend has a free tier, you can register an own domain (with free tier) and send from this domain, but if you don't have you'll receive mails from resend.dev
-   - Get your API Key from the dashboard.
-
-2. **Configure Resend in KActions**:
-   - Select "Email (Resend)" as the provider.
-   - Enter your API Key.
-   - Configure the sender and recipient email addresses.
 
 ## Webhook Configuration
 
@@ -83,10 +72,10 @@ KActions allows you to configure webhooks to send data to external services when
    - Define the POST request body in JSON format.
 
 3. **Triggering events**:
-   - Select which events will trigger the webhook: start, pause, resume, or end of ride.
+   - Select which events will trigger the webhook: start or end of ride.
 
 4. **Location filter (optional)**:
-   - You can configure the webhook to activate only when you're at a specific location.
+   - You can configure the webhook to activate only when you're at at home location (POI Home in your Karoo).
 
 5. **Webhook testing**:
    - Use the "Send test to webhook" function to verify the configuration.
@@ -94,18 +83,22 @@ KActions allows you to configure webhooks to send data to external services when
 ## Usage
 
 1. **Configure notification options**:
-   - Enable or disable notifications for different events: start, end, pause, and resumption of the ride.
+   - Enable or disable notifications for different events: start, end of the ride.
+   - You've configure this for notifications and webhooks separately.
 
-2. **Configure phone numbers**:
+2. **Configure phone number**:
    - Add one phone numbers that will receive notifications.
-   - Numbers should be entered with E164 format (with the '+' sign and with the country code example: +34675123123).
+   - Number should be entered with E164 format (with the '+' sign and with the country code example: +34675123123).
 
 3. **Customize messages**:
-   - Personalize messages for each type of event (start, end, pause, resumption).
+   - Personalize messages for each type of event .
 
 4. **During your ride**:
-   - Once configured, KActions will automatically send messages when you start, pause, resume, or end a ride on your Karoo.
+   - Once configured, KActions will automatically send messages/execute webhook when you start or end a ride on your Karoo.
    - You don't need to interact with the app during the ride; everything works in the background.
+
+Webhook has can be triggered pressing the button in the app if you add webhook custom field in the profiles screen. 
+This button has a security measure, you have to press twice to send the webhook (and you can configure to be triggered only if you're near home)
 
 ## Features
 
@@ -126,15 +119,15 @@ KActions allows you to configure webhooks to send data to external services when
 
 ## Privacy/Liability
 
-- KActions does not store  personal information beyond what is necessary for its operation, obviously if you use a third part API (Whapi, CallmeBot, Resend, Textbelt or any information with webhooks) you're sharing this information with these services. KActions store information only in your Karoo device, but if you use a third party API, you need to understand you're sharing this info with third party service. 
-- KActions doesn't have any relationship or partnership with Whapi, Callmebot, Resend or Textbelt, you need to read and accept their conditions. If you use KActions with any of these services, you accept this. 
-- When you use Kactions you're agree you've all responsability with the information (and use), for example don't spam, be careful it you link a webhook to make actions, etc. Kactions has no warranties, if you aren't agree with this you cannot use it.
+- KActions does not store  personal information beyond what is necessary for its operation, obviously if you use a third part API (Whapi, CallmeBot, Textbelt or any information with webhooks) you're sharing this information with these services. KActions store information only in your Karoo device, but if you use a third party API, you need to understand you're sharing this info with third party service. 
+- KActions doesn't have any relationship or partnership with Whapi, Callmebot or Textbelt, you need to read and accept their conditions. If you use KActions with any of these services, you accept this. 
+- When you use Kactions you're agree you've all responsibility with the information (and use), for example don't spam, be careful it you link a webhook to make actions, etc. Kactions has no warranties, if you aren't agree with this you cannot use it.
 - Please be careful with your personal information.
 
 ## Credits
 
 - Developed by EnderThor.
-- Uses Whapi, CallMeBot, TextBelt, and Resend APIs for message sending.
+- Uses Whapi, CallMeBot, TextBelt  for message sending.
 - Uses the Karoo Extensions Framework developed by Hammerhead.
 
 ## Useful Links
@@ -142,5 +135,4 @@ KActions allows you to configure webhooks to send data to external services when
 - [Whapi Documentation](https://docs.whapi.io/)
 - [CallMeBot API](https://www.callmebot.com/blog/free-api-whatsapp-messages/)
 - [TextBelt SMS API](https://textbelt.com/)
-- [Resend Email API](https://resend.com)
 - [Karoo Extensions Framework](https://github.com/hammerheadnav/karoo-ext)
