@@ -7,9 +7,9 @@ import com.enderthor.kActions.activity.dataStore
 import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.SenderConfig
 import com.enderthor.kActions.data.WebhookData
-import com.enderthor.kActions.data.defaultConfigData
 import com.enderthor.kActions.data.defaultSenderConfig
 import com.enderthor.kActions.data.defaultWebhookData
+import com.enderthor.kActions.data.getPreviewConfigData
 import com.enderthor.kActions.extension.jsonWithUnknownKeys
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -38,12 +38,12 @@ class ConfigurationManager(
         return context.dataStore.data.map { settingsJson ->
             try {
                 jsonWithUnknownKeys.decodeFromString<List<ConfigData>>(
-                    settingsJson[preferencesKey] ?: defaultConfigData
+                    settingsJson[preferencesKey] ?: getPreviewConfigData(context)
                 )
 
             } catch(e: Throwable){
                 Timber.tag("kpower").e(e, "Failed to read preferences Flow Extension")
-                jsonWithUnknownKeys.decodeFromString<List<ConfigData>>(defaultConfigData)
+                jsonWithUnknownKeys.decodeFromString<List<ConfigData>>(getPreviewConfigData(context))
             }
         }.distinctUntilChanged()
     }

@@ -1,6 +1,6 @@
 package com.enderthor.kActions.screens
 
-import androidx.compose.foundation.focusable
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -315,14 +315,14 @@ fun ConfigurationScreen() {
                 }
             }
         } else {
-            if (isEmailProviderSelected && (emailFrom.isBlank() || !isEmailFromValid)) {
-                statusMessage = "Error: Se requiere un email de remitente válido"
+            statusMessage = if (isEmailProviderSelected && (emailFrom.isBlank() || !isEmailFromValid)) {
+                "Error: Se requiere un email de remitente válido"
             } else if (isEmailProviderSelected && (email1.isBlank() || !isEmail1Valid)) {
-                statusMessage = "Error: Se requiere un email de destinatario válido"
+                "Error: Se requiere un email de destinatario válido"
             } else if (!isEmailProviderSelected && (phoneNumber1.isBlank() || !isPhone1Valid)) {
-                statusMessage = cannotSaveMessage
+                cannotSaveMessage
             } else {
-                statusMessage = cannotSaveMessage
+                cannotSaveMessage
             }
 
             scope.launch {
