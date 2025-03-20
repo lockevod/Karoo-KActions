@@ -15,7 +15,6 @@ import io.hammerhead.karooext.extension.KarooExtension
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -70,6 +69,7 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
 
         notificationManager = NotificationManager(sender, applicationContext)
         webhookManager = WebhookManager(applicationContext, karooSystem, this)
+        webhookManager.restorePendingWebhookStates()
         rideStateManager = RideStateManager(
             karooSystem,
             notificationManager,
@@ -135,60 +135,16 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
         }
     }
 
-    fun triggerCustomWebhook(webhookId: Int? = null) {
-        if (webhookId == null) {
-            Timber.w("Webhook ID no proporcionado")
-            return
-        }
-        rideStateManager.triggerCustomWebhook(webhookId)
+    fun updateWebhookStatus(webhookId: Int, status: WebhookStatus) {
+        webhookManager.updateWebhookStatus(webhookId, status)
     }
 
-
-
-    fun updateWebhookState(webhookId: Int?, newStatus: WebhookStatus) {
-        webhookId?.let { id ->
-            launch(Dispatchers.IO) {
-                webhookManager.updateWebhookStatus(id, newStatus)
-                Timber.d("Webhook $id actualizado a estado $newStatus")
-            }
-        }
+    fun scheduleResetToIdle(webhookId: Int, delayMillis: Long) {
+        webhookManager.scheduleResetToIdle(webhookId, delayMillis)
     }
 
-    fun scheduleResetToIdle(webhookId: Int?, delayMillis: Long) {
-        webhookId?.let { id ->
-            launch(Dispatchers.IO) {
-                delay(delayMillis)
-                updateWebhookState(id, WebhookStatus.IDLE)
-            }
-        }
-    }
-
-
-    fun executeWebhookWithStateTransitions(webhookId: Int?) {
-        webhookId?.let { id ->
-            launch(Dispatchers.IO) {
-                try {
-
-                    triggerCustomWebhook(id)
-
-
-                    delay(10_000)
-                    updateWebhookState(id, WebhookStatus.SUCCESS)
-
-
-                    delay(5_000)
-                    updateWebhookState(id, WebhookStatus.IDLE)
-                } catch (e: Exception) {
-
-                    Timber.e(e, "Error al ejecutar webhook $id: ${e.message}")
-                    updateWebhookState(id, WebhookStatus.ERROR)
-
-
-                    delay(10_000)
-                    updateWebhookState(id, WebhookStatus.IDLE)
-                }
-            }
-        }
+    fun executeWebhookWithStateTransitions(webhookId: Int) {
+        webhookManager.executeWebhookWithStateTransitions(webhookId)
     }
 
     override fun onDestroy() {

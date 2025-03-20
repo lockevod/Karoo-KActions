@@ -125,12 +125,4 @@ class RideStateManager(
             }
         }
     }
-
-    fun triggerCustomWebhook(webhookId: Int) {
-        scope.launch {
-            Timber.d("Activando webhook: $webhookId")
-
-            webhookManager.handleEvent("custom",webhookId)
-        }
-    }
 }

@@ -47,6 +47,7 @@ fun WebhookConfigScreen() {
     var actionOnCustom by remember { mutableStateOf(false) }
     var onlyIfLocation by remember { mutableStateOf(false) }
     var location by remember { mutableStateOf(GpsCoordinates(0.0, 0.0)) }
+    var header by remember { mutableStateOf("") }
 
     var isLoading by remember { mutableStateOf(false) }
     var statusMessage by remember { mutableStateOf<String?>(null) }
@@ -90,6 +91,7 @@ fun WebhookConfigScreen() {
                     actionOnCustom = savedWebhook.actionOnCustom
                     onlyIfLocation = savedWebhook.onlyIfLocation
                     location = savedWebhook.location
+                    header = savedWebhook.header
                 }
             }
         }
@@ -107,6 +109,7 @@ fun WebhookConfigScreen() {
                     name = name.trim(),
                     url = url.trim(),
                     post = postBody.trim(),
+                    header = header.trim(),
                     enabled = enabled,
                     actionOnStart = actionOnStart,
                     actionOnStop = actionOnStop,
@@ -154,7 +157,17 @@ fun WebhookConfigScreen() {
                     return@launch
                 }
 
-                val headers = mapOf("Content-Type" to "application/json")
+                val defaultHeaders = mapOf("Content-Type" to "application/json")
+                val customHeaders = if (header.isNotBlank()) {
+                    header.split("\n").mapNotNull { line ->
+                        val parts = line.split(":", limit = 2)
+                        if (parts.size == 2) {
+                            parts[0].trim() to parts[1].trim()
+                        } else null
+                    }.toMap()
+                } else emptyMap()
+
+                val headers = defaultHeaders + customHeaders
                 val body = if (postBody.isBlank()) null else postBody.toByteArray()
 
                 val response = karooSystem.makeHttpRequest(
@@ -262,6 +275,26 @@ fun WebhookConfigScreen() {
                                 saveData()
                             } },
                         singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
+                    )
+
+                    OutlinedTextField(
+                        value = header,
+                        onValueChange = {
+                            header = it
+                        },
+                        label = { Text(stringResource(R.string.webhook_headers)) },
+                        placeholder = { Text(stringResource(R.string.webhook_headers_placeholder)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) {
+                                saveData()
+                            }},
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = {
                             focusManager.clearFocus()

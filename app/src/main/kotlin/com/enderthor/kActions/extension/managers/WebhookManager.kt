@@ -1,9 +1,6 @@
 package com.enderthor.kActions.extension.managers
 
 import android.content.Context
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import com.enderthor.kActions.activity.dataStore
 import com.enderthor.kActions.data.GpsCoordinates
 import com.enderthor.kActions.data.WebhookData
 import com.enderthor.kActions.data.WebhookStatus
@@ -16,8 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import timber.log.Timber
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -26,7 +21,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class WebhookManager(
-    private val context: Context,
+    context: Context,
     private val karooSystem: KarooSystemService,
     private val scope: CoroutineScope
 ) {
@@ -34,7 +29,6 @@ class WebhookManager(
     private val webhookStateStore = WebhookStateStore(context)
     private val configManager = ConfigurationManager(context)
     private var webhookConfig: WebhookData? = null
-    private val webhooksKey = stringPreferencesKey("webhooks")
 
 
     suspend fun loadWebhookConfiguration(webhookId: Int? = null) {
@@ -81,16 +75,6 @@ class WebhookManager(
         }
     }
 
-    fun triggerCustomWebhook(webhookId: Int?) {
-        webhookId?.let { id ->
-            scope.launch(Dispatchers.IO) {
-                Timber.d("Activando webhook: $id")
-                handleEvent("custom", id)
-            }
-        } ?: run {
-            Timber.w("Webhook ID no proporcionado")
-        }
-    }
 
     fun restorePendingWebhookStates() {
         scope.launch(Dispatchers.IO) {
@@ -106,13 +90,13 @@ class WebhookManager(
                         val remainingTime = targetTime - currentTime
 
                         if (remainingTime > 0) {
-                            // Restaurar el estado actual
+
                             updateWebhookStatus(webhook.id, status)
 
-                            // Esperar el tiempo restante
+
                             delay(remainingTime)
 
-                            // Realizar la siguiente transición
+
                             when (status) {
                                 WebhookStatus.FIRST -> {
                                     updateWebhookStatus(webhook.id, WebhookStatus.IDLE)
@@ -190,17 +174,6 @@ class WebhookManager(
     }
 
 
-
-    private suspend fun loadWebhooks(): List<WebhookData> {
-        return configManager.loadWebhookDataFlow().first()
-    }
-
-    private suspend fun saveWebhooks(webhooks: List<WebhookData>) {
-        context.dataStore.edit { preferences ->
-            preferences[webhooksKey] = Json.encodeToString(webhooks)
-        }
-    }
-
     fun scheduleResetToIdle(webhookId: Int, delayMillis: Long) {
         webhookStateStore.saveWebhookState(
             webhookId,
@@ -267,7 +240,17 @@ class WebhookManager(
                 return false
             }
 
-            val headers = mapOf("Content-Type" to "application/json")
+            val defaultHeaders = mapOf("Content-Type" to "application/json")
+            val customHeaders = if (config.header.isNotBlank()) {
+                config.header.split("\n").mapNotNull { line ->
+                    val parts = line.split(":", limit = 2)
+                    if (parts.size == 2) {
+                        parts[0].trim() to parts[1].trim()
+                    } else null
+                }.toMap()
+            } else emptyMap()
+
+            val headers = defaultHeaders + customHeaders
             val body = if (config.post.isBlank()) null else config.post.toByteArray()
 
             val response = karooSystem.makeHttpRequest(

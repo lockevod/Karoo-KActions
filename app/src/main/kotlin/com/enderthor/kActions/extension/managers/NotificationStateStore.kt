@@ -3,11 +3,11 @@ package com.enderthor.kActions.extension.managers
 import android.content.Context
 import androidx.core.content.edit
 
-class NotificationStateStore(private val context: Context) {
+class NotificationStateStore(context: Context) {
     private val preferences = context.getSharedPreferences("notification_states", Context.MODE_PRIVATE)
 
     fun saveNotificationTime(eventType: String, timestamp: Long) {
-        preferences.edit() {
+        preferences.edit {
             putLong("notification_$eventType.timestamp", timestamp)
         }
     }
@@ -20,7 +20,6 @@ class NotificationStateStore(private val context: Context) {
         val sentMessages = getSentMessages().toMutableSet()
         sentMessages.add(stateKey)
 
-        // Limitar el tamaño del conjunto
         if (sentMessages.size > 10) {
             val keysToRemove = sentMessages.toList()
                 .sortedBy { it.split("-").lastOrNull()?.toLongOrNull() ?: 0L }
@@ -28,7 +27,7 @@ class NotificationStateStore(private val context: Context) {
             sentMessages.removeAll(keysToRemove.toSet())
         }
 
-        preferences.edit() {
+        preferences.edit {
             putStringSet("sent_messages", sentMessages)
         }
     }

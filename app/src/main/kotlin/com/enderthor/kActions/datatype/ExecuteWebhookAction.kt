@@ -40,21 +40,27 @@ class ExecuteWebhookAction : ActionCallback {
                 return
             }
 
-            if (extension != null) {
+            if (extension != null && webhookId != null) {
                 Timber.d("Ejecutando webhook con ID: $webhookId y Webhook URL: ${parameters[WEBHOOK_URL]} y estado: $currentStatus")
                 withContext(Dispatchers.IO) {
                     when (currentStatus) {
                         WebhookStatus.IDLE -> {
-
-                            extension.updateWebhookState(webhookId, WebhookStatus.FIRST)
+                            extension.updateWebhookStatus(
+                                webhookId,
+                                WebhookStatus.FIRST
+                            )
                             extension.scheduleResetToIdle(webhookId, 10_000)
                         }
-                        WebhookStatus.FIRST -> {
 
-                            extension.updateWebhookState(webhookId, WebhookStatus.EXECUTING)
+                        WebhookStatus.FIRST -> {
+                            extension.updateWebhookStatus(
+                                webhookId,
+                                WebhookStatus.EXECUTING
+                            )
                             extension.executeWebhookWithStateTransitions(webhookId)
                         }
-                        else -> {  }
+
+                        else -> {}
                     }
                 }
             }
