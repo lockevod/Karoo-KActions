@@ -235,6 +235,10 @@ class WebhookManager(
 
     suspend fun sendWebhook(config: WebhookData): Boolean {
         try {
+
+            Timber.d("Enviando webhook a: ${config.url}")
+
+
             if (!config.url.startsWith("http")) {
                 Timber.e("URL de webhook inválida: ${config.url}")
                 return false

@@ -25,6 +25,8 @@ import io.hammerhead.karooext.KarooSystemService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -157,7 +159,7 @@ fun WebhookConfigScreen() {
                     return@launch
                 }
 
-                val defaultHeaders = mapOf("Content-Type" to "application/json")
+
                 val customHeaders = if (header.isNotBlank()) {
                     header.split("\n").mapNotNull { line ->
                         val parts = line.split(":", limit = 2)
@@ -167,15 +169,50 @@ fun WebhookConfigScreen() {
                     }.toMap()
                 } else emptyMap()
 
-                val headers = defaultHeaders + customHeaders
-                val body = if (postBody.isBlank()) null else postBody.toByteArray()
 
+                val contentType = customHeaders["Content-Type"]?.lowercase()
+
+
+                val body = when {
+                    postBody.isBlank() -> null
+                    contentType?.contains("json") == true -> {
+
+                        if (postBody.trim().startsWith("{") && postBody.trim().endsWith("}")) {
+
+                            postBody.toByteArray()
+                        } else {
+
+                            try {
+                                val jsonObject = buildJsonObject {
+                                    postBody.split("\n").forEach { line ->
+                                        val parts = line.split(":", limit = 2)
+                                        if (parts.size == 2) {
+                                            put(parts[0].trim(), JsonPrimitive(parts[1].trim()))
+                                        }
+                                    }
+                                }
+                                jsonObject.toString().toByteArray()
+                            } catch (e: Exception) {
+                                postBody.toByteArray()
+                            }
+                        }
+                    }
+                    else -> postBody.toByteArray()
+                }
+
+
+                val headers = customHeaders
+
+                Timber.d("Headers: $headers")
+                Timber.d("Body: ${body?.decodeToString()}")
                 val response = karooSystem.makeHttpRequest(
                     method = "POST",
                     url = url,
                     headers = headers,
                     body = body
                 ).first()
+
+                Timber.d("Response: ${response.statusCode} ${response.body?.decodeToString()}")
 
                 statusMessage = if (response.statusCode in 200..299) {
                     testSuccess

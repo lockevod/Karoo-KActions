@@ -55,6 +55,7 @@ fun KarooSystemService.makeHttpRequest(method: String, url: String, queue: Boole
                     trySend(event.state as HttpResponseState.Complete)
                     close()
                 }
+                Timber.d("Received event: $event")
             },
             onError = { s: String ->
                 Timber.e("Failed to make http request: $s")
