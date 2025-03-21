@@ -163,7 +163,7 @@ class WebhookManager(
 
     private suspend fun checkCurrentLocation(targetLocation: GpsCoordinates): Boolean {
         try {
-            val currentLocation = karooSystem.getGpsFlow().first() // Obtenemos solo el primer valor
+            val currentLocation = karooSystem.getGpsFlow().first()
 
             val distance = distanceTo(currentLocation, targetLocation)
             Timber.d("Distancia a la ubicación objetivo: $distance km")

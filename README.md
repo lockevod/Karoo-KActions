@@ -104,6 +104,33 @@ KActions allows you to configure webhooks to send data to external services when
 Webhook has can be triggered pressing the button in the app if you add webhook custom field in the profiles screen. 
 This button has a security measure, you have to press twice to send the webhook (and you can configure to be triggered only if you're near home)
 
+## Import/Export Configuration
+
+KActions allows you to import  both provider configurations and webhook settings:
+
+### Provider Configuration
+
+- **Import Provider Settings**:
+   - Fill information in file (you've a template in configs folder).
+   - Copy the file to your Karoo device in the KActions folder (/sdcard/Android/data/com.enderthor.kActions/files). You need to create this folder if it doesn't exist (you can use a file manager app or ADB).
+   - Please respect the file name, it must to be "provider_config.json"
+   - Access the Provider Configuration screen.
+   - Tap the "Import Configuration" button.
+   - The app will read settings from file.
+
+### Webhook Configuration
+
+- **Import Webhook Settings**:
+     - Fill information in file (you've a template in configs folder).
+     - Copy the file to your Karoo device in the KActions folder (/sdcard/Android/data/com.enderthor.kActions/files). You need to create this folder if it doesn't exist (you can use a file manager app or ADB).
+     - Please respect the file name, it must to be "webhook_config.json"
+     - Access the Webhook Configuration screen.
+     - Tap the "Import Webhooks" button.
+     - The app will read webhook configurations from the previously exported file.
+
+- This feature makes it easy to import api keys and webhooks information (but you and introduce directly by Karoo keyboard). Be careful, this file has sensitive information (api keys, phone numbers, etc.) and you should not share it with anyone.
+- This feature only save basic information you need to configure/select rest of the options in the app (like messages, enable, etc.).
+
 ## Features
 
 - Automatic sending of notifications to preset number.

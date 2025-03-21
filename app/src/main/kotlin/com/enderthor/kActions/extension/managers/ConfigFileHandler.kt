@@ -30,20 +30,6 @@ class ConfigFileHandler(private val context: Context) {
     }
 
 
-    fun readWebhookFromFile(uri: Uri): List<WebhookData>? {
-        return try {
-            val inputStream = context.contentResolver.openInputStream(uri)
-            val content = inputStream?.bufferedReader()?.use(BufferedReader::readText)
-            inputStream?.close()
-
-            if (content.isNullOrBlank()) return null
-
-            json.decodeFromString<List<WebhookData>>(content)
-        } catch (e: Exception) {
-            Timber.e(e, "Error leyendo configuración de webhook del archivo: ${e.message}")
-            null
-        }
-    }
 
     fun readWebhookFromFile(uri: Uri, currentWebhooks:List<WebhookData> = emptyList()): WebhookImportResult {
 
@@ -82,20 +68,6 @@ class ConfigFileHandler(private val context: Context) {
         }
     }
 
-    fun readSenderConfigFromFile(uri: Uri): List<SenderConfig>? {
-        return try {
-            val inputStream = context.contentResolver.openInputStream(uri)
-            val content = inputStream?.bufferedReader()?.use(BufferedReader::readText)
-            inputStream?.close()
-
-            if (content.isNullOrBlank()) return null
-
-            json.decodeFromString<List<SenderConfig>>(content)
-        } catch (e: Exception) {
-            Timber.e(e, "Error read config from file: ${e.message}")
-            null
-        }
-    }
 
     fun readSenderConfigFromFile(uri: Uri, currentSenders: List<SenderConfig> = emptyList()): SenderConfigImportResult {
         try {
