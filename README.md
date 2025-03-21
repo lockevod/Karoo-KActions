@@ -137,7 +137,7 @@ KActions allows you to import both provider configurations and webhook settings 
 - **Import Provider Settings**:
    - Fill information in file (you've a template in templates folder. Please don't modify structure, change/complete only apikey (insert your apikey for your provider (between quotation marks). You don't need to fill a key for every provider. You can do copy with adb with the command:
    ```
-   adb push provider_config.json /sdcard/Android/data/com.enderthor.kActions/files/
+   adb push provider_config.json /sdcard/Android/data/com.enderthor.kActions/files/provider_config.json
    ```
    - Copy the file to your Karoo device in the KActions folder (/sdcard/Android/data/com.enderthor.kActions/files/). You need to create this folder if it doesn't exist (you can use a file manager app or ADB).
    - Please respect the file name, it must to be "provider_config.json"
@@ -147,9 +147,9 @@ KActions allows you to import both provider configurations and webhook settings 
 
 - **Import Webhook Settings**:
      - Fill information in file (you've a template in templates folder. Please don't modify structure, change/complete only second position, for example, don't change "name", insert name after : between  quotation marks. You don't need to fill all fields.
-     - Copy the file to your Karoo device in the KActions folder (/sdcard/Android/data/com.enderthor.kActions/files/). You need to create this folder if it doesn't exist (you can use a file manager app or ADB). You can do copy with adb with the command:
+     - Copy the file to your Karoo device in the KActions folder (/sdcard/Android/data/com.enderthor.kActions/files/). You don't need to create this folder if it doesn't exist (you can use a ADB and copy file directly). You can do copy with adb with the command:
      ```
-     adb push webhook_config.json /sdcard/Android/data/com.enderthor.kActions/files/
+     adb push webhook_config.json /sdcard/Android/data/com.enderthor.kActions/files/webhook_config.json
      ```
      - Please respect the file name, it must to be "webhook_config.json"
      - Access the Webhook Configuration screen.
