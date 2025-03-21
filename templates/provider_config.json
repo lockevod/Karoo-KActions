@@ -1,0 +1,14 @@
+[
+    {
+        "provider": "CALLMEBOT",
+        "apiKey": ""
+    },
+    {
+        "provider": "WHAPI",
+        "apiKey": ""
+    },
+    {
+        "provider": "TEXTBELT",
+        "apiKey": "textbelt"
+    }
+]

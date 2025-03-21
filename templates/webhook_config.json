@@ -1,0 +1,8 @@
+[
+    {
+        "name": "Test",
+        "url": "http://192.168.1.1:812/api/services/switch/toggle",
+        "header": "Content-Type: application/json\nAuthorization: Bearer fgffggfhfgdfhgdfghmRjMTlhYmQxMDA5YyIsImlhdCI6MTc0MjQ4OTAyMSwiZXhwIjoyMDU3ODQ5MDIxfQ.jSbjhhVLkp5-YYDcffffddoTywyO9Y-s",
+        "post": "entity_id: switch.garaje \n test2: 3333"
+    }
+]
