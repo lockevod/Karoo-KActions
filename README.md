@@ -29,7 +29,7 @@ Compatible with Karoo 2 and Karoo 3 running Karoo OS version 1.524.2003 and late
 
 ## Notifications Configuration
 
-KActions can send automatic messages when you start/stop your ride. You need to have connected your Karoo with the mobile app (Karoo 3) or have a data connection (Karoo 2).
+KActions can send automatic messages when you start/stop your ride. **You need to have connected your Karoo with the mobile app (Karoo 3) or have a data connection (Karoo 2)**.
 
 You need to configure basic information in Conf. Tab:
 
