@@ -62,5 +62,8 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.androidx.foundation.android)
     implementation(libs.androidx.foundation.layout.android)
+    implementation(platform("com.google.firebase:firebase-bom:33.11.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-crashlytics")
 }
 

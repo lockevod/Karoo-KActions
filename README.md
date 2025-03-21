@@ -182,6 +182,7 @@ KActions allows you to import both provider configurations and webhook settings 
 - KActions doesn't have any relationship or partnership with Whapi, Callmebot or Textbelt, you need to read and accept their conditions. If you use KActions with any of these services, you accept this. 
 - When you use Kactions you're agree you've all responsibility with the information (and use), for example don't spam, be careful it you link a webhook to make actions, etc. Kactions has no warranties, if you aren't agree with this you cannot use it.
 - Please be careful with your personal information.
+- KActions use Firebase Crashlytics for crash reporting. This is only used to improve the app and does not collect any personal information for use with KActions, but it's a service from Alphabet, please read this terms. If you do not agree with this, please do not use the app.
 
 ## Credits
 
