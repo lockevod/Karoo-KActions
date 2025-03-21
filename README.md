@@ -46,6 +46,7 @@ You need to configure basic information in Conf. Tab:
    
 4. **Select actions**:
     - Start, stop or both.
+    - Enable only in outdoors activities (only karoo > 1.548)
 
 5. **Select time betweem messages**:
     - You can configure time between two messages, this is for avoid to receive several messages, you can configure it but minimum time is 5 minutes (internal delay).
