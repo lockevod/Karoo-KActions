@@ -4,7 +4,10 @@
 > This app is currently in prototype stage and its main features might not work at all. If you want to test it anyway and encounter issues, please report them in the github issues, ideally with adb logs attached.
 > Please we careful if you use webhooks, you can trigger actions with this extension and you need to be careful with this.
 
-This extension for Karoo devices allows you to send automated notifications when you start or finish a bike ride. Now compatible with multiple messaging providers and with webhook support (send custom actions from datafield).
+This extension for Karoo devices allows to perform some automatic actions:
+- Send automated notifications when you start or finish a bike ride. Now compatible with multiple messaging providers.
+- Execute automated actions (webhook)
+- Execute custom custom action (webhook) from custom datafield.
 
 Compatible with Karoo 2 and Karoo 3 running Karoo OS version 1.524.2003 and later.
 
@@ -24,22 +27,47 @@ Compatible with Karoo 2 and Karoo 3 running Karoo OS version 1.524.2003 and late
 2. Share the file with the Hammerhead Companion app.
 3. Install the app through Hammerhead Companion.
 
-## Supported Messaging Providers
+## Notifications Configuration
 
-KActions supports several providers to send notifications:
+KActions can send automatic messages when you start/stop your ride. You need to configure basic information in Conf. Tab:
 
+1. **Configure notification options**:
+   - Enable or disable notifications for different events: start, end of the ride.
+   - You've configure this for notifications and webhooks separately.
+
+2. **Configure phone number**:
+   - Add one phone numbers that will receive notifications.
+   - Number should be entered with E164 format (with the '+' sign and with the country code example: +34675123123).
+
+3. **Customize messages**:
+   - Personalize messages for each type of event.
+     
+4. **Live Track Karoo**:
+   - Fill Live Track Karoo key. If you fill this, you will receive the link with your tracking info you neeed to fill only the key. For example:
+   https://dashboard.hammerhead.io/live/3738Ag, please fill only 3738Ag
+
+5. **During your ride**:
+   - Once configured, KActions will automatically send messages/execute webhook when you start or end a ride on your Karoo.
+   - You don't need to interact with the app during the ride; everything works in the background.
+
+Webhook has can be triggered pressing the button in the app if you add webhook custom field in the profiles screen. 
+This button has a security measure, you have to press twice to send the webhook (and you can configure to be triggered only if you're near home)
+
+KActions supports several providers to send notifications, you need to configure before use the app:
 
 ### WhatsApp (CallMeBot) Prefered option (easy)
 
 1. **Get your CallMeBot API Key**:
    - Visit [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/) and follow the instructions.
-   - CallMeBot is free and you don't need to link your number (only has to send a message and you'll have the key code) but you can only use with one number, then you can generate the key from the destination number (where you want to receive notifications).
+   - CallMeBot is free and you don't need to link your number (only has to send a message and you'll have the key code) but you can only use with one number, then you've to generate the key from the destination number (where you want to receive notifications).
+   - If you want you can app the Callmebot number in your contacts with a more friendly name. Please, you can do this steps in receiver mobile not in yours.
 
 2. **Configure KActions**:
    - Open KActions on your Karoo.
    - Select "WhatsApp (CallMeBot)" as the provider.
    - Enter your CallMeBot API Key.
-
+   - Test CallMeBot configuration with Test Button.
+  
 ### SMS (TextBelt). Second preferred option
 
 1. **About TextBelt**:
@@ -52,29 +80,36 @@ KActions supports several providers to send notifications:
    - Select "SMS (TextBelt)" as the provider.
    - To use the free version, leave the API Key field empty or type "textbelt".
    - If you've purchased credits, enter your API Key.
+   - Test Textbelt configuration with Test Button.
 
 ### WhatsApp (WHAPI) Complicated option but powerful.
 
 1. **Create a Whapi account**:
    - Visit [Whapi.io](https://whapi.io/) and register.
-   - Whapi isn't free but they've sandbox and it's free (aroung 1000 whats/month). Please read whapi conditions because you've to link a real number if you use a sandbox. If you don't understand it, please don't use it. It's more complicated and you has to understand risks.
+   - Whapi isn't free but they've sandbox and it's free (aroung 1000 whats/month). Please read whapi conditions because you've to link a real number if you use a sandbox. If you don't understand it, please don't use it. It's easy but you need to understand risks. I will not provide more info about enrollment process.
 
 2. **Configure KActions**:
    - Open KActions on your Karoo.
    - Select "WhatsApp (WHAPI)" as the provider.
    - Paste your API Key in the corresponding field.
+   - Test Whapi configuration with Test Button.
 
 ## Webhook Configuration
 
-KActions allows you to configure webhooks to send data to external services when events occur during your ride:
+KActions allows you to configure webhooks to execute external services when events occur during your ride (start/stop) or you can also execute it if you add webhook custom field in your profile. Webhook configuration is only for advanced users, it's very powerful (because you can execute action you want) but it's necessary you have experience. 
 
 1. **Enable webhooks**:
    - In the webhook configuration screen, activate the "Enable webhook" option.
    - Enter a name to identify your webhook.
 
-2. **Configure URL and data**:
+2a. **API/Webhook information**:
+   - You need to have information about your service (url, post and headers)
+   - Please check this info before next steps. You can use postman or other chrome extensions to check the correct behaviour.
+
+2b. **Configure URL, data and headers**:
    - Enter the URL of the service that will receive the data.
    - Define the POST request body in JSON format.
+   - Define Headers in JSON format.
 
 3. **Triggering events**:
    - Select which events will trigger the webhook: start or end of ride.
@@ -85,29 +120,10 @@ KActions allows you to configure webhooks to send data to external services when
 5. **Webhook testing**:
    - Use the "Send test to webhook" function to verify the configuration.
 
-## Usage
 
-1. **Configure notification options**:
-   - Enable or disable notifications for different events: start, end of the ride.
-   - You've configure this for notifications and webhooks separately.
+## Import/Export API keys/Webhook Configuration
 
-2. **Configure phone number**:
-   - Add one phone numbers that will receive notifications.
-   - Number should be entered with E164 format (with the '+' sign and with the country code example: +34675123123).
-
-3. **Customize messages**:
-   - Personalize messages for each type of event .
-
-4. **During your ride**:
-   - Once configured, KActions will automatically send messages/execute webhook when you start or end a ride on your Karoo.
-   - You don't need to interact with the app during the ride; everything works in the background.
-
-Webhook has can be triggered pressing the button in the app if you add webhook custom field in the profiles screen. 
-This button has a security measure, you have to press twice to send the webhook (and you can configure to be triggered only if you're near home)
-
-## Import/Export Configuration
-
-KActions allows you to import  both provider configurations and webhook settings:
+KActions allows you to import both provider configurations and webhook settings directly from a file. This is very useful if you've to introduce a complicated key or you webhook is complicated. You'll need to connect your Karoo by cable and execute adb commands.
 
 - **Import Provider Settings**:
    - Fill information in file (you've a template in templates folder. Please don't modify structure, change/complete only apikey (insert your apikey for your provider (between quotation marks). You don't need to fill a key for every provider. You can do copy with adb with the command:
