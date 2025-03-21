@@ -18,6 +18,7 @@ data class ConfigData(
     val notifyOnStart: Boolean = true,
     val notifyOnPause: Boolean = false,
     val notifyOnResume: Boolean = false,
+    val indoorMode: Boolean = false,
     val startMessage: String = "",
     val stopMessage: String = "",
     val pauseMessage: String = "",
@@ -26,7 +27,7 @@ data class ConfigData(
     val phoneNumbers: List<String> = listOf(),
     val emails: List<String> = listOf(),
     val emailFrom: String = "",
-    val delayIntents: Double =  60.0 * 5.0,  // 6 horas en minutos
+    val delayIntents: Double =  60.0 * 4.0,  // 4 horas en minutos
     val activeProvider: ProviderType = ProviderType.CALLMEBOT,
 )
 
@@ -65,9 +66,9 @@ data class WebhookData(
     val url: String= "",
     val header: String= "",
     val post: String= "",
-    val enabled: Boolean = true,
+    val enabled: Boolean = false,
     val actionOnStop: Boolean = false,
-    val actionOnStart: Boolean = true,
+    val actionOnStart: Boolean = false,
     val actionOnPause: Boolean = false,
     val actionOnResume: Boolean = false,
     val actionOnCustom: Boolean = true,

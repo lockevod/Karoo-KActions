@@ -54,6 +54,9 @@ fun ConfigurationScreen() {
     var stopMessage by remember { mutableStateOf("") }
     var pauseMessage by remember { mutableStateOf("") }
     var resumeMessage by remember { mutableStateOf("") }
+    var actionOnStart by remember { mutableStateOf(true) }
+    var actionOnStop by remember { mutableStateOf(false) }
+    var indoorMode by remember { mutableStateOf(false) }
 
 
     var config by remember { mutableStateOf<ConfigData?>(null) }
@@ -116,6 +119,9 @@ fun ConfigurationScreen() {
                     isActive = savedConfig.isActive
                     karooKey = savedConfig.karooKey
                     delayBetweenNotificationsInt = savedConfig.delayIntents.toInt().toString()
+                    actionOnStart = savedConfig.notifyOnStart
+                    actionOnStop = savedConfig.notifyOnStop
+                    indoorMode = savedConfig.indoorMode
 
 
                     selectedProvider = savedConfig.activeProvider
@@ -285,10 +291,13 @@ fun ConfigurationScreen() {
                         emails = emails,
                         startMessage = startMessage.trim(),
                         stopMessage = stopMessage.trim(),
+                        notifyOnStart = actionOnStart,
+                        notifyOnStop = actionOnStop,
                         pauseMessage = pauseMessage.trim(),
                         resumeMessage = resumeMessage.trim(),
                         activeProvider = selectedProvider,
-                        emailFrom = emailFrom.trim()
+                        emailFrom = emailFrom.trim(),
+                        indoorMode = indoorMode
                     ) ?: ConfigData(
                         isActive = isActive,
                         karooKey = karooKey.trim(),
@@ -297,10 +306,13 @@ fun ConfigurationScreen() {
                         emails = emails,
                         startMessage = startMessage.trim(),
                         stopMessage = stopMessage.trim(),
+                        notifyOnStart = actionOnStart,
+                        notifyOnStop = actionOnStop,
                         pauseMessage = pauseMessage.trim(),
                         resumeMessage = resumeMessage.trim(),
                         activeProvider = selectedProvider,
-                        emailFrom = emailFrom.trim()
+                        emailFrom = emailFrom.trim(),
+                        indoorMode = indoorMode
                     )
 
                     configManager.savePreferences(mutableListOf(updatedConfig))
@@ -368,6 +380,66 @@ fun ConfigurationScreen() {
                             }
                         )
                     }
+
+
+
+                    Text(
+                        stringResource(R.string.webhook_trigger_events),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(R.string.webhook_on_start),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(
+                            checked = actionOnStart,
+                            onCheckedChange = {
+                                actionOnStart = it
+                                saveData()
+                            }
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(R.string.webhook_on_stop),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(
+                            checked = actionOnStop,
+                            onCheckedChange = {
+                                actionOnStop = it
+                                saveData()
+                            }
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(R.string.indoor_mode),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(
+                            checked = indoorMode,
+                            onCheckedChange = {
+                                indoorMode = it
+                                saveData()
+                            }
+                        )
+                    }
+
+
 
                     OutlinedTextField(
                         value = delayBetweenNotificationsInt,

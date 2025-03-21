@@ -122,4 +122,5 @@
     <string name="config_exported_path">Configuration saved to: </string>
     <string name="config_export_error">Error exporting configuration</string>
     <string name="error_message">Error: %1$s</string>
+    <string name="indoor_mode">Only in outdoor</string>
 </resources>

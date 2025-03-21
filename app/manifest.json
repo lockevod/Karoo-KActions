@@ -3,9 +3,9 @@
   "packageName": "com.enderthor.kactions",
   "latestApkUrl": "https://github.com/lockevod/Karoo-KActions/releases/latest/download/kactions.apk",
   "iconUrl": "https://github.com/lockevod/Karoo-KActions/releases/latest/download/kactions.png",
-  "latestVersion": "0.2",
+  "latestVersion": "0.5",
   "latestVersionCode": 202503211,
   "developer": "Enderthor",
   "description": "This extension for Karoo devices allows to send automated whatsapp, sms or mail messages when you start, stop your activity. You can send alse custom webhooks.",
-  "releaseNotes": "Fix time between actions. Minor fixes.",
+  "releaseNotes": "Added events selection. Added only for outdoor activities (only available karoo end march version). Fix time between actions. Minor fixes.",
 }
