@@ -1,5 +1,6 @@
 package com.enderthor.kActions.screens
 
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -28,6 +29,8 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import timber.log.Timber
+import java.io.File
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +41,7 @@ fun WebhookConfigScreen() {
     var karooConnected by remember { mutableStateOf(false) }
     val configManager = remember { ConfigurationManager(context) }
     var webhook by remember { mutableStateOf<WebhookData?>(null) }
+    var savedWebhooks by remember { mutableStateOf<List<WebhookData>>(emptyList()) }
     var name by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
     var postBody by remember { mutableStateOf("") }
@@ -63,6 +67,11 @@ fun WebhookConfigScreen() {
     val testSuccess = stringResource(R.string.webhook_test_success)
     val testError = stringResource(R.string.webhook_test_error)
     val urlError = stringResource(R.string.webhook_url_error)
+    val webhookExportedSuccess = stringResource(R.string.config_exported_path)
+    val webhooksExportError = stringResource(R.string.webhooks_export_error)
+    val webhooksImportedSuccess=stringResource(R.string.webhooks_imported_success)
+    val webhooksImportedError=stringResource(R.string.webhooks_import_error)
+
 
     LaunchedEffect(Unit) {
         isConnecting = true
@@ -80,6 +89,7 @@ fun WebhookConfigScreen() {
         launch {
             configManager.loadWebhookDataFlow().collect { webhooks ->
                 if (webhooks.isNotEmpty()) {
+                    savedWebhooks= webhooks
                     val savedWebhook = webhooks.first()
                     webhook = savedWebhook
                     name = savedWebhook.name
@@ -98,6 +108,7 @@ fun WebhookConfigScreen() {
             }
         }
     }
+
 
    fun saveData() {
         if (ignoreAutoSave) return
@@ -427,6 +438,70 @@ fun WebhookConfigScreen() {
                 }
             }
 
+
+            Card {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            Timber.d("Importing webhooks from internal storage")
+                            scope.launch {
+                                isLoading = true
+                                try {
+                                    val file = File(context.getExternalFilesDir(null), "webhook_config.json")
+                                    val uri = Uri.fromFile(file)
+                                    val (success,message) = configManager.importWebhooksFromFile(uri,savedWebhooks)
+                                    statusMessage = if (success)
+                                        webhooksImportedSuccess
+                                    else
+                                        "$webhooksImportedError: $message"
+                                } catch (e: Exception) {
+                                    statusMessage =
+                                        webhooksImportedError + " ${e.message ?: ""}"
+                                } finally {
+                                    isLoading = false
+                                    delay(2000)
+                                    statusMessage = null
+                                }
+                            }
+                        },
+                        enabled = !isLoading,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.import_webhooks))
+                    }
+
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                isLoading = true
+                                try {
+                                    val file = File(context.getExternalFilesDir(null), "webhook_config.json")
+                                    val uri = Uri.fromFile(file)
+                                    val success = configManager.exportWebhooksToFile(uri)
+                                    statusMessage = if (success)
+                                        webhookExportedSuccess +" ${file.absolutePath}"
+                                    else
+                                        webhooksExportError
+                                } catch (e: Exception) {
+                                    statusMessage = webhooksExportError +
+                                            " ${e.message ?: ""}"
+                                } finally {
+                                    isLoading = false
+                                    delay(20000)
+                                    statusMessage = null
+                                }
+                            }
+                        },
+                        enabled = !isLoading,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.export_webhooks))
+                    }
+                }
+            }
             if (isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }

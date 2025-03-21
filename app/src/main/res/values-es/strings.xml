@@ -111,4 +111,18 @@
     <string name="webhook_headers_placeholder">Content-Type: application/json\nAuthorization: Bearer token</string>
 
     <string name="send_to">Se enviará a: </string>
+
+    <!-- Import/Export -->
+    <string name="import_webhooks">Importar webhook</string>
+    <string name="export_webhooks">Exportar webhook</string>
+    <string name="webhooks_imported_success">Webhooks importados correctamente</string>
+    <string name="webhooks_import_error">Error al importar webhooks</string>
+    <string name="webhooks_export_error">Error al exportar webhooks</string>
+    <string name="import_config">Import conf.</string>
+    <string name="export_config">Exportar conf.</string>
+    <string name="config_imported_success">Configuraciones importadas correctamente</string>
+    <string name="config_import_error">Error al importar configuraciones</string>
+    <string name="config_exported_path">Configuración guardada en: </string>
+    <string name="config_export_error">Error al exportar configuración</string>
+    <string name="error_message">Error: %1$s</string>
 </resources>

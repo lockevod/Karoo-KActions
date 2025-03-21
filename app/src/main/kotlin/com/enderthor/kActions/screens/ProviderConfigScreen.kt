@@ -1,5 +1,7 @@
 package com.enderthor.kActions.screens
 
+
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -25,6 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +49,7 @@ fun ProviderConfigScreen() {
     var ignoreAutoSave by remember { mutableStateOf(true) }
 
     var providerConfigs by remember { mutableStateOf<Map<ProviderType, SenderConfig>>(emptyMap()) }
-
+    var providersSaved by remember { mutableStateOf<List<SenderConfig>>(emptyList()) }
     val error_sending_message = stringResource(R.string.error_sending_message)
     val settings_saved = stringResource(R.string.settings_saved)
     val isTextBeltFree = selectedProvider == ProviderType.TEXTBELT &&
@@ -54,20 +57,26 @@ fun ProviderConfigScreen() {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    val configExportedSuccess = stringResource(R.string.config_exported_path)
+    val configExportError = stringResource(R.string.config_export_error)
+    val configImportedSuccess=stringResource(R.string.config_imported_success)
+    val configImportedError=stringResource(R.string.config_import_error)
+
 
     LaunchedEffect(Unit) {
         launch {
             delay(500)
             Timber.d("Cambiando ignoreAutoSave de $ignoreAutoSave a false")
-            ignoreAutoSave = false  // Esto debe ejecutarse siempre
+            ignoreAutoSave = false
         }
 
         launch {
             try {
                 configManager.loadPreferencesFlow().collectLatest { configDatas ->
+
                     configData = configDatas.firstOrNull()
 
-                    // Actualizar las variables con los datos de configuración
+
                     if (configData?.phoneNumbers?.isNotEmpty() == true) {
                         savedPhoneNumber = configData?.phoneNumbers?.first() ?: ""
                     }
@@ -88,6 +97,7 @@ fun ProviderConfigScreen() {
         launch {
             try {
                 configManager.loadSenderConfigFlow().collectLatest { configs ->
+                    providersSaved = configs
 
                     providerConfigs = configs.associateBy { it.provider }
 
@@ -104,6 +114,7 @@ fun ProviderConfigScreen() {
             }
         }
     }
+
 
     fun updateFieldsForProvider() {
         val config = providerConfigs[selectedProvider]
@@ -142,7 +153,7 @@ fun ProviderConfigScreen() {
                     apiKey
                 }
 
-                // Actualizar configuración activa
+
                 configData?.let { currentConfig ->
                     val updatedConfig = currentConfig.copy(
                         activeProvider = selectedProvider
@@ -150,16 +161,16 @@ fun ProviderConfigScreen() {
                     configManager.savePreferences(mutableListOf(updatedConfig))
                 }
 
-                // Crear lista actualizada de configuraciones
+
                 val updatedConfigs = mutableListOf<SenderConfig>()
 
-                // Mantener todas las configuraciones existentes
+
                 ProviderType.entries.forEach { providerType ->
                     if (providerType == selectedProvider) {
-                        // Actualizar solo el proveedor seleccionado
+
                         updatedConfigs.add(SenderConfig(providerType, currentApiKey))
                     } else {
-                        // Mantener configuración existente para otros proveedores
+
                         val existingConfig = providerConfigs[providerType]
                         if (existingConfig != null) {
                             updatedConfigs.add(existingConfig)
@@ -183,18 +194,19 @@ fun ProviderConfigScreen() {
         }
     }
 
+
     fun saveCurrentProviderConfig() {
         if (ignoreAutoSave) return
 
         scope.launch {
             try {
-                // Guardar solo el proveedor actual
+
                 val currentConfig = providerConfigs[selectedProvider] ?: SenderConfig(selectedProvider, "")
                 val updatedConfig = currentConfig.copy(apiKey = apiKey)
 
                 val updatedConfigs = providerConfigs.values.toMutableList()
 
-                // Reemplazar o añadir la configuración actual
+
                 val index = updatedConfigs.indexOfFirst { it.provider == selectedProvider }
                 if (index >= 0) {
                     updatedConfigs[index] = updatedConfig
@@ -238,13 +250,13 @@ fun ProviderConfigScreen() {
                                 selected = selectedProvider == ProviderType.TEXTBELT,
                                 onClick = {
                                     if (selectedProvider != ProviderType.TEXTBELT) {
-                                        // Guardar la configuración actual antes de cambiar
+
                                         saveCurrentProviderConfig()
 
-                                        // Cambiar al nuevo proveedor
+
                                         selectedProvider = ProviderType.TEXTBELT
 
-                                        // Actualizar UI con la configuración del nuevo proveedor
+
                                         updateFieldsForProvider()
                                     }
                                 }
@@ -262,13 +274,13 @@ fun ProviderConfigScreen() {
                                 selected = selectedProvider == ProviderType.CALLMEBOT,
                                 onClick = {
                                     if (selectedProvider != ProviderType.CALLMEBOT) {
-                                        // Guardar la configuración actual antes de cambiar
+
                                         saveCurrentProviderConfig()
 
-                                        // Cambiar al nuevo proveedor
+
                                         selectedProvider = ProviderType.CALLMEBOT
 
-                                        // Actualizar UI con la configuración del nuevo proveedor
+
                                         updateFieldsForProvider()
                                     }
                                 }
@@ -303,24 +315,6 @@ fun ProviderConfigScreen() {
                             )
                         }
 
-
-
-                       /* Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            RadioButton(
-                                selected = selectedProvider == ProviderType.RESEND,
-                                onClick = {
-                                    selectedProvider = ProviderType.RESEND
-                                    saveData()
-                                }
-                            )
-                            Text(
-                                stringResource(R.string.resend_provider),
-                                modifier = Modifier.weight(1f)
-                            )
-                        }*/
                     }
                 }
             }
@@ -456,6 +450,71 @@ fun ProviderConfigScreen() {
 
             if (isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
+
+            Card {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                isLoading = true
+                                try {
+                                    val file = File(context.getExternalFilesDir(null), "provider_config.json")
+                                    val uri = Uri.fromFile(file)
+                                    val (success,message) = configManager.importSenderConfigFromFile(uri,providersSaved)
+
+                                    statusMessage = if (success)
+                                       configImportedSuccess
+                                    else
+                                    "$configImportedError: $message"
+
+                                } catch (e: Exception) {
+                                    statusMessage =
+                                        configImportedError + " ${e.message ?: ""}"
+                                } finally {
+                                    isLoading = false
+                                    delay(2000)
+                                    statusMessage = null
+                                }
+                            }
+                        },
+                        enabled = !isLoading,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.import_config))
+                    }
+
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                isLoading = true
+                                try {
+                                    val file = File(context.getExternalFilesDir(null), "provider_config.json")
+                                    val uri = Uri.fromFile(file)
+                                    val success = configManager.exportSenderConfigToFile(uri)
+                                    statusMessage = if (success)
+                                        configExportedSuccess +" ${file.absolutePath}"
+                                    else
+                                        configExportError
+                                } catch (e: Exception) {
+                                    statusMessage = configExportError +
+                                            " ${e.message ?: ""}"
+                                } finally {
+                                    isLoading = false
+                                    delay(20000)
+                                    statusMessage = null
+                                }
+                            }
+                        },
+                        enabled = !isLoading,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.export_config))
+                    }
+                }
             }
 
             statusMessage?.let { message ->

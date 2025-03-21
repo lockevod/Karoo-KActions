@@ -110,5 +110,16 @@
     <string name="send_to">Send to: </string>
     <string name="webhook_headers">Headers</string>
     <string name="webhook_headers_placeholder">Content-Type: application/json\nAuthorization: Bearer token</string>
-
+    <string name="import_webhooks">Import webhooks</string>
+    <string name="export_webhooks">Export webhooks</string>
+    <string name="webhooks_imported_success">Webhooks imported successfully</string>
+    <string name="webhooks_import_error">Error importing webhooks</string>
+    <string name="webhooks_export_error">Error exporting webhooks</string>
+    <string name="import_config">Import conf.</string>
+    <string name="export_config">Export conf.</string>
+    <string name="config_imported_success">Configurations imported successfully</string>
+    <string name="config_import_error">Error importing configurations</string>
+    <string name="config_exported_path">Configuration saved to: </string>
+    <string name="config_export_error">Error exporting configuration</string>
+    <string name="error_message">Error: %1$s</string>
 </resources>

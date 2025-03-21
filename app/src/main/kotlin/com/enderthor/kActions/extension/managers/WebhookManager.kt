@@ -22,6 +22,7 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+
 class WebhookManager(
     context: Context,
     private val karooSystem: KarooSystemService,
@@ -115,7 +116,7 @@ class WebhookManager(
                                 else -> webhookStateStore.clearWebhookState(webhook.id)
                             }
                         } else {
-                            // Si el tiempo ya pasó, limpiar
+
                             updateWebhookStatus(webhook.id, WebhookStatus.IDLE)
                             webhookStateStore.clearWebhookState(webhook.id)
                         }
@@ -193,7 +194,7 @@ class WebhookManager(
     fun executeWebhookWithStateTransitions(webhookId: Int) {
         scope.launch(Dispatchers.IO) {
             try {
-                // Guardar estado inicial
+
                 webhookStateStore.saveWebhookState(
                     webhookId,
                     WebhookStatus.EXECUTING.name,
@@ -206,7 +207,7 @@ class WebhookManager(
                 delay(10_000)
                 updateWebhookStatus(webhookId, WebhookStatus.SUCCESS)
 
-                // Guardar estado para transición a IDLE
+
                 webhookStateStore.saveWebhookState(
                     webhookId,
                     WebhookStatus.SUCCESS.name,
@@ -221,7 +222,7 @@ class WebhookManager(
                 Timber.e(e, "Error al ejecutar webhook $webhookId: ${e.message}")
                 updateWebhookStatus(webhookId, WebhookStatus.ERROR)
 
-                // Guardar estado para transición a ERROR
+
                 webhookStateStore.saveWebhookState(
                     webhookId,
                     WebhookStatus.ERROR.name,
@@ -311,4 +312,6 @@ class WebhookManager(
             return false
         }
     }
+
+
 }

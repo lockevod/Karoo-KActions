@@ -1,6 +1,7 @@
 package com.enderthor.kActions.extension.managers
 
 import android.content.Context
+import android.net.Uri
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.enderthor.kActions.activity.dataStore
@@ -13,6 +14,7 @@ import com.enderthor.kActions.data.getPreviewConfigData
 import com.enderthor.kActions.extension.jsonWithUnknownKeys
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -25,6 +27,8 @@ class ConfigurationManager(
     private val preferencesKey = stringPreferencesKey("configdata")
     private val senderConfigKey = stringPreferencesKey("sender")
     private val webhookKey = stringPreferencesKey("webhook")
+
+    private val fileHandler = ConfigFileHandler(context)
 
 
 
@@ -89,5 +93,63 @@ class ConfigurationManager(
             }
         }.distinctUntilChanged()
     }
+
+
+    suspend fun importWebhooksFromFile(uri: Uri, currentWebhooks: List<WebhookData>): Pair<Boolean, String> {
+        return try {
+            val result =  fileHandler.readWebhookFromFile(uri, currentWebhooks)
+
+            if (result.webhooks.isEmpty() || result.status.startsWith("Error")) {
+                Pair(false, result.status)
+            } else {
+                saveWebhookData(result.webhooks.toMutableList())
+                Pair(true, result.status)
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error import webhooks: ${e.message}")
+            Pair(false, "Error: ${e.message}")
+        }
+    }
+
+    suspend fun importSenderConfigFromFile(uri: Uri, currentSenders: List<SenderConfig>): Pair<Boolean, String> {
+        return try {
+            val result =  fileHandler.readSenderConfigFromFile(uri, currentSenders)
+
+            if (result.senderConfigs.isEmpty() || result.status.startsWith("Error")) {
+                Pair(false, result.status)
+            } else {
+                saveSenderConfig(result.senderConfigs.toMutableList())
+                Pair(true, result.status)
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error import Senders: ${e.message}")
+            Pair(false, "Error: ${e.message}")
+        }
+    }
+
+
+    suspend fun exportWebhooksToFile(uri: Uri): Boolean {
+        try {
+            val configs = loadWebhookDataFlow().first()
+            Timber.d("Exportando configuraciones de webhooks $configs")
+            return fileHandler.exportWebhookToFile(configs, uri)
+        } catch (e: Exception) {
+            Timber.e(e, "Error exportando configuraciones: ${e.message}")
+            return false
+        }
+    }
+
+
+    suspend fun exportSenderConfigToFile(uri: Uri): Boolean {
+        try {
+            val configs = loadSenderConfigFlow().first()
+            return fileHandler.exportSenderConfigToFile(configs, uri)
+        } catch (e: Exception) {
+            Timber.e(e, "Error exportando configuraciones: ${e.message}")
+            return false
+        }
+    }
+
+
 
 }
