@@ -382,9 +382,48 @@ fun ConfigurationScreen() {
                     }
 
 
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(R.string.indoor_mode),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(
+                            checked = indoorMode,
+                            onCheckedChange = {
+                                indoorMode = it
+                                saveData()
+                            }
+                        )
+                    }
+
+
+
+                    OutlinedTextField(
+                        value = delayBetweenNotificationsInt,
+                        onValueChange = {
+                            if (it.isEmpty() || it.all { char -> char.isDigit() }) {
+                                delayBetweenNotificationsInt = it
+                                saveData()
+                            }
+                        },
+                        label = { Text(stringResource(R.string.notification_delay)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
+                    )
 
                     Text(
-                        stringResource(R.string.webhook_trigger_events),
+                        stringResource(R.string.send_notifications_when),
                         style = MaterialTheme.typography.titleMedium
                     )
 
@@ -421,44 +460,6 @@ fun ConfigurationScreen() {
                             }
                         )
                     }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            stringResource(R.string.indoor_mode),
-                            modifier = Modifier.weight(1f)
-                        )
-                        Switch(
-                            checked = indoorMode,
-                            onCheckedChange = {
-                                indoorMode = it
-                                saveData()
-                            }
-                        )
-                    }
-
-
-
-                    OutlinedTextField(
-                        value = delayBetweenNotificationsInt,
-                        onValueChange = {
-                            if (it.isEmpty() || it.all { char -> char.isDigit() }) {
-                                delayBetweenNotificationsInt = it
-                                saveData()
-                            }
-                        },
-                        label = { Text(stringResource(R.string.notification_delay)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus()
-                            keyboardController?.hide()
-                            saveData() })
-                    )
                 }
             }
 
@@ -468,109 +469,39 @@ fun ConfigurationScreen() {
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                   /* if (selectedProvider == ProviderType.RESEND) {
-                        OutlinedTextField(
-                            value = emailFrom,
-                            onValueChange = {
-                                emailFrom = it
-                                val (valid, message) = validateEmail(it)
-                                isEmailFromValid = valid
-                                emailFromErrorMessage = message
-                            },
-                            label = { Text("Email remitente") },
-                            placeholder = { Text("remitente@tudominio.com") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .onFocusChanged { if (!it.isFocused) {
-                                    keyboardController?.hide()
-                                    saveData()
-                                }},
-                            singleLine = true,
-                            isError = !isEmailFromValid,
-                            supportingText = {
-                                if (!isEmailFromValid) {
-                                    Text(emailFromErrorMessage)
-                                }
-                            },
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Email,
-                                imeAction = ImeAction.Done
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onDone = {
-                                    focusManager.clearFocus()
-                                    keyboardController?.hide()
-                                    saveData()
-                                }
-                            )
-                        )
+                    Text(
+                        stringResource(R.string.phone_numbers),
+                        style = MaterialTheme.typography.titleMedium
+                    )
 
-                        Text(
-                            stringResource(R.string.email_addresses),
-                            style = MaterialTheme.typography.titleMedium
-                        )
+                    Text(
+                        stringResource(R.string.enter_up_to_3_phones),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
 
-                        Text(
-                            stringResource(R.string.email_to),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                    PhoneNumberInput(
+                        value = phoneNumber1,
+                        onValueChange = {
+                            phoneNumber1 = it
+                            val (valid, message) = validatePhoneNumber(it)
+                            isPhone1Valid = valid
+                            phone1ErrorMessage = message
+                        },
+                        label = stringResource(R.string.number_1),
+                        isValid = isPhone1Valid,
+                        errorMessage = phone1ErrorMessage,
+                        onClear = {
+                            phoneNumber1 = ""
+                            isPhone1Valid = true
+                            phone1ErrorMessage = ""
+                            saveData()
+                        },
+                        onDone = { saveData() },
+                        onFocusChange = { focusState ->
+                            if (!focusState.isFocused) saveData()
+                        }
+                    )
 
-                        EmailInput(
-                            value = email1,
-                            onValueChange = {
-                                email1 = it
-                                val (valid, message) = validateEmail(it)
-                                isEmail1Valid = valid
-                                email1ErrorMessage = message
-                            },
-                            label = stringResource(R.string.email_1),
-                            isValid = isEmail1Valid,
-                            errorMessage = email1ErrorMessage,
-                            onClear = {
-                                email1 = ""
-                                isEmail1Valid = true
-                                email1ErrorMessage = ""
-                                saveData()
-                            },
-                            onDone = { saveData() },
-                            onFocusChange = { focusState ->
-                                if (!focusState.isFocused) saveData()
-                            }
-                        )
-                    } else {*/
-                        Text(
-                            stringResource(R.string.phone_numbers),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-
-                        Text(
-                            stringResource(R.string.enter_up_to_3_phones),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        PhoneNumberInput(
-                            value = phoneNumber1,
-                            onValueChange = {
-                                phoneNumber1 = it
-                                val (valid, message) = validatePhoneNumber(it)
-                                isPhone1Valid = valid
-                                phone1ErrorMessage = message
-                            },
-                            label = stringResource(R.string.number_1),
-                            isValid = isPhone1Valid,
-                            errorMessage = phone1ErrorMessage,
-                            onClear = {
-                                phoneNumber1 = ""
-                                isPhone1Valid = true
-                                phone1ErrorMessage = ""
-                                saveData()
-                            },
-                            onDone = { saveData() },
-                            onFocusChange = { focusState ->
-                                if (!focusState.isFocused) saveData()
-                            }
-                        )
-                    //}
                 }
             }
 

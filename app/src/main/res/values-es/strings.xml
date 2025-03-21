@@ -27,7 +27,7 @@
     <string name="error_sending_message">Error al enviar mensaje. Revisa tu configuración.</string>
     <string name="settings_saved">Configuración guardada automáticamente</string>
     <string name="karoo_configuration">Karoo Tracking Key</string>
-    <string name="notification_delay">Tiempo necesario entre hasta que se enviará un nuevo mensaje.</string>
+    <string name="notification_delay">Minutos necesarios hasta que se enviará un nuevo mensaje.</string>
 
     <!-- PhonesScreen -->
     <string name="phone_numbers">Teléfono</string>
@@ -125,5 +125,5 @@
     <string name="config_exported_path">Configuración guardada en: </string>
     <string name="config_export_error">Error al exportar configuración</string>
     <string name="error_message">Error: %1$s</string>
-    <string name="indoor_mode">Solo outdoor</string>
+    <string name="indoor_mode">Sólo outdoor?</string>
 </resources>

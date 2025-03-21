@@ -23,6 +23,7 @@ import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.data.SenderConfig
 import com.enderthor.kActions.extension.managers.ConfigurationManager
+import com.enderthor.kActions.data.export
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -39,7 +40,7 @@ fun ProviderConfigScreen() {
 
     var senderConfig by remember { mutableStateOf<SenderConfig?>(null) }
     var configData by remember { mutableStateOf<ConfigData?>(null) }
-    var selectedProvider by remember { mutableStateOf(ProviderType.TEXTBELT) }
+    var selectedProvider by remember { mutableStateOf(ProviderType.CALLMEBOT) }
     var apiKey by remember { mutableStateOf("") }
     var savedPhoneNumber by remember { mutableStateOf("") }
     var savedEmail by remember { mutableStateOf("") }
@@ -242,30 +243,7 @@ fun ProviderConfigScreen() {
                     )
 
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            RadioButton(
-                                selected = selectedProvider == ProviderType.TEXTBELT,
-                                onClick = {
-                                    if (selectedProvider != ProviderType.TEXTBELT) {
 
-                                        saveCurrentProviderConfig()
-
-
-                                        selectedProvider = ProviderType.TEXTBELT
-
-
-                                        updateFieldsForProvider()
-                                    }
-                                }
-                            )
-                            Text(
-                                stringResource(R.string.textbelt_provider),
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
@@ -287,6 +265,30 @@ fun ProviderConfigScreen() {
                             )
                             Text(
                                 stringResource(R.string.callmebot_provider),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            RadioButton(
+                                selected = selectedProvider == ProviderType.TEXTBELT,
+                                onClick = {
+                                    if (selectedProvider != ProviderType.TEXTBELT) {
+
+                                        saveCurrentProviderConfig()
+
+
+                                        selectedProvider = ProviderType.TEXTBELT
+
+
+                                        updateFieldsForProvider()
+                                    }
+                                }
+                            )
+                            Text(
+                                stringResource(R.string.textbelt_provider),
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -341,10 +343,12 @@ fun ProviderConfigScreen() {
                                 label = { Text(stringResource(R.string.api_key)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .onFocusChanged {  if (!it.isFocused) {
-                                        keyboardController?.hide()
-                                        saveData()
-                                    } },
+                                    .onFocusChanged {
+                                        if (!it.isFocused) {
+                                            keyboardController?.hide()
+                                            saveData()
+                                        }
+                                    },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                 keyboardActions = KeyboardActions( onDone = {
@@ -364,10 +368,12 @@ fun ProviderConfigScreen() {
                                 label = { Text(stringResource(R.string.api_key)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .onFocusChanged { if (!it.isFocused) {
-                                        keyboardController?.hide()
-                                        saveData()
-                                    } },
+                                    .onFocusChanged {
+                                        if (!it.isFocused) {
+                                            keyboardController?.hide()
+                                            saveData()
+                                        }
+                                    },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                 keyboardActions = KeyboardActions(onDone = {
@@ -386,10 +392,12 @@ fun ProviderConfigScreen() {
                                 label = { Text(stringResource(R.string.api_key)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .onFocusChanged { if (!it.isFocused) {
-                                        keyboardController?.hide()
-                                        saveData()
-                                    } },
+                                    .onFocusChanged {
+                                        if (!it.isFocused) {
+                                            keyboardController?.hide()
+                                            saveData()
+                                        }
+                                    },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                 keyboardActions = KeyboardActions(onDone = {
@@ -486,34 +494,37 @@ fun ProviderConfigScreen() {
                     ) {
                         Text(stringResource(R.string.import_config))
                     }
-
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                isLoading = true
-                                try {
-                                    val file = File(context.getExternalFilesDir(null), "provider_config.json")
-                                    val uri = Uri.fromFile(file)
-                                    val success = configManager.exportSenderConfigToFile(uri)
-                                    statusMessage = if (success)
-                                        configExportedSuccess +" ${file.absolutePath}"
-                                    else
-                                        configExportError
-                                } catch (e: Exception) {
-                                    statusMessage = configExportError +
-                                            " ${e.message ?: ""}"
-                                } finally {
-                                    isLoading = false
-                                    delay(15000)
-                                    statusMessage = null
+                    if (export)
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    isLoading = true
+                                    try {
+                                        val file = File(
+                                            context.getExternalFilesDir(null),
+                                            "provider_config.json"
+                                        )
+                                        val uri = Uri.fromFile(file)
+                                        val success = configManager.exportSenderConfigToFile(uri)
+                                        statusMessage = if (success)
+                                            configExportedSuccess + " ${file.absolutePath}"
+                                        else
+                                            configExportError
+                                    } catch (e: Exception) {
+                                        statusMessage = configExportError +
+                                                " ${e.message ?: ""}"
+                                    } finally {
+                                        isLoading = false
+                                        delay(15000)
+                                        statusMessage = null
+                                    }
                                 }
-                            }
-                        },
-                        enabled = !isLoading,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.export_config))
-                    }
+                            },
+                            enabled = !isLoading,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.export_config))
+                        }
                 }
             }
 

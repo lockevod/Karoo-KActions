@@ -26,7 +26,7 @@
     <string name="test_message_sent">Test message sent successfully!</string>
     <string name="error_sending_message">Error sending message. Check your configuration.</string>
     <string name="settings_saved">Settings saved automatically</string>
-    <string name="notification_delay">Delay between send a new start ride message</string>
+    <string name="notification_delay">Minutes between send a new start ride message</string>
 
     <!-- PhonesScreen -->
     <string name="phone_numbers">Phone Number</string>
@@ -122,5 +122,5 @@
     <string name="config_exported_path">Configuration saved to: </string>
     <string name="config_export_error">Error exporting configuration</string>
     <string name="error_message">Error: %1$s</string>
-    <string name="indoor_mode">Only in outdoor</string>
+    <string name="indoor_mode">Only in outdoor?</string>
 </resources>

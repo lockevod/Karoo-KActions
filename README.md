@@ -52,7 +52,7 @@ You need to configure basic information in Conf. Tab:
     - You can configure time between two messages, this is for avoid to receive several messages, you can configure it but minimum time is 5 minutes (internal delay).
 
 6. **Live Track**:
-   - Fill Live Track Karoo key. If you fill this, you will receive the link with your tracking info you neeed to fill only the key. For example:
+   - Fill Live Track Karoo key. If you fill this, you will receive the link with your tracking info you need to fill only the key. For example:
    https://dashboard.hammerhead.io/live/3738Ag, please fill only 3738Ag
 
 7. **During your ride**:

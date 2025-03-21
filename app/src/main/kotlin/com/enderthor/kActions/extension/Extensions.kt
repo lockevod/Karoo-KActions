@@ -8,6 +8,7 @@ import io.hammerhead.karooext.models.OnGlobalPOIs
 import io.hammerhead.karooext.models.OnHttpResponse
 import io.hammerhead.karooext.models.OnLocationChanged
 import io.hammerhead.karooext.models.RideState
+import io.hammerhead.karooext.models.ActiveRideProfile
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.awaitClose
@@ -84,6 +85,17 @@ fun KarooSystemService.makeHttpRequest(method: String, url: String, queue: Boole
 fun KarooSystemService.streamLocation(): Flow<OnLocationChanged> {
     return callbackFlow {
         val listenerId = addConsumer { event: OnLocationChanged ->
+            trySendBlocking(event)
+        }
+        awaitClose {
+            removeConsumer(listenerId)
+        }
+    }
+}
+
+fun KarooSystemService.streamActiveRideProfile(): Flow<ActiveRideProfile> {
+    return callbackFlow {
+        val listenerId = addConsumer { event: ActiveRideProfile ->
             trySendBlocking(event)
         }
         awaitClose {

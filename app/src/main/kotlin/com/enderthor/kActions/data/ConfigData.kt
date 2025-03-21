@@ -9,6 +9,7 @@ import com.enderthor.kActions.R
 const val MIN_TIME_BETWEEN_SAME_MESSAGES = 3 * 60 * 1000L
 const val MIN_TIME_TEXTBELT_FREE = 24 * 60 * 60 * 1000L
 const val karooUrl= "https://dashboard.hammerhead.io/live/"
+val export: Boolean = false
 
 
 @Serializable
@@ -18,7 +19,7 @@ data class ConfigData(
     val notifyOnStart: Boolean = true,
     val notifyOnPause: Boolean = false,
     val notifyOnResume: Boolean = false,
-    val indoorMode: Boolean = false,
+    val indoorMode: Boolean = true,
     val startMessage: String = "",
     val stopMessage: String = "",
     val pauseMessage: String = "",

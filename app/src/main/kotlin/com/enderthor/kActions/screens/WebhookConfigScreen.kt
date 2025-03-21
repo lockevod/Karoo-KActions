@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.enderthor.kActions.R
 import com.enderthor.kActions.data.GpsCoordinates
 import com.enderthor.kActions.data.WebhookData
+import com.enderthor.kActions.data.export
 import com.enderthor.kActions.extension.makeHttpRequest
 import com.enderthor.kActions.extension.managers.ConfigurationManager
 import io.hammerhead.karooext.KarooSystemService
@@ -296,10 +297,12 @@ fun WebhookConfigScreen() {
                         label = { Text(stringResource(R.string.webhook_name)) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .onFocusChanged {  if (!it.isFocused) {
-                                keyboardController?.hide()
-                                saveData()
-                            } },
+                            .onFocusChanged {
+                                if (!it.isFocused) {
+                                    keyboardController?.hide()
+                                    saveData()
+                                }
+                            },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = {
@@ -318,10 +321,12 @@ fun WebhookConfigScreen() {
                         placeholder = { Text(stringResource(R.string.webhook_url_placeholder)) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .onFocusChanged {  if (!it.isFocused) {
-                                keyboardController?.hide()
-                                saveData()
-                            } },
+                            .onFocusChanged {
+                                if (!it.isFocused) {
+                                    keyboardController?.hide()
+                                    saveData()
+                                }
+                            },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = {
@@ -340,9 +345,11 @@ fun WebhookConfigScreen() {
                         placeholder = { Text(stringResource(R.string.webhook_headers_placeholder)) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .onFocusChanged { if (!it.isFocused) {
-                                saveData()
-                            }},
+                            .onFocusChanged {
+                                if (!it.isFocused) {
+                                    saveData()
+                                }
+                            },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = {
                             focusManager.clearFocus()
@@ -361,10 +368,12 @@ fun WebhookConfigScreen() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp)
-                            .onFocusChanged {  if (!it.isFocused) {
-                                keyboardController?.hide()
-                                saveData()
-                            } },
+                            .onFocusChanged {
+                                if (!it.isFocused) {
+                                    keyboardController?.hide()
+                                    saveData()
+                                }
+                            },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = {
                             focusManager.clearFocus()
@@ -472,33 +481,37 @@ fun WebhookConfigScreen() {
                         Text(stringResource(R.string.import_webhooks))
                     }
 
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                isLoading = true
-                                try {
-                                    val file = File(context.getExternalFilesDir(null), "webhook_config.json")
-                                    val uri = Uri.fromFile(file)
-                                    val success = configManager.exportWebhooksToFile(uri)
-                                    statusMessage = if (success)
-                                        webhookExportedSuccess +" ${file.absolutePath}"
-                                    else
-                                        webhooksExportError
-                                } catch (e: Exception) {
-                                    statusMessage = webhooksExportError +
-                                            " ${e.message ?: ""}"
-                                } finally {
-                                    isLoading = false
-                                    delay(15000)
-                                    statusMessage = null
+                    if (export)
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    isLoading = true
+                                    try {
+                                        val file = File(
+                                            context.getExternalFilesDir(null),
+                                            "webhook_config.json"
+                                        )
+                                        val uri = Uri.fromFile(file)
+                                        val success = configManager.exportWebhooksToFile(uri)
+                                        statusMessage = if (success)
+                                            webhookExportedSuccess + " ${file.absolutePath}"
+                                        else
+                                            webhooksExportError
+                                    } catch (e: Exception) {
+                                        statusMessage = webhooksExportError +
+                                                " ${e.message ?: ""}"
+                                    } finally {
+                                        isLoading = false
+                                        delay(15000)
+                                        statusMessage = null
+                                    }
                                 }
-                            }
-                        },
-                        enabled = !isLoading,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.export_webhooks))
-                    }
+                            },
+                            enabled = !isLoading,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.export_webhooks))
+                        }
                 }
             }
             if (isLoading) {
