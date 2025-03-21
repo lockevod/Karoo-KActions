@@ -28,18 +28,8 @@ Compatible with Karoo 2 and Karoo 3 running Karoo OS version 1.524.2003 and late
 
 KActions supports several providers to send notifications:
 
-### WhatsApp (WHAPI)
 
-1. **Create a Whapi account**:
-   - Visit [Whapi.io](https://whapi.io/) and register.
-   - Whapi isn't free but they've sandbox and it's free (aroung 1000 whats/month). Please read whapi conditions because you've to link a real number if you use a sandbox. If you don't understand it, please don't use it.
-
-2. **Configure KActions**:
-   - Open KActions on your Karoo.
-   - Select "WhatsApp (WHAPI)" as the provider.
-   - Paste your API Key in the corresponding field.
-
-### WhatsApp (CallMeBot)
+### WhatsApp (CallMeBot) Prefered option (easy)
 
 1. **Get your CallMeBot API Key**:
    - Visit [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/) and follow the instructions.
@@ -50,11 +40,11 @@ KActions supports several providers to send notifications:
    - Select "WhatsApp (CallMeBot)" as the provider.
    - Enter your CallMeBot API Key.
 
-### SMS (TextBelt)
+### SMS (TextBelt). Second preferred option
 
 1. **About TextBelt**:
    - TextBelt offers worldwide SMS sending.
-   - The free version allows 1 SMS per day. 
+   - The free version allows 1 SMS per day. This is easy but you can only send a sms and if there is some problem you cannot retry same day.
    - For more messages, you need to purchase credits at [TextBelt](https://textbelt.com/). 
    - You'll receive from different numbers (TextBelt has a significant pool number)
 
@@ -62,6 +52,17 @@ KActions supports several providers to send notifications:
    - Select "SMS (TextBelt)" as the provider.
    - To use the free version, leave the API Key field empty or type "textbelt".
    - If you've purchased credits, enter your API Key.
+
+### WhatsApp (WHAPI) Complicated option but powerful.
+
+1. **Create a Whapi account**:
+   - Visit [Whapi.io](https://whapi.io/) and register.
+   - Whapi isn't free but they've sandbox and it's free (aroung 1000 whats/month). Please read whapi conditions because you've to link a real number if you use a sandbox. If you don't understand it, please don't use it. It's more complicated and you has to understand risks.
+
+2. **Configure KActions**:
+   - Open KActions on your Karoo.
+   - Select "WhatsApp (WHAPI)" as the provider.
+   - Paste your API Key in the corresponding field.
 
 ## Webhook Configuration
 
@@ -110,8 +111,7 @@ KActions allows you to import  both provider configurations and webhook settings
 
 - **Import Provider Settings**:
    - Fill information in file (you've a template in templates folder. Please don't modify structure, change/complete only apikey (insert your apikey for your provider (between quotation marks). You don't need to fill a key for every provider. You can do copy with adb with the command:
-   ```adb push provider_config.json /sdcard/Android/data/com.enderthor.kActions/files/
-   ```
+   ``` adb push provider_config.json /sdcard/Android/data/com.enderthor.kActions/files/ 
    - Copy the file to your Karoo device in the KActions folder (/sdcard/Android/data/com.enderthor.kActions/files/). You need to create this folder if it doesn't exist (you can use a file manager app or ADB).
    - Please respect the file name, it must to be "provider_config.json"
    - Access the Provider Configuration screen.
