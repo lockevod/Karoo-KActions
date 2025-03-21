@@ -29,7 +29,9 @@ Compatible with Karoo 2 and Karoo 3 running Karoo OS version 1.524.2003 and late
 
 ## Notifications Configuration
 
-KActions can send automatic messages when you start/stop your ride. You need to configure basic information in Conf. Tab:
+KActions can send automatic messages when you start/stop your ride. You need to have connected your Karoo with the mobile app (Karoo 3) or have a data connection (Karoo 2).
+
+You need to configure basic information in Conf. Tab:
 
 1. **Configure notification options**:
    - Enable or disable notifications for different events: start, end of the ride.
@@ -41,12 +43,18 @@ KActions can send automatic messages when you start/stop your ride. You need to 
 
 3. **Customize messages**:
    - Personalize messages for each type of event.
-     
-4. **Live Track Karoo**:
+   
+4. **Select actions**:
+    - Start, stop or both.
+
+5. **Select time betweem messages**:
+    - You can configure time between two messages, this is for avoid to receive several messages, you can configure it but minimum time is 5 minutes (internal delay).
+
+6. **Live Track**:
    - Fill Live Track Karoo key. If you fill this, you will receive the link with your tracking info you neeed to fill only the key. For example:
    https://dashboard.hammerhead.io/live/3738Ag, please fill only 3738Ag
 
-5. **During your ride**:
+7. **During your ride**:
    - Once configured, KActions will automatically send messages/execute webhook when you start or end a ride on your Karoo.
    - You don't need to interact with the app during the ride; everything works in the background.
 
@@ -55,7 +63,7 @@ This button has a security measure, you have to press twice to send the webhook 
 
 KActions supports several providers to send notifications, you need to configure before use the app:
 
-### WhatsApp (CallMeBot) Prefered option (easy)
+### WhatsApp (CallMeBot) Preferred option (easy)
 
 1. **Get your CallMeBot API Key**:
    - Visit [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/) and follow the instructions.

@@ -298,13 +298,13 @@ fun ProviderConfigScreen() {
                                 selected = selectedProvider == ProviderType.WHAPI,
                                 onClick = {
                                     if (selectedProvider != ProviderType.WHAPI) {
-                                        // Guardar la configuración actual antes de cambiar
+
                                         saveCurrentProviderConfig()
 
-                                        // Cambiar al nuevo proveedor
+
                                         selectedProvider = ProviderType.WHAPI
 
-                                        // Actualizar UI con la configuración del nuevo proveedor
+
                                         updateFieldsForProvider()
                                     }
                                 }
@@ -476,7 +476,7 @@ fun ProviderConfigScreen() {
                                         configImportedError + " ${e.message ?: ""}"
                                 } finally {
                                     isLoading = false
-                                    delay(2000)
+                                    delay(15000)
                                     statusMessage = null
                                 }
                             }
@@ -504,7 +504,7 @@ fun ProviderConfigScreen() {
                                             " ${e.message ?: ""}"
                                 } finally {
                                     isLoading = false
-                                    delay(20000)
+                                    delay(15000)
                                     statusMessage = null
                                 }
                             }

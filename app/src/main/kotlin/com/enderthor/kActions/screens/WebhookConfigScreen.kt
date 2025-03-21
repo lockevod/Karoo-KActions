@@ -462,7 +462,7 @@ fun WebhookConfigScreen() {
                                         webhooksImportedError + " ${e.message ?: ""}"
                                 } finally {
                                     isLoading = false
-                                    delay(2000)
+                                    delay(15000)
                                     statusMessage = null
                                 }
                             }
@@ -490,7 +490,7 @@ fun WebhookConfigScreen() {
                                             " ${e.message ?: ""}"
                                 } finally {
                                     isLoading = false
-                                    delay(20000)
+                                    delay(15000)
                                     statusMessage = null
                                 }
                             }

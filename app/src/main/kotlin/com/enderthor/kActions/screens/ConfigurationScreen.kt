@@ -247,18 +247,18 @@ fun ConfigurationScreen() {
         isEmailFromValid = emailFromResult.first
         emailFromErrorMessage = emailFromResult.second
 
-        // Verificar requisitos específicos según el proveedor seleccionado
+
         val isEmailProviderSelected = selectedProvider == ProviderType.RESEND
 
-        // Para proveedores de email, se requiere tanto email del destinatario como del remitente
+
         val isEmailConfigValid = !isEmailProviderSelected ||
                 (email1.isNotBlank() && isEmail1Valid && emailFrom.isNotBlank() && isEmailFromValid)
 
-        // Para proveedores de SMS/WhatsApp, se requiere un número de teléfono válido
+
         val isPhoneConfigValid = isEmailProviderSelected ||
                 (phoneNumber1.isNotBlank() && isPhone1Valid)
 
-        // Solo guardamos si todas las validaciones necesarias pasan
+
         if (isEmailConfigValid && isPhoneConfigValid) {
 
             scope.launch {
@@ -649,12 +649,12 @@ fun EmailInput(
 
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,  // Solo actualiza el valor sin más acciones
+        onValueChange = onValueChange,
         label = { Text(label) },
         placeholder = { Text("nombre@dominio.com") },
         modifier = Modifier
             .fillMaxWidth()
-            .onFocusChanged(onFocusChange),  // Elimina .focusable()
+            .onFocusChanged(onFocusChange),
         singleLine = true,
         isError = !isValid,
         supportingText = {
@@ -699,12 +699,12 @@ fun PhoneNumberInput(
 
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,  // Solo actualiza el valor sin más acciones
+        onValueChange = onValueChange,
         label = { Text(label) },
         placeholder = { Text(phonePlaceholder) },
         modifier = Modifier
             .fillMaxWidth()
-            .onFocusChanged(onFocusChange),  // No agregues .focusable() aquí
+            .onFocusChanged(onFocusChange),
         singleLine = true,
         isError = !isValid,
         supportingText = {

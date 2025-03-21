@@ -3,6 +3,7 @@ package com.enderthor.kActions.extension
 import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.extension.managers.ConfigurationManager
 import io.hammerhead.karooext.KarooSystemService
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.buildJsonObject
@@ -54,7 +55,7 @@ class Sender(
                     if (totalAttempts > 1) {
                         val delayTime = delaySeconds[currentCycle]
                         Timber.d("Reintentando envío a $phoneNumber. Intento $totalAttempts, esperando $delayTime segundos...")
-                        kotlinx.coroutines.delay(delayTime * 1000L)
+                        delay(delayTime * 1000L)
                     }
 
 
@@ -71,7 +72,7 @@ class Sender(
                 if (currentCycle < maxCycles - 1) {
                     val waitMinutes = cycleDelayMinutes[currentCycle]
                     Timber.d("Fallaron $attemptsPerCycle intentos, esperando $waitMinutes minutos antes del siguiente ciclo...")
-                    kotlinx.coroutines.delay(waitMinutes * 60 * 1000L)
+                    delay(waitMinutes * 60 * 1000L)
                 }
 
                 currentCycle++
