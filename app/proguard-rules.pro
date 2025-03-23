@@ -50,6 +50,8 @@
 -keep class com.enderthor.kActions.** { *; }
 -keep class com.enderthor.kActions.data.** { *; }
 -keep class com.enderthor.kActions.extension.** { *; }
+-keep class com.enderthor.kActions.extension.managers.** { *; }
+-keep class com.enderthor.kActions.datatype.** { *; }
 -keep class com.enderthor.kActions.activity.** { *; }
 -keep class com.enderthor.kActions.screens.** { *; }
 

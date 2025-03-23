@@ -27,6 +27,7 @@ context: Context
     ): Boolean {
         val lastTime = notificationStateStore.getLastNotificationTime(eventType)
         val timeElapsed = currentTime - lastTime
+        val isNewSession = notificationStateStore.isNewSession(eventType)
 
         val isTextBeltFree = senderConfig?.let {
             it.provider == ProviderType.TEXTBELT &&
@@ -40,7 +41,8 @@ context: Context
             else -> maxOf(configuredDelay.toLong(), MIN_TIME_BETWEEN_SAME_MESSAGES)
         }
 
-        if (timeElapsed >= minTimeBetweenMessages) {
+
+        if (isNewSession || timeElapsed >= minTimeBetweenMessages) {
             val configsWithNotify = when (eventType) {
                 "start" -> configs.filter { it.notifyOnStart }
                 "stop" -> configs.filter { it.notifyOnStop }
@@ -66,7 +68,6 @@ context: Context
         }
         return false
     }
-
     suspend fun sendMessageForEvent(
         eventType: String,
         configs: List<ConfigData>,

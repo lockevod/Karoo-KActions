@@ -9,7 +9,7 @@ import com.enderthor.kActions.R
 const val MIN_TIME_BETWEEN_SAME_MESSAGES = 3 * 60 * 1000L
 const val MIN_TIME_TEXTBELT_FREE = 24 * 60 * 60 * 1000L
 const val karooUrl= "https://dashboard.hammerhead.io/live/"
-val export: Boolean = false
+const val export: Boolean = false
 
 
 @Serializable
@@ -24,6 +24,12 @@ data class ConfigData(
     val stopMessage: String = "",
     val pauseMessage: String = "",
     val resumeMessage: String = "",
+    val customMessage1: String = "",
+    val customMessage2: String = "",
+    val isTracking1: Boolean = false,
+    val isTracking2: Boolean = false,
+    val isDistance1: Boolean = false,
+    val isDistance2: Boolean = false,
     val karooKey: String = "",
     val phoneNumbers: List<String> = listOf(),
     val emails: List<String> = listOf(),
@@ -75,11 +81,12 @@ data class WebhookData(
     val actionOnCustom: Boolean = true,
     val onlyIfLocation: Boolean = true,
     val location: GpsCoordinates = GpsCoordinates(0.0,0.0),
-    val status: WebhookStatus = WebhookStatus.IDLE,
+    val status: StepStatus = StepStatus.IDLE,
 )
 
 
-enum class WebhookStatus { IDLE,FIRST, EXECUTING, SUCCESS, ERROR, NOT_AVAILABLE,CANCEL }
+enum class StepStatus { IDLE,FIRST, EXECUTING, SUCCESS, ERROR, NOT_AVAILABLE,CANCEL }
+
 
 @Serializable
 data class SenderConfig(

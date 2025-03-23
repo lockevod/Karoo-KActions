@@ -21,7 +21,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import com.enderthor.kActions.data.WebhookData
-import com.enderthor.kActions.data.WebhookStatus
+import com.enderthor.kActions.data.StepStatus
 import com.enderthor.kActions.extension.managers.ConfigurationManager
 import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.internal.ViewEmitter
@@ -94,7 +94,7 @@ abstract class WebhookDataTypeBase(
         config: ViewConfig
     ): RemoteViewsCompositionResult {
 
-        val status = webhookData?.status ?: WebhookStatus.NOT_AVAILABLE
+        val status = webhookData?.status ?: StepStatus.NOT_AVAILABLE
         val name = webhookData?.name ?: ""
 
 
@@ -108,13 +108,13 @@ abstract class WebhookDataTypeBase(
 
 
         val webhookMessage = when (status) {
-            WebhookStatus.IDLE -> "$idleActionString\n$name"
-            WebhookStatus.FIRST -> firstActionString
-            WebhookStatus.EXECUTING -> executingActionString
-            WebhookStatus.CANCEL -> cancelActionString
-            WebhookStatus.SUCCESS -> successActionString
-            WebhookStatus.ERROR -> errorActionString
-            WebhookStatus.NOT_AVAILABLE -> notAvailableActionString
+            StepStatus.IDLE -> "$idleActionString\n$name"
+            StepStatus.FIRST -> firstActionString
+            StepStatus.EXECUTING -> executingActionString
+            StepStatus.CANCEL -> cancelActionString
+            StepStatus.SUCCESS -> successActionString
+            StepStatus.ERROR -> errorActionString
+            StepStatus.NOT_AVAILABLE -> notAvailableActionString
         }
 
         return glance.compose(context, DpSize.Unspecified) {

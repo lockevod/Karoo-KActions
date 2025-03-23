@@ -9,10 +9,9 @@ import io.hammerhead.karooext.models.ActiveRideProfile
 import io.hammerhead.karooext.models.RideProfile
 import io.hammerhead.karooext.models.RideState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -28,22 +27,24 @@ class RideStateManager(
     private var wasPaused = false
 
 
+
     fun observeRideState(
         activeConfigs: List<ConfigData>,
         senderConfig: SenderConfig?
-    ): Flow<RideState> {
-        return karooSystem.streamRide()
-            .combine(karooSystem.streamActiveRideProfile().catch { emit(defaultActiveRideProfile()) }) { rideState, activeProfile ->
-                Pair(rideState, activeProfile)
-            }.also { combinedFlow ->
-                scope.launch {
-                    combinedFlow.collect { (rideState, activeProfile) ->
-                        processRideStateChange(rideState, activeConfigs, senderConfig, activeProfile)
-                    }
+    ) {
+        scope.launch {
+            karooSystem.streamRide()
+                .combine(karooSystem.streamActiveRideProfile().catch { emit(defaultActiveRideProfile()) }
+                    .onStart { emit(defaultActiveRideProfile()) }) { rideState, activeProfile ->
+                    Pair(rideState, activeProfile)
                 }
-            }
-            .map { (rideState, _) -> rideState }
+                .collect { (rideState, activeProfile) ->
+                    processRideStateChange(rideState, activeConfigs, senderConfig, activeProfile)
+                }
+        }
     }
+
+
 
     private fun defaultActiveRideProfile(): ActiveRideProfile {
         return ActiveRideProfile(profile = RideProfile(

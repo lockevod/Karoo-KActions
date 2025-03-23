@@ -4,7 +4,7 @@ import com.enderthor.kActions.BuildConfig
 import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.data.SenderConfig
-import com.enderthor.kActions.data.WebhookStatus
+import com.enderthor.kActions.data.StepStatus
 import com.enderthor.kActions.datatype.WebhookDataType
 import com.enderthor.kActions.extension.managers.ConfigurationManager
 import com.enderthor.kActions.extension.managers.NotificationManager
@@ -15,7 +15,7 @@ import io.hammerhead.karooext.extension.KarooExtension
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
@@ -89,39 +89,19 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
     }
 
     private fun initializeSystem() {
-
         launch {
             try {
 
-                configManager.loadPreferencesFlow().collect { configs ->
+                configManager.loadPreferencesFlow().combine(configManager.loadSenderConfigFlow()) { configs, senderConfigs ->
                     activeConfigs = configs
-
-
-                    val activeProvider = configs.first().activeProvider
-
-
-                    if (senderConfig == null) {
-                        configManager.loadSenderConfigFlow().first().let { senderConfigs ->
-                            senderConfig = findActiveSenderConfig(senderConfigs, activeProvider)
-                        }
-                    }
-
-                    if (senderConfig != null) {
-                        rideStateManager.observeRideState(activeConfigs, senderConfig)
+                    val activeProvider = configs.firstOrNull()?.activeProvider
+                    senderConfig = findActiveSenderConfig(senderConfigs, activeProvider)
+                    Pair(activeConfigs, senderConfig)
+                }.collect { (configs, sender) ->
+                    if (configs.isNotEmpty() && sender != null) {
+                        rideStateManager.observeRideState(configs, sender)
                     }
                 }
-
-
-                configManager.loadSenderConfigFlow().collect { configList ->
-                    val activeProvider = activeConfigs.first().activeProvider
-                    senderConfig = findActiveSenderConfig(configList, activeProvider)
-
-                    if (activeConfigs.isNotEmpty()) {
-                        rideStateManager.observeRideState(activeConfigs, senderConfig)
-                    }
-                }
-
-
             } catch (e: Exception) {
                 Timber.e(e, "Error inicializando configuraciones")
             }
@@ -135,7 +115,7 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
         }
     }
 
-    fun updateWebhookStatus(webhookId: Int, status: WebhookStatus) {
+    fun updateWebhookStatus(webhookId: Int, status: StepStatus) {
         webhookManager.updateWebhookStatus(webhookId, status)
     }
 

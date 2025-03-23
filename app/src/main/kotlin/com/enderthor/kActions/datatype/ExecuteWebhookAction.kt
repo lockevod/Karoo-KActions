@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.glance.GlanceId
 import androidx.glance.action.ActionParameters
 import androidx.glance.appwidget.action.ActionCallback
+import com.enderthor.kActions.data.StepStatus
 import com.enderthor.kActions.extension.KActionsExtension
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import com.enderthor.kActions.data.WebhookStatus
 import timber.log.Timber
 
 class ExecuteWebhookAction : ActionCallback {
@@ -32,10 +32,10 @@ class ExecuteWebhookAction : ActionCallback {
             val webhookId = parameters[WEBHOOK_ID]
             val currentStatusStr = parameters[CURRENT_STATUS]
 
-            val currentStatus = currentStatusStr?.let { WebhookStatus.valueOf(it) }
-                ?: WebhookStatus.IDLE
+            val currentStatus = currentStatusStr?.let { StepStatus.valueOf(it) }
+                ?: StepStatus.IDLE
 
-            if (currentStatus != WebhookStatus.IDLE && currentStatus != WebhookStatus.FIRST) {
+            if (currentStatus != StepStatus.IDLE && currentStatus != StepStatus.FIRST) {
                 Timber.d("Webhook en estado $currentStatus, no se procesará la acción")
                 return
             }
@@ -44,18 +44,18 @@ class ExecuteWebhookAction : ActionCallback {
                 Timber.d("Ejecutando webhook con ID: $webhookId y Webhook URL: ${parameters[WEBHOOK_URL]} y estado: $currentStatus")
                 withContext(Dispatchers.IO) {
                     when (currentStatus) {
-                        WebhookStatus.IDLE -> {
+                        StepStatus.IDLE -> {
                             extension.updateWebhookStatus(
                                 webhookId,
-                                WebhookStatus.FIRST
+                                StepStatus.FIRST
                             )
                             extension.scheduleResetToIdle(webhookId, 10_000)
                         }
 
-                        WebhookStatus.FIRST -> {
+                        StepStatus.FIRST -> {
                             extension.updateWebhookStatus(
                                 webhookId,
-                                WebhookStatus.EXECUTING
+                                StepStatus.EXECUTING
                             )
                             extension.executeWebhookWithStateTransitions(webhookId)
                         }

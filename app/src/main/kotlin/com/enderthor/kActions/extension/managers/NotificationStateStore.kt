@@ -2,13 +2,27 @@ package com.enderthor.kActions.extension.managers
 
 import android.content.Context
 import androidx.core.content.edit
+import java.util.UUID
 
 class NotificationStateStore(context: Context) {
     private val preferences = context.getSharedPreferences("notification_states", Context.MODE_PRIVATE)
+    private val sessionId: String = UUID.randomUUID().toString()
+
+    init {
+        preferences.edit {
+            putString("last_session_id", sessionId)
+        }
+    }
+
+    fun isNewSession(eventType: String): Boolean {
+        val lastEventSessionId = preferences.getString("session_${eventType}", "")
+        return lastEventSessionId != sessionId
+    }
 
     fun saveNotificationTime(eventType: String, timestamp: Long) {
         preferences.edit {
             putLong("notification_$eventType.timestamp", timestamp)
+            putString("session_${eventType}", sessionId)
         }
     }
 

@@ -24,3 +24,7 @@ local.properties
 /.idea/runConfigurations.xml
 /.idea/vcs.xml
 /.idea/
+/ConfigData.kt
+/ConfigData_sergi.kt
+/provider_config.json
+/webhook_config.json
