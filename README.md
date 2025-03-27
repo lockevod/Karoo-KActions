@@ -8,6 +8,7 @@ This extension for Karoo devices allows to perform some automatic actions:
 - Send automated notifications when you start or finish a bike ride. Now compatible with multiple messaging providers.
 - Execute automated actions (webhook)
 - Execute custom custom action (webhook) from custom datafield.
+- Send custom messages directly from a button (custom datafield).
 
 Compatible with Karoo 2 and Karoo 3 running Karoo OS version 1.524.2003 and later.
 
@@ -43,6 +44,7 @@ You need to configure basic information in Conf. Tab:
 
 3. **Customize messages**:
    - Personalize messages for each type of event.
+   - You can fill Custom Messages also, this is for sending custom messages directly from your ride when you want. You can also select distance option and the message will include remaining distance (if you've loaded a route)
    
 4. **Select actions**:
     - Start, stop or both.
@@ -59,7 +61,9 @@ You need to configure basic information in Conf. Tab:
    - Once configured, KActions will automatically send messages/execute webhook when you start or end a ride on your Karoo.
    - You don't need to interact with the app during the ride; everything works in the background.
 
-Webhook has can be triggered pressing the button in the app if you add webhook custom field in the profiles screen. 
+
+Webhook can be triggered pressing the button in the app if you add webhook custom field in the profiles screen. 
+Custom Message can be  triggered pressing the button in the app if you add Custom Message 1 or Custom Message 2 as data field in the profiles screen.
 This button has a security measure, you have to press twice to send the webhook (and you can configure to be triggered only if you're near home)
 
 KActions supports several providers to send notifications, you need to configure before use the app:
@@ -133,6 +137,7 @@ KActions allows you to configure webhooks to execute external services when even
 ## Import/Export API keys/Webhook Configuration
 
 KActions allows you to import both provider configurations and webhook settings directly from a file. This is very useful if you've to introduce a complicated key or you webhook is complicated. You'll need to connect your Karoo by cable and execute adb commands.
+You only need to use it if you want to import complex api keys. If you don't have any file to import, you can skip this step.
 
 - **Import Provider Settings**:
    - Fill information in file (you've a template in templates folder. Please don't modify structure, change/complete only apikey (insert your apikey for your provider (between quotation marks). You don't need to fill a key for every provider. You can do copy with adb with the command:
@@ -164,7 +169,8 @@ KActions allows you to import both provider configurations and webhook settings 
 - Automatic sending of notifications to preset number.
 - Customizable messages for each type of event.
 - Control of minimum time between messages of the same type.
-- Support for multiple languages.
+- Custom Message support to send messages with custom data directly from ride (datatype button)
+- Support for multiple languages (EN, ES).
 - Integration with Karoo Live for real-time tracking.
 - Multiple messaging providers (WhatsApp, SMS, email).
 - Webhooks for integration with external services.
