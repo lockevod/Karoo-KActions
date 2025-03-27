@@ -29,6 +29,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.style.TextDecoration
+import com.enderthor.kActions.data.customMessage
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,6 +54,8 @@ fun ConfigurationScreen() {
     var phone1ErrorMessage by remember { mutableStateOf("") }
     var startMessage by remember { mutableStateOf("") }
     var stopMessage by remember { mutableStateOf("") }
+    var customMessage1 by remember { mutableStateOf(customMessage()) }
+    var customMessage2 by remember { mutableStateOf(customMessage()) }
     var pauseMessage by remember { mutableStateOf("") }
     var resumeMessage by remember { mutableStateOf("") }
     var actionOnStart by remember { mutableStateOf(true) }
@@ -140,6 +144,8 @@ fun ConfigurationScreen() {
                     stopMessage = savedConfig.stopMessage
                     pauseMessage = savedConfig.pauseMessage
                     resumeMessage = savedConfig.resumeMessage
+                    customMessage1 = savedConfig.customMessage1
+                    customMessage2 = savedConfig.customMessage2
                 }
             }
         }
@@ -297,7 +303,9 @@ fun ConfigurationScreen() {
                         resumeMessage = resumeMessage.trim(),
                         activeProvider = selectedProvider,
                         emailFrom = emailFrom.trim(),
-                        indoorMode = indoorMode
+                        indoorMode = indoorMode,
+                        customMessage1 = customMessage1,
+                        customMessage2 = customMessage2
                     ) ?: ConfigData(
                         isActive = isActive,
                         karooKey = karooKey.trim(),
@@ -312,7 +320,9 @@ fun ConfigurationScreen() {
                         resumeMessage = resumeMessage.trim(),
                         activeProvider = selectedProvider,
                         emailFrom = emailFrom.trim(),
-                        indoorMode = indoorMode
+                        indoorMode = indoorMode,
+                        customMessage1 = customMessage1,
+                        customMessage2 = customMessage2
                     )
 
                     configManager.savePreferences(mutableListOf(updatedConfig))
@@ -585,6 +595,140 @@ fun ConfigurationScreen() {
                 }
             }
 
+
+            Card {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        stringResource(R.string.custom_messages),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    Text(
+                        stringResource(R.string.configure_custom_messages),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        stringResource(R.string.custom_message_1),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            textDecoration = TextDecoration.Underline
+                        )
+                    )
+
+                    OutlinedTextField(
+                        value = customMessage1.name,
+                        onValueChange = { customMessage1.name = it },
+                        label = { Text(stringResource(R.string.custom_message_1)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) saveData() },
+                        minLines = 2,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
+
+                    )
+
+                    OutlinedTextField(
+                        value = customMessage1.message,
+                        onValueChange = { customMessage1.message = it },
+                        label = { Text(stringResource(R.string.custom_message_content)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) saveData() },
+                        minLines = 2,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
+
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(R.string.include_distance),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(
+                            checked = customMessage1.isdistance,
+                            onCheckedChange = {
+                                customMessage1.isdistance = it
+                                saveData()
+                            }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Text(
+                        stringResource(R.string.custom_message_2),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            textDecoration = TextDecoration.Underline
+                        )
+                    )
+
+                    OutlinedTextField(
+                        value = customMessage2.name,
+                        onValueChange = { customMessage1.name = it },
+                        label = { Text(stringResource(R.string.custom_message_2)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) saveData() },
+                        minLines = 2,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
+
+                    )
+
+                    OutlinedTextField(
+                        value = customMessage2.message,
+                        onValueChange = { customMessage2.message = it },
+                        label = { Text(stringResource(R.string.custom_message_content)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) saveData() },
+                        minLines = 2,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
+
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(R.string.include_distance),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(
+                            checked = customMessage2.isdistance,
+                            onCheckedChange = {
+                                customMessage2.isdistance = it
+                                saveData()
+                            }
+                        )
+                    }
+                }
+            }
+
+
+
             Card {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -735,7 +879,3 @@ fun PhoneNumberInput(
         }
     )
 }
-
-
-
-

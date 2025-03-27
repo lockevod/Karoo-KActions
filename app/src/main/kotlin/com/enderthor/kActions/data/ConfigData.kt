@@ -11,6 +11,14 @@ const val MIN_TIME_TEXTBELT_FREE = 24 * 60 * 60 * 1000L
 const val karooUrl= "https://dashboard.hammerhead.io/live/"
 const val export: Boolean = false
 
+@Serializable
+data class customMessage (
+    var name: String = "",
+    var message: String = "",
+    var istracking: Boolean = false,
+    var isdistance: Boolean = false,
+    var status: StepStatus = StepStatus.IDLE,
+)
 
 @Serializable
 data class ConfigData(
@@ -24,12 +32,8 @@ data class ConfigData(
     val stopMessage: String = "",
     val pauseMessage: String = "",
     val resumeMessage: String = "",
-    val customMessage1: String = "",
-    val customMessage2: String = "",
-    val isTracking1: Boolean = false,
-    val isTracking2: Boolean = false,
-    val isDistance1: Boolean = false,
-    val isDistance2: Boolean = false,
+    val customMessage1: customMessage = customMessage(),
+    val customMessage2: customMessage = customMessage(),
     val karooKey: String = "",
     val phoneNumbers: List<String> = listOf(),
     val emails: List<String> = listOf(),

@@ -100,10 +100,10 @@
 
     <string name="webhook_idle_action">Tap to execute</string>
     <string name="webhook_first_action">Tap to confirm</string>
-    <string name="webhook_excuting_action">Executing webhook…</string>
+    <string name="webhook_excuting_action">Executing …</string>
     <string name="webhook_success_action">Execution successful</string>
     <string name="webhook_error_action">Execution failed</string>
-    <string name="webhook_notavailable_action">Webhook not available</string>
+    <string name="webhook_notavailable_action">Not available</string>
     <string name="webhook_cancel_action">Action Cancelled</string>
     <string name="webhook_description_datatype">Webhook</string>
     <string name="webhook_datatype">Webhook</string>
@@ -123,4 +123,15 @@
     <string name="config_export_error">Error exporting configuration</string>
     <string name="error_message">Error: %1$s</string>
     <string name="indoor_mode">Only in outdoor?</string>
+
+
+    <string name="custom1_datatype">Custom Message 1</string>
+    <string name="custom2_datatype">Custom Message 2</string>
+
+    <string name="custom_messages">Custom Messages</string>
+    <string name="configure_custom_messages">Configure messages that can be sent manually</string> <string name="custom_message_1">Custom 1</string>
+    <string name="custom_message_2">Custom 2</string>
+    <string name="custom_message_name">Title</string>
+    <string name="custom_message_content">Content</string>
+    <string name="include_distance">Include remaining distance?</string>
 </resources>

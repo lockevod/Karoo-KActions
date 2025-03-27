@@ -19,7 +19,7 @@
     <string name="test_sending">Prueba de envío de mensajes</string>
     <string name="test_phone_number">Número para pruebas</string>
     <string name="phone_placeholder">34675123123</string>
-    <string name="connecting">Conectando...</string>
+    <string name="connecting">Conectando…</string>
     <string name="send_test_message">Enviar mensaje de prueba</string>
     <string name="error_karoo_not_connected">Error: El sistema Karoo no está conectado</string>
     <string name="test_message_content">Mensaje de prueba desde KActions</string>
@@ -37,7 +37,7 @@
     <string name="number_3">Número 3</string>
     <string name="error_no_plus">El número de teléfono debe introducirse con el símbolo \'+\' y con código de país. Ejemplo: +34675123123</string>
     <string name="error_digits_only">El número de teléfono solo debe contener dígitos y +. Ejemplo: +34675123123</string>
-    <string name="error_length">El número de teléfono debe tener entre 10-15 dígitos, el código de país es obligatorio. Ejemplo: +34675123123</string>
+    <string name="error_length">El número de teléfono debe tener entre 10–15 dígitos, el código de país es obligatorio. Ejemplo: +34675123123</string>
     <string name="phone_numbers_saved">Números de teléfono guardados</string>
     <string name="cannot_save_invalid_format">No se puede guardar: Algunos números de teléfono tienen un formato inválido</string>
     <string name="email_1">Email</string>
@@ -100,13 +100,15 @@
 
     <string name="webhook_idle_action">Pulsa para ejecutar</string>
     <string name="webhook_first_action">Pulsa para confirmar</string>
-    <string name="webhook_excuting_action">Ejecutando webhook…</string>
+    <string name="webhook_excuting_action">Ejecutando …</string>
     <string name="webhook_success_action">Éxito al ejecutar</string>
     <string name="webhook_error_action">Error en ejecución</string>
-    <string name="webhook_notavailable_action">Webhook no disponible</string>
+    <string name="webhook_notavailable_action">No disponible</string>
     <string name="webhook_cancel_action">Acción Cancelada</string>
     <string name="webhook_description_datatype">Webhook</string>
     <string name="webhook_datatype">Webhook</string>
+    <string name="custom1_datatype">Mensaje Custom 1</string>
+    <string name="custom2_datatype">Mensaje Custom 2</string>
     <string name="webhook_headers">Headers</string>
     <string name="webhook_headers_placeholder">Content-Type: application/json\nAuthorization: Bearer token</string>
 
@@ -126,4 +128,11 @@
     <string name="config_export_error">Error al exportar configuración</string>
     <string name="error_message">Error: %1$s</string>
     <string name="indoor_mode">Sólo outdoor?</string>
+    <string name="custom_messages">Mensajes Custom Datatypes</string>
+    <string name="custom_message_1">Custom 1</string>
+    <string name="custom_message_2">Custom 2</string>
+    <string name="custom_message_name">Título</string>
+    <string name="custom_message_content">Contenido </string>
+    <string name="include_distance">Incluir distancia faltante?</string>
+    <string name="configure_custom_messages">Configura mensajes que se pueden enviar manualmente</string>
 </resources>

@@ -45,7 +45,6 @@ class RideStateManager(
     }
 
 
-
     private fun defaultActiveRideProfile(): ActiveRideProfile {
         return ActiveRideProfile(profile = RideProfile(
             id = "default",
@@ -71,6 +70,8 @@ class RideStateManager(
         val activeConfigs = configs.filter { it.isActive }
         val isIndoor = activeProfile.profile.indoor
 
+        Timber.d("Active configs: $activeConfigs")
+        Timber.d("Indoor mode: $isIndoor")
 
         val currentTime = System.currentTimeMillis()
 

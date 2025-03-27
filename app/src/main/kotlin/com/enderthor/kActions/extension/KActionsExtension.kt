@@ -5,6 +5,7 @@ import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.data.SenderConfig
 import com.enderthor.kActions.data.StepStatus
+import com.enderthor.kActions.datatype.CustomMessageDataType
 import com.enderthor.kActions.datatype.WebhookDataType
 import com.enderthor.kActions.extension.managers.ConfigurationManager
 import com.enderthor.kActions.extension.managers.NotificationManager
@@ -25,12 +26,6 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
     private val job = SupervisorJob()
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
-
-    override val types by lazy {
-        listOf(
-            WebhookDataType("webhook-one", applicationContext,0),
-        )
-    }
 
 
     lateinit var karooSystem: KarooSystemService
@@ -56,6 +51,16 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
         }
     }
 
+    override val types by lazy {
+        listOf(
+            WebhookDataType("webhook-one", applicationContext,0),
+            CustomMessageDataType("custom-one", applicationContext, 0, karooSystem),
+            CustomMessageDataType("custom-two", applicationContext, 1,karooSystem),
+        )
+    }
+
+
+
     override fun onCreate() {
         super.onCreate()
         setInstance(this)
@@ -67,7 +72,7 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
         configManager = ConfigurationManager(applicationContext)
         sender = Sender(karooSystem, configManager)
 
-        notificationManager = NotificationManager(sender, applicationContext)
+        notificationManager = NotificationManager(sender, applicationContext,this)
         webhookManager = WebhookManager(applicationContext, karooSystem, this)
         webhookManager.restorePendingWebhookStates()
         rideStateManager = RideStateManager(
@@ -125,6 +130,18 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
 
     fun executeWebhookWithStateTransitions(webhookId: Int) {
         webhookManager.executeWebhookWithStateTransitions(webhookId)
+    }
+
+    fun updateCustomMessageStatus(messageId: Int, status: StepStatus) {
+        notificationManager.updateCustomMessageStatus(messageId, status)
+    }
+
+    fun scheduleResetCustomMessageToIdle(messageId: Int, delayMillis: Long) {
+        notificationManager.scheduleResetCustomMessageToIdle(messageId, delayMillis)
+    }
+
+    fun sendCustomMessageWithStateTransitions(messageId: Int, messageText: String) {
+        notificationManager.sendCustomMessageWithStateTransitions(messageId, messageText)
     }
 
     override fun onDestroy() {

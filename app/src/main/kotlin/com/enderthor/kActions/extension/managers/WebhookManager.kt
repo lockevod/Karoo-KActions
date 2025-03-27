@@ -167,7 +167,7 @@ class WebhookManager(
 
             val distance = distanceTo(currentLocation, targetLocation)
             Timber.d("Distancia a la ubicación objetivo: $distance km")
-            return distance <= 0.010 // 10 metros
+            return distance <= 0.070 // 70 metros
 
         } catch (e: Exception) {
             Timber.e(e, "Error al comprobar la ubicación: ${e.message}")

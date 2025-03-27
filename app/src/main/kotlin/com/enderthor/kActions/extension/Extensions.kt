@@ -9,20 +9,38 @@ import io.hammerhead.karooext.models.OnHttpResponse
 import io.hammerhead.karooext.models.OnLocationChanged
 import io.hammerhead.karooext.models.RideState
 import io.hammerhead.karooext.models.ActiveRideProfile
+import io.hammerhead.karooext.models.DataPoint
+import io.hammerhead.karooext.models.DataType
+import io.hammerhead.karooext.models.OnStreamState
+import io.hammerhead.karooext.models.StreamState
+import io.hammerhead.karooext.models.UserProfile
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.timeout
+import kotlinx.coroutines.isActive
 import kotlinx.serialization.json.Json
 import timber.log.Timber
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 
+
+const val RETRY_CHECK_STREAMS = 4
+const val WAIT_STREAMS_SHORT = 3000L // 3 seconds
+const val STREAM_TIMEOUT = 15000L // 15 seconds
+const val WAIT_STREAMS_LONG = 120000L // 120 seconds
+const val WAIT_STREAMS_MEDIUM = 10000L // 10 seconds
 val jsonWithUnknownKeys = Json { ignoreUnknownKeys = true }
 
 
@@ -78,6 +96,17 @@ fun KarooSystemService.makeHttpRequest(method: String, url: String, queue: Boole
             } else {
                 throw e
             }
+        }
+    }
+}
+
+fun KarooSystemService.streamDataFlow(dataTypeId: String): Flow<StreamState> {
+    return callbackFlow {
+        val listenerId = addConsumer(OnStreamState.StartStreaming(dataTypeId)) { event: OnStreamState ->
+            trySendBlocking(event.state)
+        }
+        awaitClose {
+            removeConsumer(listenerId)
         }
     }
 }
@@ -140,6 +169,99 @@ fun KarooSystemService.getHomeFlow(): Flow<GpsCoordinates> {
             emit(GpsCoordinates(0.0, 0.0))
         }
 }
+
+@OptIn(FlowPreview::class)
+fun KarooSystemService.streamDataMonitorFlow(
+    dataTypeID: String,
+    noCheck: Boolean = false,
+    defaultValue: Double = 0.0,
+): Flow<StreamState> = flow {
+
+    if (noCheck) {
+        streamDataFlow(dataTypeID).collect { emit(it) }
+        return@flow
+    }
+
+    var retryAttempt = 0
+
+
+    val initialState = StreamState.Streaming(
+        DataPoint(
+            dataTypeId = dataTypeID,
+            values = mapOf(DataType.Field.SINGLE to defaultValue),
+        )
+    )
+
+    emit(initialState)
+
+    while (currentCoroutineContext().isActive) {
+        try {
+            streamDataFlow(dataTypeID)
+                .distinctUntilChanged()
+                .timeout(STREAM_TIMEOUT.milliseconds)
+                .collect { state ->
+                    when (state) {
+                        is StreamState.Idle -> {
+                            Timber.w("Stream estado inactivo: $dataTypeID, esperando...")
+                            delay(WAIT_STREAMS_SHORT)
+                        }
+                        is StreamState.NotAvailable -> {
+                            Timber.w("Stream estado NotAvailable: $dataTypeID, esperando...")
+                            emit(initialState)
+                            delay(WAIT_STREAMS_SHORT * 2)
+                        }
+                        is StreamState.Searching -> {
+                            Timber.w("Stream estado searching: $dataTypeID, esperando...")
+                            emit(initialState)
+                            delay(WAIT_STREAMS_SHORT/2)
+                        }
+                        else -> {
+                            retryAttempt = 0
+                            Timber.d("Stream estado: $state")
+                            emit(state)
+                        }
+                    }
+                }
+
+        } catch (e: Exception) {
+            when (e) {
+                is TimeoutCancellationException -> {
+                    if (retryAttempt++ < RETRY_CHECK_STREAMS) {
+                        val backoffDelay = (1000L * (1 shl retryAttempt))
+                            .coerceAtMost(WAIT_STREAMS_MEDIUM)
+                        Timber.w("Timeout/Cancel en stream $dataTypeID, reintento $retryAttempt en ${backoffDelay}ms. Motivo $e")
+                        delay(backoffDelay)
+                    } else {
+                        Timber.e("Máximo de reintentos alcanzado")
+                        retryAttempt = 0
+                        delay(WAIT_STREAMS_LONG)
+                    }
+                }
+                is CancellationException -> {
+                    Timber.d("Cancelación ignorada en streamDataFlow")
+                }
+                else -> {
+                    Timber.e(e, "Error en stream")
+                    delay(WAIT_STREAMS_LONG)
+                }
+            }
+        }
+    }
+}
+
+fun KarooSystemService.streamUserProfile(): Flow<UserProfile> {
+    return callbackFlow {
+        val listenerId = addConsumer { userProfile: UserProfile ->
+            trySendBlocking(userProfile)
+        }
+        awaitClose {
+            removeConsumer(listenerId)
+        }
+    }
+}
+
+
+
 
 
 
