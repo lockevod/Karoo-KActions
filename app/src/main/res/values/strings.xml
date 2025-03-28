@@ -18,8 +18,8 @@
     <string name="api_key">API Key</string>
     <string name="test_sending">Test message sending</string>
     <string name="test_phone_number">Test phone number</string>
-    <string name="phone_placeholder">34675123123</string>
-    <string name="connecting">Connecting...</string>
+    <string name="phone_placeholder">+34675123123</string>
+    <string name="connecting">Connecting…</string>
     <string name="send_test_message">Send test message</string>
     <string name="error_karoo_not_connected">Error: Karoo System is not connected</string>
     <string name="test_message_content">Test message from KActions</string>
@@ -36,7 +36,7 @@
     <string name="number_3">Number 3</string>
     <string name="error_no_plus">Phone number must be entered with the \'+\' symbol and with country code. Example: +34675123123</string>
     <string name="error_digits_only">Phone number must contain only digits and +. Example: +34675123123</string>
-    <string name="error_length">Phone number must have between 10-15 digits, country code is required. Example: +34675123123</string>
+    <string name="error_length">Phone number must have between 10–15 digits, country code is required. Example: +34675123123</string>
     <string name="phone_numbers_saved">Phone numbers saved</string>
     <string name="cannot_save_invalid_format">Cannot save: Some phone numbers have invalid format</string>
 

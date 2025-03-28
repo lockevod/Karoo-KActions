@@ -85,11 +85,12 @@ data class WebhookData(
     val actionOnCustom: Boolean = true,
     val onlyIfLocation: Boolean = true,
     val location: GpsCoordinates = GpsCoordinates(0.0,0.0),
-    val status: StepStatus = StepStatus.IDLE,
+    val status: WebhookStatus = WebhookStatus.IDLE,
 )
 
 
 enum class StepStatus { IDLE,FIRST, EXECUTING, SUCCESS, ERROR, NOT_AVAILABLE,CANCEL }
+enum class WebhookStatus { IDLE,FIRST, EXECUTING, SUCCESS, ERROR, NOT_AVAILABLE,CANCEL }
 
 
 @Serializable

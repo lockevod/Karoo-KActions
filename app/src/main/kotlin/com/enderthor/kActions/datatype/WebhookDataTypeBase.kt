@@ -21,7 +21,6 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import com.enderthor.kActions.data.WebhookData
-import com.enderthor.kActions.data.StepStatus
 import com.enderthor.kActions.extension.managers.ConfigurationManager
 import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.internal.ViewEmitter
@@ -38,6 +37,10 @@ import androidx.glance.action.actionParametersOf
 import io.hammerhead.karooext.models.ShowCustomStreamState
 import timber.log.Timber
 import kotlin.coroutines.cancellation.CancellationException
+import androidx.glance.GlanceId
+import com.enderthor.kActions.data.WebhookStatus
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 
 @OptIn(ExperimentalGlanceRemoteViewsApi::class)
 abstract class WebhookDataTypeBase(
@@ -48,8 +51,14 @@ abstract class WebhookDataTypeBase(
 
     private val glance = GlanceRemoteViews()
     private val configManager by lazy { ConfigurationManager(context) }
+    private val uniqueGlanceId: GlanceId by lazy {
+        GlanceIdFactory.getUniqueGlanceId(context, "webhook_${datatype}_${webhookIndex}")
+    }
 
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
+
+        val scopeJob = Job()
+        val scope = CoroutineScope(Dispatchers.IO + scopeJob)
 
         val configJob = CoroutineScope(Dispatchers.IO).launch {
             emitter.onNext(UpdateGraphicConfig(showHeader = false))
@@ -58,7 +67,7 @@ abstract class WebhookDataTypeBase(
         }
 
 
-        val viewJob = CoroutineScope(Dispatchers.IO).launch {
+        val viewJob = scope.launch {
             while (isActive) {
                 try {
                     configManager.loadWebhookDataFlow().collect  { webhooks ->
@@ -83,6 +92,8 @@ abstract class WebhookDataTypeBase(
         emitter.setCancellable {
             configJob.cancel()
             viewJob.cancel()
+            scope.cancel()
+            scopeJob.cancel()
         }
 
     }
@@ -94,7 +105,7 @@ abstract class WebhookDataTypeBase(
         config: ViewConfig
     ): RemoteViewsCompositionResult {
 
-        val status = webhookData?.status ?: StepStatus.NOT_AVAILABLE
+        val status_webhook = webhookData?.status ?: WebhookStatus.NOT_AVAILABLE
         val name = webhookData?.name ?: ""
 
 
@@ -107,34 +118,33 @@ abstract class WebhookDataTypeBase(
         val notAvailableActionString = context.getString(R.string.webhook_notavailable_action)
 
 
-        val webhookMessage = when (status) {
-            StepStatus.IDLE -> "$idleActionString\n$name"
-            StepStatus.FIRST -> firstActionString
-            StepStatus.EXECUTING -> executingActionString
-            StepStatus.CANCEL -> cancelActionString
-            StepStatus.SUCCESS -> successActionString
-            StepStatus.ERROR -> errorActionString
-            StepStatus.NOT_AVAILABLE -> notAvailableActionString
+        val webhookMessage = when (status_webhook) {
+            WebhookStatus.IDLE -> "$idleActionString\n$name"
+            WebhookStatus.FIRST -> firstActionString
+            WebhookStatus.EXECUTING -> executingActionString
+            WebhookStatus.CANCEL -> cancelActionString
+            WebhookStatus.SUCCESS -> successActionString
+            WebhookStatus.ERROR -> errorActionString
+            WebhookStatus.NOT_AVAILABLE -> notAvailableActionString
         }
 
-        return glance.compose(context, DpSize.Unspecified) {
+        return glance.compose(context, DpSize.Unspecified, uniqueGlanceId) {
             var modifier = GlanceModifier.fillMaxSize().padding(5.dp)
 
-            Timber.d("WebhookData: $webhookData")
+
             if (!config.preview && webhookData != null) {
 
-                val id = webhookData.id
+                val id_webhook = webhookData.id
                 val url = webhookData.url
-                val statusName = status.name
-                Timber.d("Dentro click WebhookData:")
+                val statusName_webhook = status_webhook.name
+                Timber.d("Configurando ExecuteWebhookAction con ID: $id_webhook y URL: $url y uniqueGlanceId: $uniqueGlanceId y config $config")
 
                 modifier = modifier.clickable(
-                    onClick = actionRunCallback<ExecuteWebhookAction>(
-                        parameters = actionParametersOf(
-                                ExecuteWebhookAction.WEBHOOK_ID to id,
-                                ExecuteWebhookAction.WEBHOOK_URL to url,
-                                ExecuteWebhookAction.CURRENT_STATUS to statusName
-                        )
+                    onClick = GlanceIdFactory.createWebhookClickAction(
+                        context = context,
+                        webhookId = id_webhook,
+                        webhookUrl = url,
+                        status = statusName_webhook
                     )
                 )
             }

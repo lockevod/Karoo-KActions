@@ -620,8 +620,11 @@ fun ConfigurationScreen() {
 
                     OutlinedTextField(
                         value = customMessage1.name,
-                        onValueChange = { customMessage1.name = it },
-                        label = { Text(stringResource(R.string.custom_message_1)) },
+                        onValueChange = { newValue ->
+                            customMessage1 = customMessage1.copy(name = newValue)
+                            saveData()
+                        },
+                        label = { Text(stringResource(R.string.custom_message_name)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .onFocusChanged { if (!it.isFocused) saveData() },
@@ -637,7 +640,10 @@ fun ConfigurationScreen() {
 
                     OutlinedTextField(
                         value = customMessage1.message,
-                        onValueChange = { customMessage1.message = it },
+                        onValueChange = { newValue ->
+                            customMessage1 = customMessage1.copy(message = newValue)
+                            saveData()
+                        },
                         label = { Text(stringResource(R.string.custom_message_content)) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -662,7 +668,7 @@ fun ConfigurationScreen() {
                         Switch(
                             checked = customMessage1.isdistance,
                             onCheckedChange = {
-                                customMessage1.isdistance = it
+                                customMessage1 = customMessage1.copy(isdistance = it)
                                 saveData()
                             }
                         )
@@ -677,8 +683,11 @@ fun ConfigurationScreen() {
 
                     OutlinedTextField(
                         value = customMessage2.name,
-                        onValueChange = { customMessage1.name = it },
-                        label = { Text(stringResource(R.string.custom_message_2)) },
+                        onValueChange = { newValue ->
+                            customMessage2 = customMessage2.copy(name = newValue)
+                            saveData()
+                        },
+                        label = { Text(stringResource(R.string.custom_message_name)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .onFocusChanged { if (!it.isFocused) saveData() },
@@ -694,7 +703,10 @@ fun ConfigurationScreen() {
 
                     OutlinedTextField(
                         value = customMessage2.message,
-                        onValueChange = { customMessage2.message = it },
+                        onValueChange = { newValue ->
+                            customMessage2 = customMessage2.copy(message = newValue)
+                            saveData()
+                        },
                         label = { Text(stringResource(R.string.custom_message_content)) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -719,7 +731,7 @@ fun ConfigurationScreen() {
                         Switch(
                             checked = customMessage2.isdistance,
                             onCheckedChange = {
-                                customMessage2.isdistance = it
+                                customMessage2 = customMessage2.copy(isdistance = it)
                                 saveData()
                             }
                         )

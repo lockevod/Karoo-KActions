@@ -5,6 +5,7 @@ import com.enderthor.kActions.data.ConfigData
 import com.enderthor.kActions.data.ProviderType
 import com.enderthor.kActions.data.SenderConfig
 import com.enderthor.kActions.data.StepStatus
+import com.enderthor.kActions.data.WebhookStatus
 import com.enderthor.kActions.datatype.CustomMessageDataType
 import com.enderthor.kActions.datatype.WebhookDataType
 import com.enderthor.kActions.extension.managers.ConfigurationManager
@@ -120,7 +121,7 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
         }
     }
 
-    fun updateWebhookStatus(webhookId: Int, status: StepStatus) {
+    fun updateWebhookStatus(webhookId: Int, status: WebhookStatus) {
         webhookManager.updateWebhookStatus(webhookId, status)
     }
 

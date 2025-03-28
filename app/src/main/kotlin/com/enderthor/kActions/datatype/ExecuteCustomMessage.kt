@@ -15,7 +15,8 @@ class ExecuteCustomMessage : ActionCallback {
     companion object {
         val MESSAGE_ID = ActionParameters.Key<Int>("message_id")
         val MESSAGE_TEXT = ActionParameters.Key<String>("message_text")
-        val CURRENT_STATUS = ActionParameters.Key<String>("current_status")
+        val CURRENT_STATUS_MESSAGE = ActionParameters.Key<String>("current_status_message")
+
     }
 
    override suspend fun onAction(
@@ -24,10 +25,12 @@ class ExecuteCustomMessage : ActionCallback {
         parameters: ActionParameters
     ) {
         try {
+
+
             val extension = KActionsExtension.getInstance()
             val messageId = parameters[MESSAGE_ID]
-            val currentStatusStr = parameters[CURRENT_STATUS]
-            val messageText = parameters[MESSAGE_TEXT] // Usar este texto directamente
+            val currentStatusStr = parameters[CURRENT_STATUS_MESSAGE]
+            val messageText = parameters[MESSAGE_TEXT]
 
             Timber.d("Ejecutando mensaje personalizado: $messageId")
             Timber.d("Texto del mensaje: $messageText")

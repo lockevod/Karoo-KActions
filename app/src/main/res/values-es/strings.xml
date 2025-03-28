@@ -18,7 +18,7 @@
     <string name="api_key">Clave API</string>
     <string name="test_sending">Prueba de envío de mensajes</string>
     <string name="test_phone_number">Número para pruebas</string>
-    <string name="phone_placeholder">34675123123</string>
+    <string name="phone_placeholder">+34675123123</string>
     <string name="connecting">Conectando…</string>
     <string name="send_test_message">Enviar mensaje de prueba</string>
     <string name="error_karoo_not_connected">Error: El sistema Karoo no está conectado</string>

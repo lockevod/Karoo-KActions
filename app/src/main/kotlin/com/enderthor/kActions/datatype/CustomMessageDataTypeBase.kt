@@ -47,7 +47,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import java.util.Locale
+import androidx.glance.GlanceId
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlin.coroutines.cancellation.CancellationException
+
 
 @OptIn(ExperimentalGlanceRemoteViewsApi::class)
 abstract class CustomMessageDataTypeBase(
@@ -59,6 +63,10 @@ abstract class CustomMessageDataTypeBase(
 
     private val glance = GlanceRemoteViews()
     private val configManager by lazy { ConfigurationManager(context) }
+    private val uniqueGlanceId: GlanceId by lazy {
+        GlanceIdFactory.getUniqueGlanceId(context, "message_${datatype}_${value}")
+    }
+
 
     private val _distanceFlow = MutableStateFlow(0.0)
     val distanceFlow: StateFlow<Double> = _distanceFlow.asStateFlow()
@@ -92,6 +100,9 @@ abstract class CustomMessageDataTypeBase(
 
     override fun startView(context: Context, config: ViewConfig, emitter: ViewEmitter) {
 
+        val scopeJob = Job()
+        val scope = CoroutineScope(Dispatchers.IO + scopeJob)
+
         val configJob = CoroutineScope(Dispatchers.IO).launch {
             emitter.onNext(UpdateGraphicConfig(showHeader = false))
             emitter.onNext(ShowCustomStreamState(message = "", color = null))
@@ -100,7 +111,7 @@ abstract class CustomMessageDataTypeBase(
 
 
 
-        val viewJob = CoroutineScope(Dispatchers.IO).launch {
+        val viewJob = scope.launch {
             while (isActive) {
                 try {
                     val units = karooSystem.streamUserProfile().first().preferredUnit.distance
@@ -127,6 +138,8 @@ abstract class CustomMessageDataTypeBase(
         emitter.setCancellable {
             configJob.cancel()
             viewJob.cancel()
+            scope.cancel()
+            scopeJob.cancel()
         }
 
     }
@@ -140,7 +153,7 @@ abstract class CustomMessageDataTypeBase(
     ): RemoteViewsCompositionResult {
 
 
-        val status = message?.status ?: StepStatus.NOT_AVAILABLE
+        val status_message = message?.status ?: StepStatus.NOT_AVAILABLE
         val name = message?.name ?: ""
         //val istracking = message?.istracking == true
         val isdistance = message?.isdistance == true
@@ -159,7 +172,7 @@ abstract class CustomMessageDataTypeBase(
         val notAvailableActionString = context.getString(R.string.webhook_notavailable_action)
 
 
-        val message = when (status) {
+        val message = when (status_message) {
             StepStatus.IDLE -> "$idleActionString\n$name"
             StepStatus.FIRST -> firstActionString
             StepStatus.EXECUTING -> executingActionString
@@ -169,22 +182,21 @@ abstract class CustomMessageDataTypeBase(
             StepStatus.NOT_AVAILABLE -> notAvailableActionString
         }
 
-        return glance.compose(context, DpSize.Unspecified) {
+        return glance.compose(context, DpSize.Unspecified, uniqueGlanceId) {
             var modifier = GlanceModifier.fillMaxSize().padding(5.dp)
 
-            Timber.d("MessageData: $message")
+
             if (!config.preview) {
 
-                val statusName = status.name
-                Timber.d("Dentro click WebhookData:")
+                val statusName_message = status_message.name
 
+                Timber.d("Configurando ExecuteCustomMessage con ID: $value y texto: $text y uniqueGlanceId: $uniqueGlanceId y config $config")
                 modifier = modifier.clickable(
-                    onClick = actionRunCallback<ExecuteCustomMessage>(
-                        parameters = actionParametersOf(
-                            ExecuteCustomMessage.MESSAGE_ID to value,
-                            ExecuteCustomMessage.MESSAGE_TEXT to text,
-                            ExecuteCustomMessage.CURRENT_STATUS to statusName
-                        )
+                    onClick = GlanceIdFactory.createMessageClickAction(
+                        context = context,
+                        messageId = value,
+                        messageText = text,
+                        status = statusName_message
                     )
                 )
             }
