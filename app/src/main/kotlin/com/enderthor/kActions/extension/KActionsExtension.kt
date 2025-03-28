@@ -7,7 +7,6 @@ import com.enderthor.kActions.data.SenderConfig
 import com.enderthor.kActions.data.StepStatus
 import com.enderthor.kActions.data.WebhookStatus
 import com.enderthor.kActions.datatype.CustomMessageDataType
-import com.enderthor.kActions.datatype.WebhookDataType
 import com.enderthor.kActions.extension.managers.ConfigurationManager
 import com.enderthor.kActions.extension.managers.NotificationManager
 import com.enderthor.kActions.extension.managers.RideStateManager
@@ -54,9 +53,7 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
 
     override val types by lazy {
         listOf(
-            WebhookDataType("webhook-one", applicationContext,0),
-            CustomMessageDataType("custom-one", applicationContext, 0, karooSystem),
-            CustomMessageDataType("custom-two", applicationContext, 1,karooSystem),
+            CustomMessageDataType("custom-one", applicationContext, karooSystem),
         )
     }
 

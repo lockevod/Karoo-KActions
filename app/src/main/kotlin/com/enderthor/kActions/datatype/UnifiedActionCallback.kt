@@ -13,9 +13,7 @@ import timber.log.Timber
 
 class UnifiedActionCallback : ActionCallback {
     companion object {
-        val ID = ActionParameters.Key<Int>("id")
         val MESSAGE_TEXT = ActionParameters.Key<String>("message_text")
-        val WEBHOOK_URL = ActionParameters.Key<String>("webhook_url")
         val STATUS = ActionParameters.Key<String>("status")
         val LAST_CLICK_TIME = ActionParameters.Key<Long>("last_click_time")
 
@@ -35,15 +33,14 @@ class UnifiedActionCallback : ActionCallback {
             lastClickTime = currentTime
 
             val extension = KActionsExtension.getInstance() ?: return
-            val id = parameters[ID] ?: return
             val status = parameters[STATUS] ?: return
 
             if (isDoubleClick) {
                 val messageText = parameters[MESSAGE_TEXT] ?: return
-                handleCustomMessage(extension, id, messageText, status)
+                handleCustomMessage(extension, messageText, status)
+
             } else {
-                val webhookUrl = parameters[WEBHOOK_URL] ?: return
-                handleWebhook(extension, id, webhookUrl, status)
+                handleWebhook(extension, status)
             }
 
         } catch (e: Exception) {
@@ -53,7 +50,6 @@ class UnifiedActionCallback : ActionCallback {
 
     private suspend fun handleCustomMessage(
         extension: KActionsExtension,
-        messageId: Int,
         messageText: String,
         statusStr: String
     ) {
@@ -66,12 +62,12 @@ class UnifiedActionCallback : ActionCallback {
         withContext(Dispatchers.IO) {
             when (currentStatus) {
                 StepStatus.IDLE -> {
-                    extension.updateCustomMessageStatus(messageId, StepStatus.FIRST)
-                    extension.scheduleResetCustomMessageToIdle(messageId, DOUBLE_CLICK_THRESHOLD)
+                    extension.updateCustomMessageStatus(0, StepStatus.FIRST)
+                    extension.scheduleResetCustomMessageToIdle(0, DOUBLE_CLICK_THRESHOLD)
                 }
                 StepStatus.FIRST -> {
-                    extension.updateCustomMessageStatus(messageId, StepStatus.EXECUTING)
-                    extension.sendCustomMessageWithStateTransitions(messageId, messageText)
+                    extension.updateCustomMessageStatus(0, StepStatus.EXECUTING)
+                    extension.sendCustomMessageWithStateTransitions(0, messageText)
                 }
                 else -> {}
             }
@@ -80,8 +76,6 @@ class UnifiedActionCallback : ActionCallback {
 
     private suspend fun handleWebhook(
         extension: KActionsExtension,
-        webhookId: Int,
-        webhookUrl: String,
         statusStr: String
     ) {
         val currentStatus = try {
@@ -93,12 +87,12 @@ class UnifiedActionCallback : ActionCallback {
         withContext(Dispatchers.IO) {
             when (currentStatus) {
                 WebhookStatus.IDLE -> {
-                    extension.updateWebhookStatus(webhookId, WebhookStatus.FIRST)
-                    extension.scheduleResetToIdle(webhookId, DOUBLE_CLICK_THRESHOLD)
+                    extension.updateWebhookStatus( 0,WebhookStatus.FIRST)
+                    extension.scheduleResetToIdle(0, DOUBLE_CLICK_THRESHOLD)
                 }
                 WebhookStatus.FIRST -> {
-                    extension.updateWebhookStatus(webhookId, WebhookStatus.EXECUTING)
-                    extension.executeWebhookWithStateTransitions(webhookId)
+                    extension.updateWebhookStatus(0, WebhookStatus.EXECUTING)
+                    extension.executeWebhookWithStateTransitions(0)
                 }
                 else -> {}
             }

@@ -90,7 +90,6 @@ data class WebhookData(
 
 
 enum class StepStatus { IDLE,FIRST, EXECUTING, SUCCESS, ERROR, NOT_AVAILABLE,CANCEL }
-enum class WebhookStatus { IDLE,FIRST, EXECUTING, SUCCESS, ERROR, NOT_AVAILABLE,CANCEL }
 
 
 @Serializable
