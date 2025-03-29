@@ -125,8 +125,8 @@
     <string name="indoor_mode">Only in outdoor?</string>
 
 
-    <string name="custom1_datatype">Custom Message 1</string>
-    <string name="custom2_datatype">Custom Message 2</string>
+    <string name="custom1_datatype">Custom Action</string>
+    <string name="custom2_datatype">Custom Action 2</string>
 
     <string name="custom_messages">Custom Messages</string>
     <string name="configure_custom_messages">Configure messages that can be sent manually</string> <string name="custom_message_1">Custom 1</string>

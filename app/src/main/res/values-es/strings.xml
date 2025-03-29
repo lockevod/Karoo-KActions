@@ -129,7 +129,7 @@
     <string name="error_message">Error: %1$s</string>
     <string name="indoor_mode">Sólo outdoor?</string>
     <string name="custom_messages">Mensajes Custom Datatypes</string>
-    <string name="custom_message_1">Custom 1</string>
+    <string name="custom_message_1">Custom Action</string>
     <string name="custom_message_2">Custom 2</string>
     <string name="custom_message_name">Título</string>
     <string name="custom_message_content">Contenido </string>

@@ -3,7 +3,7 @@ package com.enderthor.kActions.extension.managers
 import android.content.Context
 import com.enderthor.kActions.data.GpsCoordinates
 import com.enderthor.kActions.data.WebhookData
-import com.enderthor.kActions.data.WebhookStatus
+import com.enderthor.kActions.data.StepStatus
 import com.enderthor.kActions.extension.makeHttpRequest
 import com.enderthor.kActions.extension.getGpsFlow
 import com.enderthor.kActions.extension.getHomeFlow
@@ -89,7 +89,7 @@ class WebhookManager(
                     val (statusStr, targetTime) = webhookStateStore.getWebhookState(webhook.id)
 
                     if (statusStr != null) {
-                        val status = WebhookStatus.valueOf(statusStr)
+                        val status = StepStatus.valueOf(statusStr)
                         val currentTime = System.currentTimeMillis()
                         val remainingTime = targetTime - currentTime
 
@@ -102,23 +102,23 @@ class WebhookManager(
 
 
                             when (status) {
-                                WebhookStatus.FIRST -> {
-                                    updateWebhookStatus(webhook.id, WebhookStatus.IDLE)
+                                StepStatus.FIRST -> {
+                                    updateWebhookStatus(webhook.id, StepStatus.IDLE)
                                     webhookStateStore.clearWebhookState(webhook.id)
                                 }
-                                WebhookStatus.EXECUTING -> {
-                                    updateWebhookStatus(webhook.id, WebhookStatus.SUCCESS)
+                                StepStatus.EXECUTING -> {
+                                    updateWebhookStatus(webhook.id, StepStatus.SUCCESS)
                                     scheduleResetToIdle(webhook.id, 5_000)
                                 }
-                                WebhookStatus.SUCCESS,WebhookStatus.ERROR -> {
-                                    updateWebhookStatus(webhook.id,WebhookStatus.IDLE)
+                                StepStatus.SUCCESS,StepStatus.ERROR -> {
+                                    updateWebhookStatus(webhook.id,StepStatus.IDLE)
                                     webhookStateStore.clearWebhookState(webhook.id)
                                 }
                                 else -> webhookStateStore.clearWebhookState(webhook.id)
                             }
                         } else {
 
-                            updateWebhookStatus(webhook.id, WebhookStatus.IDLE)
+                            updateWebhookStatus(webhook.id, StepStatus.IDLE)
                             webhookStateStore.clearWebhookState(webhook.id)
                         }
                     }
@@ -130,7 +130,7 @@ class WebhookManager(
     }
 
 
-    fun updateWebhookStatus(webhookId: Int, newStatus: WebhookStatus) {
+    fun updateWebhookStatus(webhookId: Int, newStatus: StepStatus) {
         scope.launch(Dispatchers.IO) {
             try {
                 val webhooks = configManager.loadWebhookDataFlow().first().toMutableList()
@@ -181,13 +181,13 @@ class WebhookManager(
     fun scheduleResetToIdle(webhookId: Int, delayMillis: Long) {
         webhookStateStore.saveWebhookState(
             webhookId,
-            WebhookStatus.FIRST.name,
+            StepStatus.FIRST.name,
             System.currentTimeMillis() + delayMillis
         )
 
         scope.launch(Dispatchers.IO) {
             delay(delayMillis)
-            updateWebhookStatus(webhookId, WebhookStatus.IDLE)
+            updateWebhookStatus(webhookId, StepStatus.IDLE)
             webhookStateStore.clearWebhookState(webhookId)
         }
     }
@@ -198,40 +198,40 @@ class WebhookManager(
 
                 webhookStateStore.saveWebhookState(
                     webhookId,
-                    WebhookStatus.EXECUTING.name,
+                    StepStatus.EXECUTING.name,
                     System.currentTimeMillis() + 10_000
                 )
 
-                updateWebhookStatus(webhookId, WebhookStatus.EXECUTING)
+                updateWebhookStatus(webhookId, StepStatus.EXECUTING)
                 handleEvent("custom", webhookId)
 
                 delay(10_000)
-                updateWebhookStatus(webhookId, WebhookStatus.SUCCESS)
+                updateWebhookStatus(webhookId, StepStatus.SUCCESS)
 
 
                 webhookStateStore.saveWebhookState(
                     webhookId,
-                    WebhookStatus.SUCCESS.name,
+                    StepStatus.SUCCESS.name,
                     System.currentTimeMillis() + 5_000
                 )
 
                 delay(5_000)
-                updateWebhookStatus(webhookId, WebhookStatus.IDLE)
+                updateWebhookStatus(webhookId, StepStatus.IDLE)
                 webhookStateStore.clearWebhookState(webhookId)
 
             } catch (e: Exception) {
                 Timber.e(e, "Error al ejecutar webhook $webhookId: ${e.message}")
-                updateWebhookStatus(webhookId, WebhookStatus.ERROR)
+                updateWebhookStatus(webhookId, StepStatus.ERROR)
 
 
                 webhookStateStore.saveWebhookState(
                     webhookId,
-                    WebhookStatus.ERROR.name,
+                    StepStatus.ERROR.name,
                     System.currentTimeMillis() + 10_000
                 )
 
                 delay(10_000)
-                updateWebhookStatus(webhookId, WebhookStatus.IDLE)
+                updateWebhookStatus(webhookId, StepStatus.IDLE)
                 webhookStateStore.clearWebhookState(webhookId)
             }
         }

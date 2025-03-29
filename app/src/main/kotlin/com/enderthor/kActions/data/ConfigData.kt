@@ -85,7 +85,7 @@ data class WebhookData(
     val actionOnCustom: Boolean = true,
     val onlyIfLocation: Boolean = true,
     val location: GpsCoordinates = GpsCoordinates(0.0,0.0),
-    val status: WebhookStatus = WebhookStatus.IDLE,
+    val status: StepStatus = StepStatus.IDLE,
 )
 
 

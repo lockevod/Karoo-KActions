@@ -10,7 +10,7 @@ import com.enderthor.kActions.extension.jsonWithUnknownKeys
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
-import java.io.BufferedReader
+
 
 
 class ConfigFileHandler(private val context: Context) {
@@ -20,15 +20,6 @@ class ConfigFileHandler(private val context: Context) {
         ignoreUnknownKeys = true
         encodeDefaults = true
     }
-
-    private val json_import = Json {
-        prettyPrint = true
-        ignoreUnknownKeys = true
-        encodeDefaults = true
-        isLenient = true
-        coerceInputValues = true
-    }
-
 
 
     fun readWebhookFromFile(uri: Uri, currentWebhooks:List<WebhookData> = emptyList()): WebhookImportResult {

@@ -7,11 +7,12 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
-import androidx.glance.GlanceId
+import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
 import androidx.glance.appwidget.RemoteViewsCompositionResult
+import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -48,23 +49,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Locale
 
 @OptIn(ExperimentalGlanceRemoteViewsApi::class)
-abstract class CustomMessageDataTypeBase(
+class CustomActionDataType(
     datatype: String,
-    protected val context: Context,
+    private val context: Context,
     private val karooSystem: KarooSystemService,
 ) : DataTypeImpl("kactions", datatype) {
 
     private val glance = GlanceRemoteViews()
     private val configManager by lazy { ConfigurationManager(context) }
-    private val uniqueGlanceId: GlanceId by lazy {
-        GlanceIdFactory.getUniqueGlanceId(context, "message_${datatype}")
-    }
+
 
     private val _distanceFlow = MutableStateFlow(0.0)
     val distanceFlow: StateFlow<Double> = _distanceFlow.asStateFlow()
@@ -105,27 +103,31 @@ abstract class CustomMessageDataTypeBase(
         }
 
         val viewJob = scope.launch {
-            while (isActive) {
                 try {
                     val units = karooSystem.streamUserProfile().first().preferredUnit.distance
 
                     karooSystem.startCollectingRemainingDistance(this)
 
-                    configManager.loadPreferencesFlow().
-                    combine(configManager.loadWebhookDataFlow()) { configData, webhooks ->
+                    configManager.loadPreferencesFlow()
+                        .combine(configManager.loadWebhookDataFlow()) { configData, webhooks ->
 
-                        val message = configData.first().customMessage1
-                        val webhook = webhooks.first()
+                            if (configData.isNotEmpty() && webhooks.isNotEmpty()) {
+                                val message = configData.first().customMessage1
+                                val webhook = webhooks.first()
 
-                        val result = updateConfigDataView(
-                            context = context,
-                            webhook = webhook,
-                            message = message,
-                            config = config,
-                            units = units,
-                        )
-                        emitter.updateView(result.remoteViews)
-                    }
+                                Timber.d("Webhook status: ${webhook.status}, Message status: ${message.status}")
+
+                                val result = updateConfigDataView(
+                                    context = context,
+                                    webhook = webhook,
+                                    message = message,
+                                    config = config,
+                                    units = units,
+                                )
+                                emitter.updateView(result.remoteViews)
+                            }
+                        }
+                        .collect { }
                 } catch (e: CancellationException) {
                     Timber.d(e, "Cancelación normal del flujo")
                 } catch (e: Exception) {
@@ -141,7 +143,7 @@ abstract class CustomMessageDataTypeBase(
                     emitter.updateView(result.remoteViews)
                     delay(5000)
                 }
-            }
+
         }
 
         emitter.setCancellable {
@@ -162,18 +164,22 @@ abstract class CustomMessageDataTypeBase(
 
 
         val statusMessage = message?.status ?: StepStatus.NOT_AVAILABLE
+        val webhookStatus = webhook?.status ?: StepStatus.NOT_AVAILABLE
+
         val name = message?.name ?: ""
         var displayText = message?.message ?: ""
 
-
-
-
-        if (message?.isdistance == true) {
-            val distance = getRemainingDistance(units)
-            displayText = displayText.replace("[DISTANCIA]", distance)
+        val displayStatus = if (displayText.isEmpty() && webhook?.enabled == true && webhook.url.isNotEmpty()) {
+            webhookStatus
+        } else {
+            statusMessage
         }
 
-        val actionString = when (statusMessage) {
+
+        val distance = getRemainingDistance(units)
+        displayText = displayText.replace("[DISTANCIA]", distance)
+
+        val actionString = when (displayStatus) {
             StepStatus.IDLE -> context.getString(R.string.webhook_idle_action)
             StepStatus.FIRST -> context.getString(R.string.webhook_first_action)
             StepStatus.EXECUTING -> context.getString(R.string.webhook_excuting_action)
@@ -184,16 +190,22 @@ abstract class CustomMessageDataTypeBase(
         }
 
         val displayMessage = "$actionString\n$name"
+        val webhookEnabled = webhook?.enabled == true
+        val webhookUrl = webhook?.url ?: ""
 
-        return glance.compose(context, DpSize.Unspecified, uniqueGlanceId) {
+        return glance.compose(context, DpSize.Unspecified) {
             var modifier = GlanceModifier.fillMaxSize().padding(5.dp)
 
             if (!config.preview) {
                 Timber.d("Configurando acción unificada , texto: $displayText")
                 modifier = modifier.clickable(
-                    onClick = GlanceIdFactory.createUnifiedClickAction(
-                        messageText = displayText,
-                        status = statusMessage.name
+                    onClick = actionRunCallback<UnifiedActionCallback>(
+                        actionParametersOf(
+                            UnifiedActionCallback.MESSAGE_TEXT to displayText,
+                            UnifiedActionCallback.STATUS to statusMessage.name,
+                            UnifiedActionCallback.WEBHOOK_ENABLED to webhookEnabled,
+                            UnifiedActionCallback.WEBHOOK_URL to webhookUrl
+                        )
                     )
                 )
             }
