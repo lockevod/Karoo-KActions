@@ -48,8 +48,10 @@ class WebhookManager(
         try {
             loadWebhookConfiguration(webhookId)
 
+            Timber.w("Estamos en  HANDLE EVENT")
+
             webhookConfig?.let { config ->
-                if (!config.enabled) return false
+                //if (!config.enabled) return false
 
                 val shouldTrigger = when (eventType) {
                     "start" -> config.actionOnStart
@@ -61,16 +63,18 @@ class WebhookManager(
                 }
 
                 val locationOk = if (config.onlyIfLocation) {
-                    Timber.d("Comprobando ubicación actual")
+                    Timber.w("Comprobando ubicación actual")
                     val poi = karooSystem.getHomeFlow().first()
                     checkCurrentLocation(poi)
                 } else {
                     true
                 }
-
+                Timber.w("Ubicación actual comprobada antes de salir")
                 if (shouldTrigger && locationOk) {
+                    Timber.w("Webhook activado")
                     return sendWebhook(config)
                 }
+                else return false
             }
             return false
         } catch (e: Exception) {
@@ -164,10 +168,11 @@ class WebhookManager(
 
     private suspend fun checkCurrentLocation(targetLocation: GpsCoordinates): Boolean {
         try {
+            Timber.w("Comprobando ubicación actual")
             val currentLocation = karooSystem.getGpsFlow().first()
 
             val distance = distanceTo(currentLocation, targetLocation)
-            Timber.d("Distancia a la ubicación objetivo: $distance km")
+            Timber.w("Distancia a la ubicación objetivo: $distance km")
             return distance <= 0.070 // 70 metros
 
         } catch (e: Exception) {
@@ -195,7 +200,7 @@ class WebhookManager(
     fun executeWebhookWithStateTransitions(webhookId: Int) {
         scope.launch(Dispatchers.IO) {
             try {
-
+                Timber.w("ESTAMOS EN EXECUTING WEBHOOK")
                 webhookStateStore.saveWebhookState(
                     webhookId,
                     StepStatus.EXECUTING.name,

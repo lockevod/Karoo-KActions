@@ -29,7 +29,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.style.TextDecoration
 import com.enderthor.kActions.data.customMessage
 import timber.log.Timber
 
@@ -288,7 +287,7 @@ fun ConfigurationScreen() {
                     )
 
                     val updatedConfig = config?.copy(
-                        isActive = isActive,
+                        isActive = true,
                         karooKey = karooKey.trim(),
                         delayIntents = delayBetweenNotificationsInt.toIntOrNull()?.toDouble() ?: 0.0,
                         phoneNumbers = phoneNumbers,
@@ -304,7 +303,7 @@ fun ConfigurationScreen() {
                         indoorMode = indoorMode,
                         customMessage1 = customMessage1,
                     ) ?: ConfigData(
-                        isActive = isActive,
+                        isActive = true,
                         karooKey = karooKey.trim(),
                         delayIntents = delayBetweenNotificationsInt.toIntOrNull()?.toDouble() ?: 0.0,
                         phoneNumbers = phoneNumbers,
@@ -363,6 +362,141 @@ fun ConfigurationScreen() {
             Card {
                 Column(
                     modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        stringResource(R.string.message_templates),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    Text(
+                        stringResource(R.string.configure_messages),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    OutlinedTextField(
+                        value = startMessage,
+                        onValueChange = { startMessage = it },
+                        label = { Text(stringResource(R.string.start_message)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) saveData() },
+                        minLines = 2,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData() })
+
+                    )
+
+                    OutlinedTextField(
+                        value = stopMessage,
+                        onValueChange = { stopMessage = it },
+                        label = { Text(stringResource(R.string.stop_message)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) saveData() },
+                        minLines = 2,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData() })
+                    )
+
+                }
+            }
+
+
+            Card {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        stringResource(R.string.custom_messages),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    Text(
+                        stringResource(R.string.configure_custom_messages),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    /* Text(
+                        stringResource(R.string.custom_message_1),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            textDecoration = TextDecoration.Underline
+                        )
+                    )
+
+                   OutlinedTextField(
+                        value = customMessage1.name,
+                        onValueChange = { newValue ->
+                            customMessage1 = customMessage1.copy(name = newValue,isdistance = true)
+                            saveData()
+                        },
+                        label = { Text(stringResource(R.string.custom_message_name)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) saveData() },
+                        minLines = 2,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
+
+                    )*/
+
+                    OutlinedTextField(
+                        value = customMessage1.message,
+                        onValueChange = { newValue ->
+                            customMessage1 = customMessage1.copy(message = newValue, name="", isdistance = true)
+                            saveData()
+                        },
+                        label = { Text(stringResource(R.string.custom_message_content)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (!it.isFocused) saveData() },
+                        minLines = 2,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
+
+                    )
+                    Text(
+                        stringResource(R.string.include_distance),
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    /*Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(R.string.include_distance),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(
+                            checked = customMessage1.isdistance,
+                            onCheckedChange = {
+                                customMessage1 = customMessage1.copy(isdistance = it)
+                                saveData()
+                            }
+                        )
+                    }*/
+                }
+            }
+
+            Card {
+                Column(
+                    modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
@@ -370,7 +504,7 @@ fun ConfigurationScreen() {
                         style = MaterialTheme.typography.titleMedium
                     )
 
-                    Row(
+                    /*Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -385,25 +519,10 @@ fun ConfigurationScreen() {
                                 saveData()
                             }
                         )
-                    }
+                    }*/
 
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            stringResource(R.string.indoor_mode),
-                            modifier = Modifier.weight(1f)
-                        )
-                        Switch(
-                            checked = indoorMode,
-                            onCheckedChange = {
-                                indoorMode = it
-                                saveData()
-                            }
-                        )
-                    }
+
 
 
 
@@ -466,6 +585,26 @@ fun ConfigurationScreen() {
                             }
                         )
                     }
+
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(R.string.indoor_mode),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(
+                            checked = indoorMode,
+                            onCheckedChange = {
+                                indoorMode = it
+                                saveData()
+                            }
+                        )
+                    }
+
+
                 }
             }
 
@@ -542,140 +681,7 @@ fun ConfigurationScreen() {
             }
 
 
-            Card {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        stringResource(R.string.message_templates),
-                        style = MaterialTheme.typography.titleMedium
-                    )
 
-                    Text(
-                        stringResource(R.string.configure_messages),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    OutlinedTextField(
-                        value = startMessage,
-                        onValueChange = { startMessage = it },
-                        label = { Text(stringResource(R.string.start_message)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { if (!it.isFocused) saveData() },
-                        minLines = 2,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = {
-                            focusManager.clearFocus()
-                            keyboardController?.hide()
-                            saveData() })
-
-                    )
-
-                    OutlinedTextField(
-                        value = stopMessage,
-                        onValueChange = { stopMessage = it },
-                        label = { Text(stringResource(R.string.stop_message)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { if (!it.isFocused) saveData() },
-                        minLines = 2,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = {
-                            focusManager.clearFocus()
-                            keyboardController?.hide()
-                            saveData() })
-                    )
-
-                }
-            }
-
-
-            Card {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        stringResource(R.string.custom_messages),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    Text(
-                        stringResource(R.string.configure_custom_messages),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        stringResource(R.string.custom_message_1),
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            textDecoration = TextDecoration.Underline
-                        )
-                    )
-
-                    OutlinedTextField(
-                        value = customMessage1.name,
-                        onValueChange = { newValue ->
-                            customMessage1 = customMessage1.copy(name = newValue,isdistance = true)
-                            saveData()
-                        },
-                        label = { Text(stringResource(R.string.custom_message_name)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { if (!it.isFocused) saveData() },
-                        minLines = 2,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = {
-                            focusManager.clearFocus()
-                            keyboardController?.hide()
-                            saveData()
-                        })
-
-                    )
-
-                    OutlinedTextField(
-                        value = customMessage1.message,
-                        onValueChange = { newValue ->
-                            customMessage1 = customMessage1.copy(message = newValue, isdistance = true)
-                            saveData()
-                        },
-                        label = { Text(stringResource(R.string.custom_message_content)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { if (!it.isFocused) saveData() },
-                        minLines = 2,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = {
-                            focusManager.clearFocus()
-                            keyboardController?.hide()
-                            saveData()
-                        })
-
-                    )
-                    Text(
-                        stringResource(R.string.include_distance),
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    /*Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            stringResource(R.string.include_distance),
-                            modifier = Modifier.weight(1f)
-                        )
-                        Switch(
-                            checked = customMessage1.isdistance,
-                            onCheckedChange = {
-                                customMessage1 = customMessage1.copy(isdistance = it)
-                                saveData()
-                            }
-                        )
-                    }*/
-                }
-            }
 
 
 
@@ -701,7 +707,7 @@ fun ConfigurationScreen() {
                         )
                     }
 
-                    Button(
+                   Button(
                         onClick = { sendTestMessage() },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading &&

@@ -129,7 +129,7 @@ class UnifiedActionCallback : ActionCallback {
                             Timber.d("No hay mensaje disponible")
                             resetState(extension)
                         }
-                    } else if (timeDiff >= ACTION_THRESHOLD && timeDiff <= CANCEL_THRESHOLD) {
+                    } else if (timeDiff <= CANCEL_THRESHOLD) {
                         // Segunda pulsación después de 8s: confirmar webhook
                         if (webhookUrl.isNotEmpty() && webhookEnabled) {
                             Timber.d("Confirmando webhook")

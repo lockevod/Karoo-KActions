@@ -93,7 +93,7 @@ class CustomActionDataType(
 
     private fun getRemainingDistance(units: UserProfile.PreferredUnit.UnitType, remaining: String = ""): String {
         return when {
-            distanceFlow.value <= 0.0 -> ""
+            distanceFlow.value <= 0.0 -> "0"
             units == UserProfile.PreferredUnit.UnitType.IMPERIAL ->
                 "$remaining${(distanceFlow.value / 1609).toInt()}mi"
             distanceFlow.value < 1.0 ->
@@ -227,7 +227,8 @@ class CustomActionDataType(
             }
         }
 
-        val name = message?.name ?: ""
+       // val name = message?.name ?: ""
+        val name = ""
         var displayText = message?.message ?: ""
 
         val displayStatus = when {

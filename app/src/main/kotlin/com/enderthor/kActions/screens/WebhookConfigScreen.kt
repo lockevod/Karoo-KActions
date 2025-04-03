@@ -124,7 +124,7 @@ fun WebhookConfigScreen() {
                     url = url.trim(),
                     post = postBody.trim(),
                     header = header.trim(),
-                    enabled = enabled,
+                    enabled = true,
                     actionOnStart = actionOnStart,
                     actionOnStop = actionOnStop,
                     actionOnPause = actionOnPause,
@@ -136,7 +136,7 @@ fun WebhookConfigScreen() {
                     name = name.trim(),
                     url = url.trim(),
                     post = postBody.trim(),
-                    enabled = enabled,
+                    enabled = true,
                     actionOnStart = actionOnStart,
                     actionOnStop = actionOnStop,
                     actionOnPause = actionOnPause,
@@ -259,7 +259,7 @@ fun WebhookConfigScreen() {
                         style = MaterialTheme.typography.titleMedium
                     )
 
-                    Row(
+                    /*Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -274,22 +274,10 @@ fun WebhookConfigScreen() {
                                 saveData()
                             }
                         )
-                    }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.webhook_only_at_location), modifier = Modifier.weight(1f))
-                        Switch(
-                            checked = onlyIfLocation,
-                            onCheckedChange = {
-                                onlyIfLocation = it
-                                saveData()
-                            }
-                        )
-                    }
+                    }*/
 
-                    OutlinedTextField(
+
+                    /*OutlinedTextField(
                         value = name,
                         onValueChange = {
                             name = it
@@ -310,7 +298,7 @@ fun WebhookConfigScreen() {
                             keyboardController?.hide()
                             saveData()
                         })
-                    )
+                    )*/
 
                     OutlinedTextField(
                         value = url,
@@ -393,6 +381,20 @@ fun WebhookConfigScreen() {
                         stringResource(R.string.webhook_trigger_events),
                         style = MaterialTheme.typography.titleMedium
                     )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.webhook_only_at_location), modifier = Modifier.weight(1f))
+                        Switch(
+                            checked = onlyIfLocation,
+                            onCheckedChange = {
+                                onlyIfLocation = it
+                                saveData()
+                            }
+                        )
+                    }
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

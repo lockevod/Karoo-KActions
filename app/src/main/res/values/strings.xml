@@ -129,11 +129,12 @@
     <string name="custom2_datatype">Custom Action 2</string>
 
     <string name="custom_messages">Custom Messages</string>
-    <string name="configure_custom_messages">Configure messages that can be sent manually</string> <string name="custom_message_1">Custom 1</string>
+    <string name="configure_custom_messages">Configure messages that can be sent manually. If you insert #dst# in your text, you will include remaining distance</string>
+    <string name="custom_message_1">Custom 1</string>
     <string name="custom_message_2">Custom 2</string>
     <string name="custom_message_name">Title</string>
     <string name="custom_message_content">Content</string>
-    <string name="include_distance">Include remaining distance if you insert #dist# in your text.</string>
+    <string name="include_distance">Include remaining distance if you insert #dst# in your text.</string>
     <string name="webhook_confirm_action">Confirm webhook</string>
 
     <string name="message_first_action">Tap now for message\nWait for webhook..</string>

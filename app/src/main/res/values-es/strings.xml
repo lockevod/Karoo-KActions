@@ -137,7 +137,7 @@
     <string name="custom_message_name">Título</string>
     <string name="custom_message_content">Contenido </string>
     <string name="include_distance">Incluir distancia faltante si insertas #dist# en tu texto</string>
-    <string name="configure_custom_messages">Configura mensajes que se pueden enviar manualmente</string>
+    <string name="configure_custom_messages">Configura mensaje que se puede enviar manualmente.Si insertas #dst# en tu texto, se añadirá la distancia restante en el lugar donde ponga #dst#</string>
     <string name="message_first_action">Pulsa ahora para mensaje\nEspera para webhook..</string>
     <string name="webhook_confirm_action">Confirma para ejecutar webhook</string>
 </resources>
