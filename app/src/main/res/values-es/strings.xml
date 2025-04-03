@@ -98,8 +98,11 @@
     <string name="webhook_send_test">Enviar prueba al webhook</string>
     <string name="webhook_url_error">Error: La URL debe comenzar con http:// o https://</string>
 
-    <string name="webhook_idle_action">Pulsa para ejecutar</string>
-    <string name="webhook_first_action">Pulsa para confirmar</string>
+    <string name="idle_action">Pulsa para ejecutar</string>
+    <string name="webhook_first_action">Pulsa ahora para mensaje\nEspera para webhook..</string>
+
+
+
     <string name="webhook_excuting_action">Ejecutando …</string>
     <string name="webhook_success_action">Éxito al ejecutar</string>
     <string name="webhook_error_action">Error en ejecución</string>
@@ -133,6 +136,8 @@
     <string name="custom_message_2">Custom 2</string>
     <string name="custom_message_name">Título</string>
     <string name="custom_message_content">Contenido </string>
-    <string name="include_distance">Incluir distancia faltante?</string>
+    <string name="include_distance">Incluir distancia faltante si insertas #dist# en tu texto</string>
     <string name="configure_custom_messages">Configura mensajes que se pueden enviar manualmente</string>
+    <string name="message_first_action">Pulsa ahora para mensaje\nEspera para webhook..</string>
+    <string name="webhook_confirm_action">Confirma para ejecutar webhook</string>
 </resources>

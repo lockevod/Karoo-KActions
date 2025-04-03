@@ -25,6 +25,7 @@ import com.enderthor.kActions.R
 import com.enderthor.kActions.data.StepStatus
 import com.enderthor.kActions.data.WebhookData
 import com.enderthor.kActions.data.customMessage
+import com.enderthor.kActions.extension.KActionsExtension
 import com.enderthor.kActions.extension.managers.ConfigurationManager
 import com.enderthor.kActions.extension.streamDataMonitorFlow
 import com.enderthor.kActions.extension.streamUserProfile
@@ -60,6 +61,16 @@ class CustomActionDataType(
     private val karooSystem: KarooSystemService,
 ) : DataTypeImpl("kactions", datatype) {
 
+
+    companion object {
+        private var lastStatusUpdateTime: Long = 0
+        private const val ACTION_THRESHOLD = 8_000L
+        private var statusUpdateJob: Job? = null
+
+        private var readyMessageShown: Boolean = false
+    }
+
+
     private val glance = GlanceRemoteViews()
     private val configManager by lazy { ConfigurationManager(context) }
 
@@ -74,7 +85,7 @@ class CustomActionDataType(
                     if (state is StreamState.Streaming) {
                         val distanceValue = state.dataPoint.singleValue ?: 0.0
                         _distanceFlow.value = distanceValue
-                        Timber.d("Distancia restante actualizada: $distanceValue")
+                        //Timber.d("Distancia restante actualizada: $distanceValue")
                     }
                 }
         }
@@ -103,35 +114,70 @@ class CustomActionDataType(
         }
 
         val viewJob = scope.launch {
-                try {
-                    val units = karooSystem.streamUserProfile().first().preferredUnit.distance
+            try {
+                val units = karooSystem.streamUserProfile().first().preferredUnit.distance
+                karooSystem.startCollectingRemainingDistance(this)
 
-                    karooSystem.startCollectingRemainingDistance(this)
 
-                    configManager.loadPreferencesFlow()
-                        .combine(configManager.loadWebhookDataFlow()) { configData, webhooks ->
+                configManager.loadPreferencesFlow()
+                    .combine(configManager.loadWebhookDataFlow()) { configData, webhooks ->
+                        Pair(configData, webhooks)
+                    }
+                    .collect { (configData, webhooks) ->
 
-                            if (configData.isNotEmpty() && webhooks.isNotEmpty()) {
-                                val message = configData.first().customMessage1
-                                val webhook = webhooks.first()
+                        val message = if (configData.isNotEmpty()) configData.first().customMessage1 else null
+                        val webhook = if (webhooks.isNotEmpty()) webhooks.first() else null
 
-                                Timber.d("Webhook status: ${webhook.status}, Message status: ${message.status}")
+                       // Timber.d("Actualizando vista - Webhook: ${webhook?.status}, Mensaje: ${message?.status}")
 
-                                val result = updateConfigDataView(
-                                    context = context,
-                                    webhook = webhook,
-                                    message = message,
-                                    config = config,
-                                    units = units,
-                                )
-                                emitter.updateView(result.remoteViews)
+
+                        // Detectar cambio a estado FIRST e iniciar timer
+                        if (message?.status == StepStatus.FIRST && lastStatusUpdateTime == 0L) {
+                            lastStatusUpdateTime = System.currentTimeMillis()
+
+                            // Cancelar timer anterior si existe
+                            statusUpdateJob?.cancel()
+
+                            // Programar actualización automática después de 8 segundos
+                            statusUpdateJob = scope.launch {
+                                delay(ACTION_THRESHOLD)
+                                if (message.status == StepStatus.FIRST) {
+                                    // Cambiar estado interno a CONFIRM
+                                    val exten = KActionsExtension.getInstance() ?: return@launch
+                                    exten.updateCustomMessageStatus(0, StepStatus.CONFIRM)
+                                    exten.updateWebhookStatus(0, StepStatus.CONFIRM)
+
+                                    // Actualizar la UI con el nuevo estado
+                                    val result = updateConfigDataView(
+                                        context = context,
+                                        webhook = webhook?.copy(status = StepStatus.CONFIRM),
+                                        message = message.copy(status = StepStatus.CONFIRM),
+                                        config = config,
+                                        units = units,
+                                    )
+                                    emitter.updateView(result.remoteViews)
+                                }
                             }
+                        } else if (message?.status != StepStatus.FIRST) {
+                            // Cancelar timer si salimos de estado FIRST
+                            statusUpdateJob?.cancel()
+                            lastStatusUpdateTime = 0L
                         }
-                        .collect { }
-                } catch (e: CancellationException) {
-                    Timber.d(e, "Cancelación normal del flujo")
-                } catch (e: Exception) {
-                    Timber.e(e, "Error actualizando vista")
+
+
+                        val result = updateConfigDataView(
+                            context = context,
+                            webhook = webhook,
+                            message = message,
+                            config = config,
+                            units = units,
+                        )
+                        emitter.updateView(result.remoteViews)
+                    }
+            } catch (e: CancellationException) {
+                Timber.d(e, "Cancelación normal del flujo")
+            } catch (e: Exception) {
+                Timber.e(e, "Error actualizando vista: ${e.message}")
 
                     val result = updateConfigDataView(
                         context = context,
@@ -149,6 +195,7 @@ class CustomActionDataType(
         emitter.setCancellable {
             configJob.cancel()
             viewJob.cancel()
+            statusUpdateJob?.cancel() // Cancelar el timer
             scope.cancel()
             scopeJob.cancel()
         }
@@ -162,26 +209,58 @@ class CustomActionDataType(
         units: UserProfile.PreferredUnit.UnitType,
     ): RemoteViewsCompositionResult {
 
-
         val statusMessage = message?.status ?: StepStatus.NOT_AVAILABLE
         val webhookStatus = webhook?.status ?: StepStatus.NOT_AVAILABLE
+        val currentTime = System.currentTimeMillis()
+
+
+        if (message?.status != null) {
+            if (statusMessage == StepStatus.FIRST && lastStatusUpdateTime == 0L) {
+                // Inicializar el timestamp cuando entramos en FIRST por primera vez
+                //Timber.d("Inicializando contador para mensaje de confirmación")
+                lastStatusUpdateTime = currentTime
+                readyMessageShown = false
+            } else if (statusMessage != StepStatus.FIRST) {
+                // Resetear timestamp cuando salimos de FIRST
+                lastStatusUpdateTime = 0L
+                readyMessageShown = false
+            }
+        }
 
         val name = message?.name ?: ""
         var displayText = message?.message ?: ""
 
-        val displayStatus = if (displayText.isEmpty() && webhook?.enabled == true && webhook.url.isNotEmpty()) {
-            webhookStatus
-        } else {
-            statusMessage
+        val displayStatus = when {
+            // Cuando el webhook está en CONFIRM o EXECUTING, priorizar su estado
+            webhookStatus == StepStatus.CONFIRM || webhookStatus == StepStatus.EXECUTING -> webhookStatus
+
+            // Cuando el mensaje está vacío y hay webhook configurado
+            displayText.isEmpty() && webhook?.enabled == true && webhook.url.isNotEmpty() -> webhookStatus
+
+            // En otros casos, usar el estado del mensaje
+            else -> statusMessage
         }
 
-
         val distance = getRemainingDistance(units)
-        displayText = displayText.replace("[DISTANCIA]", distance)
+        displayText = displayText.replace("#dst#", distance)
 
         val actionString = when (displayStatus) {
-            StepStatus.IDLE -> context.getString(R.string.webhook_idle_action)
-            StepStatus.FIRST -> context.getString(R.string.webhook_first_action)
+            StepStatus.IDLE -> context.getString(R.string.idle_action)
+            StepStatus.FIRST -> {
+                if (lastStatusUpdateTime > 0L) {
+                    val timeElapsed = currentTime - lastStatusUpdateTime
+                    if (timeElapsed >= ACTION_THRESHOLD) {
+                        //Timber.d("Tiempo transcurrido: ${timeElapsed}ms - Listo para webhook")
+                        context.getString(R.string.webhook_confirm_action)
+                    } else {
+                        //Timber.d("Tiempo transcurrido: ${timeElapsed}ms - Mostrando opciones")
+                        context.getString(R.string.message_first_action)
+                    }
+                } else {
+                    context.getString(R.string.message_first_action)
+                }
+            }
+            StepStatus.CONFIRM -> context.getString(R.string.webhook_confirm_action)
             StepStatus.EXECUTING -> context.getString(R.string.webhook_excuting_action)
             StepStatus.CANCEL -> context.getString(R.string.webhook_cancel_action)
             StepStatus.SUCCESS -> context.getString(R.string.webhook_success_action)
@@ -197,7 +276,7 @@ class CustomActionDataType(
             var modifier = GlanceModifier.fillMaxSize().padding(5.dp)
 
             if (!config.preview) {
-                Timber.d("Configurando acción unificada , texto: $displayText")
+               // Timber.d("Configurando acción unificada , texto: $displayText")
                 modifier = modifier.clickable(
                     onClick = actionRunCallback<UnifiedActionCallback>(
                         actionParametersOf(

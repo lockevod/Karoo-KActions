@@ -98,8 +98,8 @@
     <string name="webhook_send_test">Send webhook test</string>
     <string name="webhook_url_error">Error: URL must start with http:// or https://</string>
 
-    <string name="webhook_idle_action">Tap to execute</string>
-    <string name="webhook_first_action">Tap to confirm</string>
+    <string name="idle_action">Tap to execute</string>
+    <string name="webhook_first_action">Tap to confirm message/Wait for webhook..</string>
     <string name="webhook_excuting_action">Executing …</string>
     <string name="webhook_success_action">Execution successful</string>
     <string name="webhook_error_action">Execution failed</string>
@@ -133,5 +133,9 @@
     <string name="custom_message_2">Custom 2</string>
     <string name="custom_message_name">Title</string>
     <string name="custom_message_content">Content</string>
-    <string name="include_distance">Include remaining distance?</string>
+    <string name="include_distance">Include remaining distance if you insert #dist# in your text.</string>
+    <string name="webhook_confirm_action">Confirm webhook</string>
+
+    <string name="message_first_action">Tap now for message\nWait for webhook..</string>
+
 </resources>

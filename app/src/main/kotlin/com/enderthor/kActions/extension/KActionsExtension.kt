@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
@@ -88,6 +89,7 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
                 Timber.w("Failed to connect to Karoo system")
             }
         }
+        checkAndResetBlockedState()
     }
 
     private fun initializeSystem() {
@@ -121,9 +123,6 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
         webhookManager.updateWebhookStatus(webhookId, status)
     }
 
-    fun scheduleResetToIdle(webhookId: Int, delayMillis: Long) {
-        webhookManager.scheduleResetToIdle(webhookId, delayMillis)
-    }
 
     fun executeWebhookWithStateTransitions(webhookId: Int) {
         webhookManager.executeWebhookWithStateTransitions(webhookId)
@@ -133,12 +132,45 @@ class KActionsExtension : KarooExtension("kactions", BuildConfig.VERSION_NAME), 
         notificationManager.updateCustomMessageStatus(messageId, status)
     }
 
-    fun scheduleResetCustomMessageToIdle(messageId: Int, delayMillis: Long) {
-        notificationManager.scheduleResetCustomMessageToIdle(messageId, delayMillis)
-    }
 
     fun sendCustomMessageWithStateTransitions(messageId: Int, messageText: String) {
         notificationManager.sendCustomMessageWithStateTransitions(messageId, messageText)
+    }
+
+    fun checkAndResetBlockedState() {
+        launch(Dispatchers.IO) {
+            try {
+
+                val webhookData = configManager.loadWebhookDataFlow().firstOrNull() ?: emptyList()
+                val messageDatas = configManager.loadPreferencesFlow().firstOrNull() ?: emptyList()
+
+                val webhookBlocked = webhookData.any { it.status == StepStatus.EXECUTING }
+                val messageBlocked = messageDatas.any { it.customMessage1.status == StepStatus.EXECUTING }
+
+                if (webhookBlocked || messageBlocked) {
+                    Timber.d("Detectado estado EXECUTING bloqueado, forzando restablecimiento")
+
+
+                    webhookData.forEach { webhook ->
+                        if (webhook.status == StepStatus.EXECUTING) {
+                            updateWebhookStatus(0, StepStatus.IDLE)
+                        }
+                    }
+
+
+                    messageDatas.forEach { config ->
+                        config.customMessage1.let {
+                            if (it.status == StepStatus.EXECUTING) {
+                                Timber.d("Restableciendo mensaje1 de EXECUTING a IDLE")
+                                updateCustomMessageStatus(0, StepStatus.IDLE)
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error al verificar estados bloqueados")
+            }
+        }
     }
 
     override fun onDestroy() {

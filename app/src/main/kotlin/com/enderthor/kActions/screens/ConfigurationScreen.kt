@@ -55,7 +55,6 @@ fun ConfigurationScreen() {
     var startMessage by remember { mutableStateOf("") }
     var stopMessage by remember { mutableStateOf("") }
     var customMessage1 by remember { mutableStateOf(customMessage()) }
-    var customMessage2 by remember { mutableStateOf(customMessage()) }
     var pauseMessage by remember { mutableStateOf("") }
     var resumeMessage by remember { mutableStateOf("") }
     var actionOnStart by remember { mutableStateOf(true) }
@@ -145,7 +144,6 @@ fun ConfigurationScreen() {
                     pauseMessage = savedConfig.pauseMessage
                     resumeMessage = savedConfig.resumeMessage
                     customMessage1 = savedConfig.customMessage1
-                    customMessage2 = savedConfig.customMessage2
                 }
             }
         }
@@ -305,7 +303,6 @@ fun ConfigurationScreen() {
                         emailFrom = emailFrom.trim(),
                         indoorMode = indoorMode,
                         customMessage1 = customMessage1,
-                        customMessage2 = customMessage2
                     ) ?: ConfigData(
                         isActive = isActive,
                         karooKey = karooKey.trim(),
@@ -322,7 +319,6 @@ fun ConfigurationScreen() {
                         emailFrom = emailFrom.trim(),
                         indoorMode = indoorMode,
                         customMessage1 = customMessage1,
-                        customMessage2 = customMessage2
                     )
 
                     configManager.savePreferences(mutableListOf(updatedConfig))
@@ -621,7 +617,7 @@ fun ConfigurationScreen() {
                     OutlinedTextField(
                         value = customMessage1.name,
                         onValueChange = { newValue ->
-                            customMessage1 = customMessage1.copy(name = newValue)
+                            customMessage1 = customMessage1.copy(name = newValue,isdistance = true)
                             saveData()
                         },
                         label = { Text(stringResource(R.string.custom_message_name)) },
@@ -641,7 +637,7 @@ fun ConfigurationScreen() {
                     OutlinedTextField(
                         value = customMessage1.message,
                         onValueChange = { newValue ->
-                            customMessage1 = customMessage1.copy(message = newValue)
+                            customMessage1 = customMessage1.copy(message = newValue, isdistance = true)
                             saveData()
                         },
                         label = { Text(stringResource(R.string.custom_message_content)) },
@@ -657,7 +653,12 @@ fun ConfigurationScreen() {
                         })
 
                     )
-                    Row(
+                    Text(
+                        stringResource(R.string.include_distance),
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    /*Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -672,70 +673,7 @@ fun ConfigurationScreen() {
                                 saveData()
                             }
                         )
-                    }
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Text(
-                        stringResource(R.string.custom_message_2),
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            textDecoration = TextDecoration.Underline
-                        )
-                    )
-
-                    OutlinedTextField(
-                        value = customMessage2.name,
-                        onValueChange = { newValue ->
-                            customMessage2 = customMessage2.copy(name = newValue)
-                            saveData()
-                        },
-                        label = { Text(stringResource(R.string.custom_message_name)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { if (!it.isFocused) saveData() },
-                        minLines = 2,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = {
-                            focusManager.clearFocus()
-                            keyboardController?.hide()
-                            saveData()
-                        })
-
-                    )
-
-                    OutlinedTextField(
-                        value = customMessage2.message,
-                        onValueChange = { newValue ->
-                            customMessage2 = customMessage2.copy(message = newValue)
-                            saveData()
-                        },
-                        label = { Text(stringResource(R.string.custom_message_content)) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { if (!it.isFocused) saveData() },
-                        minLines = 2,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = {
-                            focusManager.clearFocus()
-                            keyboardController?.hide()
-                            saveData()
-                        })
-
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            stringResource(R.string.include_distance),
-                            modifier = Modifier.weight(1f)
-                        )
-                        Switch(
-                            checked = customMessage2.isdistance,
-                            onCheckedChange = {
-                                customMessage2 = customMessage2.copy(isdistance = it)
-                                saveData()
-                            }
-                        )
-                    }
+                    }*/
                 }
             }
 
