@@ -48,7 +48,7 @@ class WebhookManager(
         try {
             loadWebhookConfiguration(webhookId)
 
-            Timber.w("Estamos en  HANDLE EVENT")
+            //Timber.w("Estamos en  HANDLE EVENT")
 
             webhookConfig?.let { config ->
                 //if (!config.enabled) return false
@@ -63,15 +63,15 @@ class WebhookManager(
                 }
 
                 val locationOk = if (config.onlyIfLocation) {
-                    Timber.w("Comprobando ubicación actual")
+                    //Timber.w("Comprobando ubicación actual")
                     val poi = karooSystem.getHomeFlow().first()
                     checkCurrentLocation(poi)
                 } else {
                     true
                 }
-                Timber.w("Ubicación actual comprobada antes de salir")
+               // Timber.w("Ubicación actual comprobada antes de salir")
                 if (shouldTrigger && locationOk) {
-                    Timber.w("Webhook activado")
+                    //Timber.w("Webhook activado")
                     return sendWebhook(config)
                 }
                 else return false
@@ -168,11 +168,11 @@ class WebhookManager(
 
     private suspend fun checkCurrentLocation(targetLocation: GpsCoordinates): Boolean {
         try {
-            Timber.w("Comprobando ubicación actual")
+           // Timber.w("Comprobando ubicación actual")
             val currentLocation = karooSystem.getGpsFlow().first()
 
             val distance = distanceTo(currentLocation, targetLocation)
-            Timber.w("Distancia a la ubicación objetivo: $distance km")
+           // Timber.w("Distancia a la ubicación objetivo: $distance km")
             return distance <= 0.070 // 70 metros
 
         } catch (e: Exception) {
@@ -200,35 +200,42 @@ class WebhookManager(
     fun executeWebhookWithStateTransitions(webhookId: Int) {
         scope.launch(Dispatchers.IO) {
             try {
-                Timber.w("ESTAMOS EN EXECUTING WEBHOOK")
-                webhookStateStore.saveWebhookState(
-                    webhookId,
-                    StepStatus.EXECUTING.name,
-                    System.currentTimeMillis() + 10_000
-                )
 
-                updateWebhookStatus(webhookId, StepStatus.EXECUTING)
-                handleEvent("custom", webhookId)
-
-                delay(10_000)
-                updateWebhookStatus(webhookId, StepStatus.SUCCESS)
-
-
-                webhookStateStore.saveWebhookState(
-                    webhookId,
-                    StepStatus.SUCCESS.name,
-                    System.currentTimeMillis() + 5_000
-                )
-
-                delay(5_000)
-                updateWebhookStatus(webhookId, StepStatus.IDLE)
                 webhookStateStore.clearWebhookState(webhookId)
+                updateWebhookStatus(webhookId, StepStatus.EXECUTING)
+
+
+                delay(4_000)
+
+
+                val statuscode = handleEvent("custom", webhookId)
+
+
+                val finalState = if (statuscode) StepStatus.SUCCESS else StepStatus.ERROR
+                val visibilityTime = if (statuscode) 4_000L else 5_000L
+
+                updateWebhookStatus(webhookId, finalState)
+                webhookStateStore.saveWebhookState(
+                    webhookId,
+                    finalState.name,
+                    System.currentTimeMillis() + visibilityTime
+                )
+
+
+                delay(visibilityTime)
+
+
+                delay(600)
+
+
+                webhookStateStore.clearWebhookState(webhookId)
+                updateWebhookStatus(webhookId, StepStatus.IDLE)
 
             } catch (e: Exception) {
                 Timber.e(e, "Error al ejecutar webhook $webhookId: ${e.message}")
+
+
                 updateWebhookStatus(webhookId, StepStatus.ERROR)
-
-
                 webhookStateStore.saveWebhookState(
                     webhookId,
                     StepStatus.ERROR.name,
@@ -236,8 +243,10 @@ class WebhookManager(
                 )
 
                 delay(10_000)
-                updateWebhookStatus(webhookId, StepStatus.IDLE)
+                delay(600)
+
                 webhookStateStore.clearWebhookState(webhookId)
+                updateWebhookStatus(webhookId, StepStatus.IDLE)
             }
         }
     }
@@ -306,6 +315,7 @@ class WebhookManager(
             ).first()
 
             val success = response.statusCode in 200..299
+
             if (success) {
                 Timber.d("Webhook enviado correctamente a: ${config.url}")
             } else {

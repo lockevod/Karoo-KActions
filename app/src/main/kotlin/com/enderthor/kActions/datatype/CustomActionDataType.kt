@@ -175,7 +175,7 @@ class CustomActionDataType(
                         emitter.updateView(result.remoteViews)
                     }
             } catch (e: CancellationException) {
-                Timber.d(e, "Cancelación normal del flujo")
+                //Timber.d(e, "Cancelación normal del flujo")
             } catch (e: Exception) {
                 Timber.e(e, "Error actualizando vista: ${e.message}")
 
@@ -195,9 +195,18 @@ class CustomActionDataType(
         emitter.setCancellable {
             configJob.cancel()
             viewJob.cancel()
-            statusUpdateJob?.cancel() // Cancelar el timer
+            statusUpdateJob?.cancel()
             scope.cancel()
             scopeJob.cancel()
+        }
+    }
+
+    private fun getReadyMessageText(messageAvailable: Boolean, webhookAvailable: Boolean): String {
+        return when {
+            messageAvailable && webhookAvailable -> context.getString(R.string.webhook_first_action)
+            messageAvailable -> context.getString(R.string.message_only_action)
+            webhookAvailable -> context.getString(R.string.webhook_only_action)
+            else -> context.getString(R.string.idle_action)
         }
     }
 
@@ -216,25 +225,27 @@ class CustomActionDataType(
 
         if (message?.status != null) {
             if (statusMessage == StepStatus.FIRST && lastStatusUpdateTime == 0L) {
-                // Inicializar el timestamp cuando entramos en FIRST por primera vez
-                //Timber.d("Inicializando contador para mensaje de confirmación")
+
                 lastStatusUpdateTime = currentTime
                 readyMessageShown = false
             } else if (statusMessage != StepStatus.FIRST) {
-                // Resetear timestamp cuando salimos de FIRST
+
                 lastStatusUpdateTime = 0L
                 readyMessageShown = false
             }
         }
 
-       // val name = message?.name ?: ""
+
         val name = ""
         var displayText = message?.message ?: ""
 
         val displayStatus = when {
             // Cuando el webhook está en CONFIRM o EXECUTING, priorizar su estado
-            webhookStatus == StepStatus.CONFIRM || webhookStatus == StepStatus.EXECUTING -> webhookStatus
-
+            webhook == null && message == null -> StepStatus.NOT_AVAILABLE
+            webhookStatus == StepStatus.CONFIRM ||
+                    webhookStatus == StepStatus.EXECUTING ||
+                    webhookStatus == StepStatus.ERROR ||
+                    webhookStatus == StepStatus.SUCCESS -> webhookStatus
             // Cuando el mensaje está vacío y hay webhook configurado
             displayText.isEmpty() && webhook?.enabled == true && webhook.url.isNotEmpty() -> webhookStatus
 
@@ -255,10 +266,16 @@ class CustomActionDataType(
                         context.getString(R.string.webhook_confirm_action)
                     } else {
                         //Timber.d("Tiempo transcurrido: ${timeElapsed}ms - Mostrando opciones")
-                        context.getString(R.string.message_first_action)
+                       // context.getString(R.string.message_first_action)
+                        val messageAvailable = message != null && message.message.isNotEmpty()
+                        val webhookAvailable = webhook != null && webhook.url.isNotEmpty()
+                        getReadyMessageText(messageAvailable, webhookAvailable)
                     }
                 } else {
-                    context.getString(R.string.message_first_action)
+                    val messageAvailable = message != null && message.message.isNotEmpty()
+                    val webhookAvailable = webhook != null && webhook.url.isNotEmpty()
+                    getReadyMessageText(messageAvailable, webhookAvailable)
+                    //context.getString(R.string.message_first_action)
                 }
             }
             StepStatus.CONFIRM -> context.getString(R.string.webhook_confirm_action)
@@ -269,7 +286,11 @@ class CustomActionDataType(
             StepStatus.NOT_AVAILABLE -> context.getString(R.string.webhook_notavailable_action)
         }
 
-        val displayMessage = "$actionString\n$name"
+        val displayMessage = if (webhook == null && message == null) {
+            context.getString(R.string.webhook_notavailable_action)
+        } else {
+            "$actionString\n$name"
+        }
         val webhookEnabled = webhook?.enabled == true
         val webhookUrl = webhook?.url ?: ""
 
@@ -277,7 +298,7 @@ class CustomActionDataType(
             var modifier = GlanceModifier.fillMaxSize().padding(5.dp)
 
             if (!config.preview) {
-               // Timber.d("Configurando acción unificada , texto: $displayText")
+
                 modifier = modifier.clickable(
                     onClick = actionRunCallback<UnifiedActionCallback>(
                         actionParametersOf(
