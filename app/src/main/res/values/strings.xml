@@ -18,8 +18,8 @@
     <string name="api_key">API Key</string>
     <string name="test_sending">Test message sending</string>
     <string name="test_phone_number">Test phone number</string>
-    <string name="phone_placeholder">34675123123</string>
-    <string name="connecting">Connecting...</string>
+    <string name="phone_placeholder">+34675123123</string>
+    <string name="connecting">Connecting…</string>
     <string name="send_test_message">Send test message</string>
     <string name="error_karoo_not_connected">Error: Karoo System is not connected</string>
     <string name="test_message_content">Test message from KActions</string>
@@ -36,7 +36,7 @@
     <string name="number_3">Number 3</string>
     <string name="error_no_plus">Phone number must be entered with the \'+\' symbol and with country code. Example: +34675123123</string>
     <string name="error_digits_only">Phone number must contain only digits and +. Example: +34675123123</string>
-    <string name="error_length">Phone number must have between 10-15 digits, country code is required. Example: +34675123123</string>
+    <string name="error_length">Phone number must have between 10–15 digits, country code is required. Example: +34675123123</string>
     <string name="phone_numbers_saved">Phone numbers saved</string>
     <string name="cannot_save_invalid_format">Cannot save: Some phone numbers have invalid format</string>
 
@@ -98,8 +98,8 @@
     <string name="webhook_send_test">Send webhook test</string>
     <string name="webhook_url_error">Error: URL must start with http:// or https://</string>
 
-    <string name="webhook_idle_action">Tap to execute</string>
-    <string name="webhook_first_action">Tap to confirm</string>
+    <string name="idle_action">Tap to execute</string>
+    <string name="webhook_first_action">Tap to message\nWait for webhook.</string>
     <string name="webhook_excuting_action">Executing …</string>
     <string name="webhook_success_action">Execution successful</string>
     <string name="webhook_error_action">Execution failed</string>
@@ -125,13 +125,25 @@
     <string name="indoor_mode">Only in outdoor?</string>
 
 
-    <string name="custom1_datatype">Custom Message 1</string>
-    <string name="custom2_datatype">Custom Message 2</string>
+    <string name="custom1_datatype">Custom Action</string>
+    <string name="custom2_datatype">Custom Action 2</string>
 
     <string name="custom_messages">Custom Messages</string>
-    <string name="configure_custom_messages">Configure messages that can be sent manually</string> <string name="custom_message_1">Custom 1</string>
+    <string name="configure_custom_messages">Configure messages that can be sent manually. If you insert #dst# in your text, you will include remaining distance</string>
+    <string name="custom_message_1">Custom 1</string>
     <string name="custom_message_2">Custom 2</string>
     <string name="custom_message_name">Title</string>
     <string name="custom_message_content">Content</string>
-    <string name="include_distance">Include remaining distance?</string>
+    <string name="include_distance">Include remaining distance if you insert #dst# in your text.</string>
+    <string name="webhook_confirm_action">Confirm webhook</string>
+
+    <string name="message_first_action">Tap now for message. Wait for webhook..</string>
+
+    <string name="only_message_action">Tap to message</string>
+    <string name="only_webhook_action">Tap to webhook</string>
+    <string name="both_actions">Tap now for message\nWait for webhook</string>
+
+    <string name="message_only_action">Tap to message</string>
+    <string name="webhook_only_action">Tap to webhook</string>
+
 </resources>

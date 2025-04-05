@@ -26,6 +26,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEmpty
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.timeout
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.json.Json
@@ -150,8 +152,16 @@ fun KarooSystemService.getGpsFlow(): Flow<GpsCoordinates> {
         .map {
             GpsCoordinates(it.lat, it.lng)
         }
+        .onStart {
+           // Timber.d("No se recibieron coordenadas, emitiendo posición predeterminada")
+            emit(GpsCoordinates(10.0, 10.0))
+        }
+        .onEmpty {
+            //Timber.d("No se recibieron coordenadas, emitiendo posición predeterminada")
+            emit(GpsCoordinates(10.0, 10.0))
+        }
         .catch {
-            Timber.e(it, "Error obteniendo ubicación GPS")
+           // Timber.e(it, "Error obteniendo ubicación GPS")
             emit(GpsCoordinates(10.0, 10.0))
         }
         .map { it }
@@ -164,8 +174,16 @@ fun KarooSystemService.getHomeFlow(): Flow<GpsCoordinates> {
                 GpsCoordinates(homePoi.lat, homePoi.lng)
             } ?: GpsCoordinates(0.0, 0.0)
         }
+        .onStart {
+           // Timber.d("No se recibieron coordenadas, emitiendo posición predeterminada")
+            emit(GpsCoordinates(0.0, 0.0))
+        }
+        .onEmpty {
+            //Timber.d("No se recibieron coordenadas, emitiendo posición predeterminada")
+            emit(GpsCoordinates(0.0, 0.0))
+        }
         .catch {
-            Timber.e(it, "Error obteniendo ubicación HOME")
+           // Timber.e(it, "Error obteniendo ubicación HOME")
             emit(GpsCoordinates(0.0, 0.0))
         }
 }

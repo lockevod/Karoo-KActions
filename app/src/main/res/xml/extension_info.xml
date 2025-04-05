@@ -5,21 +5,9 @@
     id="kactions"
     scansDevices="false">
     <DataType
-        description="@string/webhook_description_datatype"
-        displayName="@string/webhook_datatype"
-        graphical="true"
-        icon="@drawable/ic_kactions"
-        typeId="webhook-one" />
-    <DataType
         description="@string/custom1_datatype"
         displayName="@string/custom1_datatype"
         graphical="true"
         icon="@drawable/ic_kactions"
         typeId="custom-one" />
-    <DataType
-        description="@string/custom2_datatype"
-        displayName="@string/custom2_datatype"
-        graphical="true"
-        icon="@drawable/ic_kactions"
-        typeId="custom-two" />
 </ExtensionInfo>

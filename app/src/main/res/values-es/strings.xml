@@ -18,7 +18,7 @@
     <string name="api_key">Clave API</string>
     <string name="test_sending">Prueba de envío de mensajes</string>
     <string name="test_phone_number">Número para pruebas</string>
-    <string name="phone_placeholder">34675123123</string>
+    <string name="phone_placeholder">+34675123123</string>
     <string name="connecting">Conectando…</string>
     <string name="send_test_message">Enviar mensaje de prueba</string>
     <string name="error_karoo_not_connected">Error: El sistema Karoo no está conectado</string>
@@ -98,8 +98,11 @@
     <string name="webhook_send_test">Enviar prueba al webhook</string>
     <string name="webhook_url_error">Error: La URL debe comenzar con http:// o https://</string>
 
-    <string name="webhook_idle_action">Pulsa para ejecutar</string>
-    <string name="webhook_first_action">Pulsa para confirmar</string>
+    <string name="idle_action">Pulsa para ejecutar</string>
+    <string name="webhook_first_action">Pulsa ahora para mensaje\nEspera para webhook..</string>
+
+
+
     <string name="webhook_excuting_action">Ejecutando …</string>
     <string name="webhook_success_action">Éxito al ejecutar</string>
     <string name="webhook_error_action">Error en ejecución</string>
@@ -129,10 +132,19 @@
     <string name="error_message">Error: %1$s</string>
     <string name="indoor_mode">Sólo outdoor?</string>
     <string name="custom_messages">Mensajes Custom Datatypes</string>
-    <string name="custom_message_1">Custom 1</string>
+    <string name="custom_message_1">Custom Action</string>
     <string name="custom_message_2">Custom 2</string>
     <string name="custom_message_name">Título</string>
     <string name="custom_message_content">Contenido </string>
-    <string name="include_distance">Incluir distancia faltante?</string>
-    <string name="configure_custom_messages">Configura mensajes que se pueden enviar manualmente</string>
+    <string name="include_distance">Incluir distancia faltante si insertas #dist# en tu texto</string>
+    <string name="configure_custom_messages">Configura mensaje que se puede enviar manualmente.Si insertas #dst# en tu texto, se añadirá la distancia restante en el lugar donde ponga #dst#</string>
+    <string name="message_first_action">Pulsa para mensaje\nEspera para webhook..</string>
+    <string name="webhook_confirm_action">Confirma para webhook</string>
+
+    <string name="only_message_action">Pulsa para mensaje</string>
+    <string name="only_webhook_action">Pulsa para webhook</string>
+    <string name="both_actions">Pulsa para mensaje\nEspera para webhook</string>
+    <string name="message_only_action">Pulsa ahora mensaje</string>
+    <string name="webhook_only_action">Pulsa para webhook</string>
+
 </resources>

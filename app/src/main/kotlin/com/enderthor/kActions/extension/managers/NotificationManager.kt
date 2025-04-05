@@ -105,7 +105,6 @@ private val scope: CoroutineScope
                     "pause" -> config.pauseMessage + "   " + karooLive
                     "resume" -> config.resumeMessage + "   " + karooLive
                     "custom1" -> config.customMessage1.message + "   " + karooLive
-                    "custom2" -> config.customMessage2.message + "   " + karooLive
                     else -> return@coroutineScope false
                 }
 
@@ -181,7 +180,6 @@ private val scope: CoroutineScope
 
                     val updatedConfig = when (messageId) {
                         0 -> config.copy(customMessage1 = config.customMessage1.copy(status = status))
-                        1 -> config.copy(customMessage2 = config.customMessage2.copy(status = status))
                         else -> config
                     }
 

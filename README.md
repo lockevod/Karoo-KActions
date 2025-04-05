@@ -44,7 +44,7 @@ You need to configure basic information in Conf. Tab:
 
 3. **Customize messages**:
    - Personalize messages for each type of event.
-   - You can fill Custom Messages also, this is for sending custom messages directly from your ride when you want. You can also select distance option and the message will include remaining distance (if you've loaded a route)
+   - You can fill Custom Message also, this is for sending custom messages directly from your ride when you want. If you insert/write #dist# in your text, this will be substitute for remaining distance (you need to have a route selected also)
    
 4. **Select actions**:
     - Start, stop or both.
@@ -62,9 +62,13 @@ You need to configure basic information in Conf. Tab:
    - You don't need to interact with the app during the ride; everything works in the background.
 
 
-Webhook can be triggered pressing the button in the app if you add webhook custom field in the profiles screen. 
-Custom Message can be  triggered pressing the button in the app if you add Custom Message 1 or Custom Message 2 as data field in the profiles screen.
-This button has a security measure, you have to press twice to send the webhook (and you can configure to be triggered only if you're near home)
+Webhook and Custom Message can be triggered pressing the button in the app if you add custom field in the profiles screen. Button works:
+1. Push the button in the app to activate the webhook or send a custom message.
+2. If you push the button before 8 seconds, the app will send a custom message.
+3. If you push the button after 8 seconds, the app will configure to send a webhook.
+4. If you wait more than 30 seconds, the app will reset the button and you need to push again.
+
+This button has a security measure (for webhook action only), you have to press twice to send the webhook (and you can configure to be triggered only if you're near home)
 
 KActions supports several providers to send notifications, you need to configure before use the app:
 

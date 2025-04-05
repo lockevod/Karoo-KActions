@@ -16,7 +16,7 @@ data class customMessage (
     var name: String = "",
     var message: String = "",
     var istracking: Boolean = false,
-    var isdistance: Boolean = false,
+    var isdistance: Boolean = true,
     var status: StepStatus = StepStatus.IDLE,
 )
 
@@ -33,7 +33,6 @@ data class ConfigData(
     val pauseMessage: String = "",
     val resumeMessage: String = "",
     val customMessage1: customMessage = customMessage(),
-    val customMessage2: customMessage = customMessage(),
     val karooKey: String = "",
     val phoneNumbers: List<String> = listOf(),
     val emails: List<String> = listOf(),
@@ -89,7 +88,7 @@ data class WebhookData(
 )
 
 
-enum class StepStatus { IDLE,FIRST, EXECUTING, SUCCESS, ERROR, NOT_AVAILABLE,CANCEL }
+enum class StepStatus { IDLE,FIRST,  CONFIRM,  EXECUTING, SUCCESS, ERROR, NOT_AVAILABLE,CANCEL }
 
 
 @Serializable
