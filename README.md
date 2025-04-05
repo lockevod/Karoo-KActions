@@ -68,7 +68,7 @@ Webhook and Custom Message can be triggered pressing the button in the app if yo
 3. If you push the button after 8 seconds, the app will configure to send a webhook.
 4. If you wait more than 30 seconds, the app will reset the button and you need to push again.
 
-This button has a security measure (for webhook action only), you have to press twice to send the webhook (and you can configure to be triggered only if you're near home)
+This button has a security measure (for webhook action only), you have to press twice to send the webhook (be triggered only if you're near home configured option)
 
 KActions supports several providers to send notifications, you need to configure before use the app:
 
