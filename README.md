@@ -1,7 +1,7 @@
 # KActions - Notification Extension for Karoo
 
 > [!WARNING]  
-> This app is currently in prototype stage and its main features might not work at all. If you want to test it anyway and encounter issues, please report them in the github issues, ideally with adb logs attached.
+> This app is currently in early stage and its main features might not work at all. If you want to test it anyway and encounter issues, please report them in the github issues, ideally with adb logs attached.
 > Please we careful if you use webhooks, you can trigger actions with this extension and you need to be careful with this.
 
 This extension for Karoo devices allows to perform some automatic actions:
