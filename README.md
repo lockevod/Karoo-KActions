@@ -44,7 +44,7 @@ You need to configure basic information in Conf. Tab:
 
 3. **Customize messages**:
    - Personalize messages for each type of event.
-   - You can fill Custom Messages also, this is for sending custom messages directly from your ride when you want. You can also select distance option and the message will include remaining distance (if you've loaded a route)
+   - You can fill Custom Message also, this is for sending custom messages directly from your ride when you want. If you insert/write #dist# in your text, this will be substitute for remaining distance (you need to have a route selected also)
    
 4. **Select actions**:
     - Start, stop or both.
