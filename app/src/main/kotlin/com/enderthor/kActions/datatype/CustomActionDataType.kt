@@ -83,23 +83,27 @@ class CustomActionDataType(
             streamDataMonitorFlow(DataType.Type.DISTANCE_TO_DESTINATION)
                 .collect { state ->
                     if (state is StreamState.Streaming) {
-                        val distanceValue = state.dataPoint.singleValue ?: 0.0
+                        val distanceValue = state.dataPoint.values["FIELD_DISTANCE_TO_DESTINATION_ID"]
+                            ?: 0.0
                         _distanceFlow.value = distanceValue
-                        //Timber.d("Distancia restante actualizada: $distanceValue")
+                        Timber.d("Distancia restante actualizada: $distanceValue")
                     }
                 }
         }
     }
 
     private fun getRemainingDistance(units: UserProfile.PreferredUnit.UnitType, remaining: String = ""): String {
+
+        val distance = distanceFlow.value.toDouble()
+        //Timber.d("Distancia restante: ${distance}")
         return when {
-            distanceFlow.value <= 0.0 -> "0"
+            distance <= 0.0 -> "0"
             units == UserProfile.PreferredUnit.UnitType.IMPERIAL ->
-                "$remaining${(distanceFlow.value / 1609).toInt()}mi"
-            distanceFlow.value < 1.0 ->
-                "$remaining${(distanceFlow.value * 1000).toInt()}m"
+                "$remaining${(distance / 1609).toInt()} mi"
+            distance < 1000 ->
+                "$remaining${(distance).toInt()} m"
             else ->
-                "$remaining${String.format(Locale.US, "%.1fkm", distanceFlow.value)}"
+                "$remaining${(distance / 1000).toInt()} km"
         }
     }
 
@@ -130,24 +134,19 @@ class CustomActionDataType(
 
                        // Timber.d("Actualizando vista - Webhook: ${webhook?.status}, Mensaje: ${message?.status}")
 
-
-                        // Detectar cambio a estado FIRST e iniciar timer
                         if (message?.status == StepStatus.FIRST && lastStatusUpdateTime == 0L) {
                             lastStatusUpdateTime = System.currentTimeMillis()
-
-                            // Cancelar timer anterior si existe
                             statusUpdateJob?.cancel()
 
-                            // Programar actualización automática después de 8 segundos
                             statusUpdateJob = scope.launch {
                                 delay(ACTION_THRESHOLD)
                                 if (message.status == StepStatus.FIRST) {
-                                    // Cambiar estado interno a CONFIRM
+
                                     val exten = KActionsExtension.getInstance() ?: return@launch
                                     exten.updateCustomMessageStatus(0, StepStatus.CONFIRM)
                                     exten.updateWebhookStatus(0, StepStatus.CONFIRM)
 
-                                    // Actualizar la UI con el nuevo estado
+
                                     val result = updateConfigDataView(
                                         context = context,
                                         webhook = webhook?.copy(status = StepStatus.CONFIRM),
@@ -159,7 +158,7 @@ class CustomActionDataType(
                                 }
                             }
                         } else if (message?.status != StepStatus.FIRST) {
-                            // Cancelar timer si salimos de estado FIRST
+
                             statusUpdateJob?.cancel()
                             lastStatusUpdateTime = 0L
                         }
@@ -240,16 +239,16 @@ class CustomActionDataType(
         var displayText = message?.message ?: ""
 
         val displayStatus = when {
-            // Cuando el webhook está en CONFIRM o EXECUTING, priorizar su estado
+
             webhook == null && message == null -> StepStatus.NOT_AVAILABLE
             webhookStatus == StepStatus.CONFIRM ||
                     webhookStatus == StepStatus.EXECUTING ||
                     webhookStatus == StepStatus.ERROR ||
                     webhookStatus == StepStatus.SUCCESS -> webhookStatus
-            // Cuando el mensaje está vacío y hay webhook configurado
+
             displayText.isEmpty() && webhook?.enabled == true && webhook.url.isNotEmpty() -> webhookStatus
 
-            // En otros casos, usar el estado del mensaje
+
             else -> statusMessage
         }
 
