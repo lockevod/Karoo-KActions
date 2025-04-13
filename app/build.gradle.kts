@@ -13,8 +13,8 @@ android {
         applicationId = "com.enderthor.kActions"
         minSdk = 23
         targetSdk = 34
-        versionCode = 202504071
-        versionName = "1.0.1"
+        versionCode = 202504131
+        versionName = "1.1.0"
     }
 
     buildTypes {
