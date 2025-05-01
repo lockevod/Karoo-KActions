@@ -52,14 +52,32 @@ class WebhookManager(
 
             webhookConfig?.let { config ->
                 //if (!config.enabled) return false
-
+                val modConfig: WebhookData
                 val shouldTrigger = when (eventType) {
-                    "start" -> config.actionOnStart
-                    "stop" -> config.actionOnStop
-                    "pause" -> config.actionOnPause
-                    "resume" -> config.actionOnResume
-                    "custom" -> config.actionOnCustom
-                    else -> false
+                    "start" -> {
+                        modConfig = config.copy(post = config.post.replace("%status%", config.statusTextOnStart))
+                        config.actionOnStart
+                    }
+                    "stop" -> {
+                        modConfig = config.copy(post = config.post.replace("%status%", config.statusTextOnStop))
+                        config.actionOnStop
+                    }
+                    "pause" -> {
+                        modConfig = config.copy(post = config.post.replace("%status%", config.statusTextOnPause))
+                        config.actionOnPause
+                    }
+                    "resume" -> {
+                        modConfig = config.copy(post = config.post.replace("%status%", config.statusTextOnResume))
+                        config.actionOnResume
+                    }
+                    "custom" -> {
+                        modConfig = config.copy(post = config.post.replace("%status%", config.statusTextOnCustom))
+                        config.actionOnCustom
+                    }
+                    else -> {
+                        modConfig = config    
+                        false
+                    }
                 }
 
                 val locationOk = if (config.onlyIfLocation) {
@@ -72,7 +90,7 @@ class WebhookManager(
                // Timber.w("Ubicación actual comprobada antes de salir")
                 if (shouldTrigger && locationOk) {
                     //Timber.w("Webhook activado")
-                    return sendWebhook(config)
+                    return sendWebhook(modConfig)
                 }
                 else return false
             }

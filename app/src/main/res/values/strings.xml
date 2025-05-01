@@ -85,6 +85,10 @@
     <string name="webhook_url_placeholder">https://example.com/webhook</string>
     <string name="webhook_post_body">POST Body (JSON)</string>
     <string name="webhook_post_body_placeholder">{ \"key\": \"value\" }</string>
+    <string name="webhook_status_when_ride_starts">Ride start status</string>
+    <string name="webhook_status_when_ride_starts_placeholder">Started</string>
+    <string name="webhook_status_when_ride_stops">Ride stop status</string>
+    <string name="webhook_status_when_ride_stops_placeholder">Stopped</string>
     <string name="webhook_trigger_events">Events that trigger the webhook</string>
     <string name="webhook_on_start">On start</string>
     <string name="webhook_on_stop">On stop</string>
