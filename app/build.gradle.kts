@@ -13,7 +13,7 @@ android {
         applicationId = "com.enderthor.kActions"
         minSdk = 23
         targetSdk = 34
-        versionCode = 202504131
+        versionCode = 202505051
         versionName = "1.1.0"
     }
 
@@ -62,7 +62,7 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.androidx.foundation.android)
     implementation(libs.androidx.foundation.layout.android)
-    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-crashlytics")
 }
