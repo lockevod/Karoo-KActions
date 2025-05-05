@@ -47,6 +47,11 @@ fun WebhookConfigScreen() {
     var url by remember { mutableStateOf("") }
     var postBody by remember { mutableStateOf("") }
     var enabled by remember { mutableStateOf(true) }
+    var statusTextOnStart by remember { mutableStateOf("") }
+    var statusTextOnStop by remember { mutableStateOf("") }
+    var statusTextOnPause by remember { mutableStateOf("") }
+    var statusTextOnResume by remember { mutableStateOf("") }
+    var statusTextOnCustom by remember { mutableStateOf("") }
     var actionOnStart by remember { mutableStateOf(true) }
     var actionOnStop by remember { mutableStateOf(false) }
     var actionOnPause by remember { mutableStateOf(false) }
@@ -98,10 +103,15 @@ fun WebhookConfigScreen() {
                     postBody = savedWebhook.post
                     enabled = savedWebhook.enabled
                     actionOnStart = savedWebhook.actionOnStart
+                    statusTextOnStart = savedWebhook.statusTextOnStart
                     actionOnStop = savedWebhook.actionOnStop
+                    statusTextOnStop = savedWebhook.statusTextOnStop
                     actionOnPause = savedWebhook.actionOnPause
+                    statusTextOnPause = savedWebhook.statusTextOnPause
                     actionOnResume = savedWebhook.actionOnResume
+                    statusTextOnResume = savedWebhook.statusTextOnResume
                     actionOnCustom = savedWebhook.actionOnCustom
+                    statusTextOnCustom = savedWebhook.statusTextOnCustom
                     onlyIfLocation = savedWebhook.onlyIfLocation
                     location = savedWebhook.location
                     header = savedWebhook.header
@@ -125,6 +135,11 @@ fun WebhookConfigScreen() {
                     post = postBody.trim(),
                     header = header.trim(),
                     enabled = true,
+                    statusTextOnStart = statusTextOnStart,
+                    statusTextOnStop = statusTextOnStop,
+                    statusTextOnPause = statusTextOnPause,
+                    statusTextOnResume = statusTextOnResume,
+                    statusTextOnCustom = statusTextOnCustom,
                     actionOnStart = actionOnStart,
                     actionOnStop = actionOnStop,
                     actionOnPause = actionOnPause,
@@ -137,6 +152,11 @@ fun WebhookConfigScreen() {
                     url = url.trim(),
                     post = postBody.trim(),
                     enabled = true,
+                    statusTextOnStart = statusTextOnStart,
+                    statusTextOnStop = statusTextOnStop,
+                    statusTextOnPause = statusTextOnPause,
+                    statusTextOnResume = statusTextOnResume,
+                    statusTextOnCustom = statusTextOnCustom,
                     actionOnStart = actionOnStart,
                     actionOnStop = actionOnStop,
                     actionOnPause = actionOnPause,
@@ -353,6 +373,54 @@ fun WebhookConfigScreen() {
                         },
                         label = { Text(stringResource(R.string.webhook_post_body)) },
                         placeholder = { Text(stringResource(R.string.webhook_post_body_placeholder)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                            .onFocusChanged {
+                                if (!it.isFocused) {
+                                    keyboardController?.hide()
+                                    saveData()
+                                }
+                            },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
+                    )
+
+                    OutlinedTextField(
+                        value = statusTextOnStart,
+                        onValueChange = {
+                            statusTextOnStart = it
+                        },
+                        label = { Text(stringResource(R.string.webhook_status_when_ride_starts)) },
+                        placeholder = { Text(stringResource(R.string.webhook_status_when_ride_starts_placeholder)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                            .onFocusChanged {
+                                if (!it.isFocused) {
+                                    keyboardController?.hide()
+                                    saveData()
+                                }
+                            },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                            saveData()
+                        })
+                    )
+
+                    OutlinedTextField(
+                        value = statusTextOnStop,
+                        onValueChange = {
+                            statusTextOnStop = it
+                        },
+                        label = { Text(stringResource(R.string.webhook_status_when_ride_stops)) },
+                        placeholder = { Text(stringResource(R.string.webhook_status_when_ride_stops_placeholder)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp)

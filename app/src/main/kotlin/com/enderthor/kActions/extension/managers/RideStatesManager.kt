@@ -75,6 +75,7 @@ class RideStateManager(
 
         val currentTime = System.currentTimeMillis()
 
+        //if(newRideState is RideState.Paused && newRideState.auto) return
 
         if(!isIndoor || activeConfigs.firstOrNull()?.indoorMode == false)
             when (newRideState) {
@@ -147,7 +148,7 @@ class RideStateManager(
                             )
                         }
 
-
+                        isFirstRecordingSinceBoot = true // reset the variable so we can allow a "start" event again if we stop the activity and start a new one (without pausing)
                         scope.launch {
                             webhookManager.handleEvent("stop", 0)
                         }
