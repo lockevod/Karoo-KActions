@@ -45,14 +45,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.Locale
+
 
 @OptIn(ExperimentalGlanceRemoteViewsApi::class)
 class CustomActionDataType(
@@ -70,38 +70,31 @@ class CustomActionDataType(
         private var readyMessageShown: Boolean = false
     }
 
-
     private val glance = GlanceRemoteViews()
     private val configManager by lazy { ConfigurationManager(context) }
+    private var distanceFlow: Flow<Double>? = null
 
-
-    private val _distanceFlow = MutableStateFlow(0.0)
-    val distanceFlow: StateFlow<Double> = _distanceFlow.asStateFlow()
-
-    private fun KarooSystemService.startCollectingRemainingDistance(scope: CoroutineScope) {
-        scope.launch(Dispatchers.IO) {
-            streamDataMonitorFlow(DataType.Type.DISTANCE_TO_DESTINATION)
-                .collect { state ->
-                    if (state is StreamState.Streaming) {
-                        val distanceValue = state.dataPoint.values["FIELD_DISTANCE_TO_DESTINATION_ID"]
-                            ?: 0.0
-                        _distanceFlow.value = distanceValue
-                        Timber.d("Distancia restante actualizada: $distanceValue")
-                    }
-                }
-        }
+    private fun KarooSystemService.getRemainingDistanceFlow(): Flow<Double> {
+        return streamDataMonitorFlow(DataType.Type.DISTANCE_TO_DESTINATION)
+            .map { state ->
+                if (state is StreamState.Streaming) {
+                    state.dataPoint.values["FIELD_DISTANCE_TO_DESTINATION_ID"] ?: 0.0
+                } else 0.0
+            }
+            .catch { e ->
+                Timber.e(e, "Error obteniendo distancia: ${e.message}")
+                emit(0.0)
+            }
     }
 
-    private fun getRemainingDistance(units: UserProfile.PreferredUnit.UnitType, remaining: String = ""): String {
-
-        val distance = distanceFlow.value.toDouble()
-        //Timber.d("Distancia restante: ${distance}")
+    private suspend fun getRemainingDistance(units: UserProfile.PreferredUnit.UnitType, remaining: String = ""): String {
+        val distance = distanceFlow?.first() ?: 0.0
         return when {
             distance <= 0.0 -> "0"
             units == UserProfile.PreferredUnit.UnitType.IMPERIAL ->
                 "$remaining${(distance / 1609).toInt()} mi"
             distance < 1000 ->
-                "$remaining${(distance).toInt()} m"
+                "$remaining${distance.toInt()} m"
             else ->
                 "$remaining${(distance / 1000).toInt()} km"
         }
@@ -117,11 +110,11 @@ class CustomActionDataType(
             awaitCancellation()
         }
 
+        distanceFlow = karooSystem.getRemainingDistanceFlow()
+
         val viewJob = scope.launch {
             try {
                 val units = karooSystem.streamUserProfile().first().preferredUnit.distance
-                karooSystem.startCollectingRemainingDistance(this)
-
 
                 configManager.loadPreferencesFlow()
                     .combine(configManager.loadWebhookDataFlow()) { configData, webhooks ->
